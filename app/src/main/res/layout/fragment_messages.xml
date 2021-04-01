@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    tools:context=".Fragment.MessagesFragment">
+
+    <include
+        android:id="@+id/userhome_navigation_opener_include"
+        layout="@layout/navigation_opener_toolbar"/>
+
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/userhome_navigation_opener_include">
+
+        <LinearLayout
+            android:id="@+id/no_messages_layout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/all_users_messages_lists"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </android.support.v7.widget.RecyclerView>
+
+
+
+
+    </FrameLayout>
+</RelativeLayout>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:icon="@drawable/ic_profile"
+        android:id="@+id/nav_drawer_profile"
+        android:title="@string/profile" />
+
+    <item
+        android:icon="@drawable/ic_posts"
+        android:id="@+id/nav_drawer_my_posts"
+        android:title="@string/my_posts" />
+
+    <item
+        android:icon="@drawable/ic_groups"
+        android:id="@+id/nav_drawer_group"
+        android:title="@string/groups" />
+
+
+    <item
+        android:icon="@drawable/ic_add"
+        android:visible="false"
+        android:id="@+id/nav_drawer_feeds_add"
+        android:title="@string/add_feeds" />
+
+    <item
+        android:icon="@drawable/ic_group"
+        android:visible="false"
+        android:id="@+id/nav_drawer_group_add"
+        android:title="@string/new_group" />
+
+
+
+    <group android:checkableBehavior="none"
+        android:id="@+id/menu_bottom">
+
+        <item
+            android:icon="@drawable/ic_star"
+            android:id="@+id/nav_drawer_rate"
+            android:title="@string/rate" />
+
+        <item
+            android:icon="@drawable/ic_settings"
+            android:id="@+id/nav_drawer_settings"
+            android:title="@string/settings" />
+
+        <item
+            android:icon="@drawable/ic_logout"
+            android:id="@+id/nav_drawer_logout"
+            android:title="@string/logout" />
+
+    </group>
+</menu>

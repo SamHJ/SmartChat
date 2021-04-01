@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:id="@+id/messaging_area_layout"
+    android:layout_height="match_parent"
+    tools:context=".Activity.GroupMessagingArea">
+
+    <include
+        android:id="@+id/add_new_post_layout"
+        layout="@layout/navigation_opener_toolbar"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_below="@id/add_new_post_layout"
+        android:layout_width="match_parent"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/messages_recycler_view"
+        android:layout_above="@+id/sending_tools_layout"
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:gravity="center"
+        android:layout_marginStart="5dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:background="@drawable/chat_reply_drawable"
+        android:layout_above="@+id/sending_tools_layout"
+        android:id="@+id/chatter_date_layout"
+
+        android:layout_height="50dp">
+
+        <LinearLayout
+            android:layout_width="2dp"
+            android:id="@+id/vertical_line"
+            android:orientation="vertical"
+            android:background="@color/colorPrimary"
+            android:layout_height="match_parent">
+
+        </LinearLayout>
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:background="#f7f7f7"
+            android:src="@drawable/ic_close"
+            android:id="@+id/close_btn"
+            android:tint="#666666"
+            android:layout_alignParentEnd="true"
+            android:layout_height="40dp" />
+
+        <RelativeLayout
+            android:layout_toEndOf="@+id/vertical_line"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_toStartOf="@+id/close_btn"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_gravity="center"
+                android:id="@+id/chatter_user_name"
+                android:textStyle="bold"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:clickable="false"
+                android:layout_alignParentStart="true"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@string/user_name"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_gravity="center"
+                android:id="@+id/chatter_text"
+                android:clickable="false"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:textColor="#666666"
+                android:text=""
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:visibility="gone"
+                android:layout_marginTop="20dp"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="20dp"
+                android:src="@drawable/ic_sent"
+                android:visibility="gone"
+                android:layout_marginTop="20dp"
+                android:tint="#666666"
+                android:id="@+id/msg_type_img_icon"/>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+
+
+
+    <LinearLayout
+        android:id="@+id/sending_tools_layout"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:background="@color/colorWhite"
+        android:layout_height="50dp">
+
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/smiley_btn"
+            android:padding="15dp"
+            android:backgroundTint="@color/colorWhite"
+            android:src="@drawable/ic_smiley"
+            tools:ignore="ContentDescription" />
+
+
+        <hani.momanii.supernova_emoji_library.Helper.EmojiconEditText
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:id="@+id/add_message_edit_text"
+            android:background="@color/colorWhite"
+            android:textSize="16sp"
+            android:padding="10dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:imeOptions="actionSend"
+            android:hint="@string/write_a_message"
+
+            android:inputType="textMultiLine"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_marginStart="-50dp"
+            android:orientation="horizontal"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/more_options_btn"
+                android:padding="15dp"
+                android:tint="@color/colorPrimaryDark"
+                android:backgroundTint="@color/colorWhite"
+                android:src="@drawable/ic_attach_file"
+                tools:ignore="ContentDescription" />
+
+
+            <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/send_message_btn"
+                android:padding="15dp"
+                android:backgroundTint="@color/colorWhite"
+                android:src="@drawable/ic_comment_send"
+                tools:ignore="ContentDescription" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!--only admins layout-->
+    <LinearLayout
+        android:id="@+id/only_admins_layout"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:background="@color/colorWhite"
+        android:layout_height="50dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="20sp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:text="@string/only_admins_can_chat_in_this_group"
+            android:layout_height="wrap_content" />
+
+
+    </LinearLayout>
+    <!--end of only admins layout-->
+
+
+</RelativeLayout>

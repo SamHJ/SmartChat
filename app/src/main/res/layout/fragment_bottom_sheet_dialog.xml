@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp">
+
+    <!-- NOTE: This list should be displayed in a list
+    instead of nested layouts -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/send_pictures_imagebtn"
+                android:layout_width="85dp"
+                android:layout_height="85dp"
+                android:src="@drawable/image"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Gallery"
+                android:textSize="16sp"
+                android:textColor="@color/intro_title_color"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/send_video_message"
+                android:layout_width="85dp"
+                android:layout_height="85dp"
+                android:src="@drawable/video"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Video"
+                android:textSize="16sp"
+                android:textColor="@color/intro_title_color"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/send_documents_imagebtn"
+                android:layout_width="85dp"
+                android:layout_height="85dp"
+                android:src="@drawable/documents"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="File"
+                android:textSize="16sp"
+                android:textColor="@color/intro_title_color"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/send_audio_imageview"
+                android:layout_width="85dp"
+                android:layout_height="85dp"
+                android:src="@drawable/music"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Audio"
+                android:textSize="16sp"
+                android:textColor="@color/intro_title_color"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/make_voice_call_imageview"
+                android:layout_width="85dp"
+                android:layout_height="85dp"
+                android:src="@drawable/voice_call"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Voice call"
+                android:textSize="16sp"
+                android:textColor="@color/intro_title_color"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/make_video_call_imageview"
+                android:layout_width="85dp"
+                android:layout_height="85dp"
+                android:src="@drawable/video_call"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:text="Video call"
+                android:textSize="16sp"
+                android:textColor="@color/intro_title_color"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+
+
+
+</LinearLayout>

@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e6e6e6"
+    tools:context=".Activity.PersonProfile">
+
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:id="@+id/profil_scrollable"
+        android:layout_below="@+id/profile_action_bar_layout"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:id="@+id/layout_profile_image_and_details"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:id="@+id/profile_name_and_image"
+                android:layout_width="match_parent"
+                android:background="@color/colorPrimary"
+                android:layout_height="250dp">
+
+
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/userhome_profile_dialog_image"
+                    android:layout_width="@dimen/navigation_drawer_logo_size"
+                    android:layout_height="@dimen/navigation_drawer_logo_size"
+                    android:background="@drawable/navigation_drawer_image_circle_shape"
+                    android:elevation="5dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/easy_to_use"
+                    app:civ_border_color="@color/colorWhite"
+                    app:civ_border_width="2dp"
+                    android:transitionName="sharedProfileImageTransition"
+                    android:layout_gravity="center"
+                    />
+
+                <TextView
+                    android:id="@+id/user_full_name_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Mary Jackson"
+                    android:textStyle="bold"
+                    android:transitionName="sharedProfileTextTransition"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="20sp"/>
+
+                <TextView
+                    android:id="@+id/user_name_tex"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="User Name"
+                    android:textColor="#e0efe6"
+                    android:textSize="20sp"/>
+
+            </LinearLayout>
+
+            <Button
+            android:id="@+id/follow_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="60dp"
+            android:background="@color/colorPrimaryDark"
+            android:text="Follow"
+            android:visibility="gone"
+            android:textColor="@color/colorWhite" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:id="@+id/followers_cardView_container"
+                android:orientation="horizontal"
+                android:layout_marginTop="-60dp"
+                android:layout_below="@+id/profile_name_and_image"
+                android:layout_height="wrap_content">
+
+
+
+                <android.support.v7.widget.CardView
+                    android:id="@+id/profile_followers_cardview"
+                    android:layout_width="match_parent"
+                    android:layout_margin="20dp"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="15dp"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:id="@+id/all_my_no_of_posts_layout"
+                            android:layout_weight="1"
+                            android:layout_width="0dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:layout_marginTop="20dp"
+                            android:layout_height="50dp">
+
+                            <TextView
+                                android:id="@+id/no_of_user_posts"
+                                android:layout_width="wrap_content"
+                                android:text="0"
+                                android:textSize="16sp"
+                                android:textColor="@color/intro_title_color"
+                                android:textStyle="bold"
+                                android:layout_height="wrap_content" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:text="Posts"
+                                android:textSize="16sp"
+                                android:textColor="#9f9f9f"
+                                android:layout_height="wrap_content" />
+
+                        </LinearLayout>
+
+
+
+
+                        <LinearLayout
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginTop="20dp"
+                        android:layout_height="50dp">
+
+                        <TextView
+                        android:layout_width="wrap_content"
+                        android:text="5000"
+                        android:textSize="16sp"
+                        android:textColor="@color/intro_title_color"
+                        android:textStyle="bold"
+                        android:layout_height="wrap_content" />
+                        <TextView
+                        android:layout_width="wrap_content"
+                        android:text="Followers"
+                        android:textSize="16sp"
+                        android:textColor="#9f9f9f"
+                        android:layout_height="wrap_content" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        android:layout_marginTop="20dp"
+                        android:layout_height="50dp">
+
+                        <TextView
+                        android:layout_width="wrap_content"
+                        android:text="23"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/intro_title_color"
+                        android:layout_height="wrap_content" />
+                        <TextView
+                        android:layout_width="wrap_content"
+                        android:text="Following"
+                        android:textSize="16sp"
+                        android:textColor="#9f9f9f"
+                        android:layout_height="wrap_content" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+
+                </android.support.v7.widget.CardView>
+
+            </LinearLayout>
+
+
+
+            <!--BEGINS NO OF FRIENDS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/no_of_friends_layout_main"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/follow_and_send_request_layout"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="No of friends"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/no_of_friends_layout"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/no_of_friends_layout_main"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/no_of_friends"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="  1120"
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+
+            <!--END STATUS-->
+
+            <!--BEGINS STATUS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/general_settings"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/no_of_friends_layout"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Status"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/profile_status_layout"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/general_settings"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/profile_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="  Profile Status"
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+
+            <!--END STATUS-->
+
+
+
+
+            <!--BEGIN INTERESTED IN-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/interested_layout"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/profile_status_layout"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Interested in"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/interested_layout_text"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/interested_layout"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/interested_in_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" Abstrac Algebra"
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+            <!--END INTERESTED IN-->
+
+
+
+            <!--BEGIN LOCATION-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/location_layout"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/interested_layout_text"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Location"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/location_layout_text"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/location_layout"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/location_in_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" "
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+            <!--END  SCHOOL-->
+
+
+
+
+            <!--BEGIN PHONE-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/phone_layout"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/location_layout_text"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Phone"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/phone_layout_text"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/phone_layout"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/phone_in_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" 09075380982"
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+            <!--END  PHONE-->
+
+
+
+            <!--BEGIN GENDER-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/gender_layout"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/phone_layout_text"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Gender"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/gener_layout_text"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/gender_layout"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/gender_in_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" Male"
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+            <!--END  GENDER-->
+
+
+
+
+            <!--BEGIN PHONE-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:id="@+id/dob_layout"
+                android:background="#e6e6e6"
+                android:layout_below="@+id/gener_layout_text"
+                android:layout_height="40dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Date of birth"
+                    android:padding="10dp"
+                    android:textAllCaps="true"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/dob_layout_text"
+                android:background="@color/colorWhite"
+                android:layout_below="@id/dob_layout"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/dob_in_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" 31/05/19"
+                    android:textSize="16sp"
+                    android:textColor="@color/intro_title_color"
+                    android:padding="20dp" />
+
+            </LinearLayout>
+            <!--END  DATE OF BIRTH-->
+
+
+
+
+            <LinearLayout
+                android:id="@+id/follow_and_send_request_layout"
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="20dp"
+                android:layout_below="@+id/followers_cardView_container"
+                android:layout_height="wrap_content">
+
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_height="match_parent">
+                    <Button
+                        android:id="@+id/btn_send_friend_request"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Send Friend Request"
+                        android:textColor="@color/colorWhite" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:id="@+id/btn_decline_friend_request"
+                        android:layout_width="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_height="wrap_content"
+                        android:background="@color/unsuccessful_registeration_color"
+                        android:text="Cancel Friend Request"
+                        android:textColor="@color/colorWhite" />
+                </LinearLayout>
+
+
+
+
+            </LinearLayout>
+
+
+
+
+
+        </RelativeLayout>
+
+
+
+    </ScrollView>
+
+</RelativeLayout>

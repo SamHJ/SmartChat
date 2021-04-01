@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:icon="@drawable/ic_feeds"
+        android:id="@+id/nav_feeds"
+        android:title="Feeds" />
+    <item
+        android:icon="@drawable/ic_posts"
+        android:id="@+id/nav_posts"
+        android:title="Posts" />
+    <item
+        android:icon="@drawable/ic_messages"
+        android:id="@+id/nav_messages"
+        android:title="Messages" />
+    <item
+        android:icon="@drawable/ic_friends"
+        android:id="@+id/nav_friends"
+        android:title="Friends" />
+    <item
+        android:icon="@drawable/ic_requests"
+        android:id="@+id/nav_requests"
+        android:title="Requests" />
+</menu>

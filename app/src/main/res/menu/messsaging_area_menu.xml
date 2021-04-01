@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="niwigh.com.smartchat.Activity.AddNewPost">
+    <item
+        android:id="@+id/messaging_area_change_chat_background"
+        android:orderInCategory="100"
+        android:title="Change background"
+        app:showAsAction="never" />
+</menu>

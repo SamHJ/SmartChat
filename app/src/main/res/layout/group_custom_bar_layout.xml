@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/colorPrimary"
+    android:layout_height="match_parent">
+
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/group_image"
+            android:layout_marginTop="3dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:transitionName="sharedProfileImageTransition"
+            android:src="@drawable/easy_to_use" />
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:layout_marginStart="5dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/group_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textStyle="bold"
+                android:textColor="@color/colorWhite"
+                android:textSize="16sp"
+                android:scrollbars="horizontal"
+                android:text="Group Name"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:focusable="true"
+                android:transitionName="sharedProfileTextTransition"
+                android:focusableInTouchMode="true"
+                />
+
+
+
+            <TextView
+                android:id="@+id/receiver_last_seen"
+                android:layout_width="wrap_content"
+                android:scrollbars="horizontal"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:text="Tap here for group info"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="10dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        android:layout_height="45dp">
+
+
+    </LinearLayout>
+
+
+
+
+
+</RelativeLayout>

@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="niwigh.com.smartchat.Activity.AddNewPost">
+    <item
+        android:id="@+id/action_group_info"
+        android:orderInCategory="100"
+        android:title="Group info"
+        android:icon="@drawable/ic_group"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_group_background"
+        android:orderInCategory="100"
+        android:title="Background"
+        android:icon="@drawable/ic_group"
+        app:showAsAction="never" />
+</menu>

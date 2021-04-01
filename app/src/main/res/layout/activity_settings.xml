@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e6e6e6"
+    tools:context=".Activity.Settings">
+
+    <include
+        android:id="@+id/settings_action_bar_layout"
+        layout="@layout/navigation_opener_toolbar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/settings_action_bar_layout"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.CardView
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:id="@+id/card_view_image_holder"
+                android:layout_marginTop="-0dp"
+                android:layout_below="@+id/add_new_post_layout"
+                android:layout_height="wrap_content">
+
+
+                <RelativeLayout
+                    android:id="@+id/linear_image_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fitsSystemWindows="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_alignParentStart="true"
+                        android:id="@+id/username_and_date_layout"
+                        android:padding="5dp">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/settins_userprofile_image"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:background="@drawable/navigation_drawer_image_circle_shape"
+                            android:elevation="5dp"
+                            android:src="@drawable/easy_to_use"
+                            app:civ_border_color="@color/colorPrimary"
+                            app:civ_border_width="2dp"
+                            android:transitionName="sharedProfileImageTransition"
+                            android:scaleType="centerCrop"
+                            android:layout_marginLeft="4dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:orientation="vertical"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:id="@+id/settings_profile_username"
+                                android:layout_width="match_parent"
+                                android:text="User Name"
+                                android:textColor="@color/intro_title_color"
+                                android:textStyle="bold"
+                                android:layout_marginLeft="5dp"
+                                android:layout_marginTop="8dp"
+                                android:textAlignment="textStart"
+                                android:textSize="16sp"
+                                android:transitionName="sharedusernameTransition"
+                                android:layout_height="wrap_content" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:orientation="vertical"
+                                android:layout_marginLeft="5dp"
+                                android:padding="2dp"
+                                android:id="@+id/img_username_date_layout"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/settings_text_profile_status"
+                                    android:text="Profile status "
+                                    android:textColor="#666666"
+                                    android:textSize="13dp"
+                                    android:textStyle="bold"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!--START GENERAL SETTINGS-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+                        android:id="@+id/general_settings"
+                        android:background="#e6e6e6"
+                        android:layout_below="@+id/username_and_date_layout"
+                        android:layout_height="40dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:text="General Settings"
+                            android:padding="10dp"
+                            android:textAllCaps="true"/>
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:id="@+id/account_layout"
+                        android:layout_below="@id/general_settings"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/settings_profile"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  Profile Settings                                                                "
+                            android:textSize="16sp"
+                            android:padding="20dp"
+                            android:drawableLeft="@drawable/ic_profile"
+                            android:drawableTint="@color/colorPrimaryDark"
+                            android:drawableRight="@drawable/ic_next"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:id="@+id/messages_layout"
+                        android:layout_below="@id/account_layout"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  Messages                                                                "
+                            android:textSize="16sp"
+                            android:padding="20dp"
+                            android:drawableLeft="@drawable/ic_messages"
+                            android:drawableTint="@color/colorPrimaryDark"
+                            android:drawableRight="@drawable/ic_next"/>
+
+                    </LinearLayout>
+
+                    <!--END GENERAL SETTINGS-->
+
+
+
+                    <!--START STORAGE AND NOTIFICATIONS-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+                        android:id="@+id/network_and_notification_settings"
+                        android:background="#e6e6e6"
+                        android:layout_below="@+id/messages_layout"
+                        android:layout_height="40dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:text="Storage and Notifications"
+                            android:padding="10dp"
+                            android:textAllCaps="true"/>
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:id="@+id/notifications_settings"
+                        android:layout_below="@id/network_and_notification_settings"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  Data and Storage Usage                                                                "
+                            android:textSize="16sp"
+                            android:padding="20dp"
+                            android:drawableLeft="@drawable/ic_data_usage"
+                            android:drawableTint="@color/colorPrimaryDark"
+                            android:drawableRight="@drawable/ic_next"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:id="@+id/data_layout"
+                        android:layout_below="@id/notifications_settings"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  Notificatons                                                                "
+                            android:textSize="16sp"
+                            android:padding="20dp"
+                            android:drawableLeft="@drawable/ic_bell"
+                            android:drawableTint="@color/colorPrimaryDark"
+                            android:drawableRight="@drawable/ic_next"/>
+
+                    </LinearLayout>
+
+                    <!--END STORAGE-->
+
+
+
+                    <!--START EXTRAS-->
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:gravity="center"
+                        android:id="@+id/extras"
+                        android:background="#e6e6e6"
+                        android:layout_below="@+id/data_layout"
+                        android:layout_height="40dp">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:text="Extras"
+                            android:padding="10dp"
+                            android:textAllCaps="true"/>
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:id="@+id/extras_help"
+                        android:visibility="gone"
+                        android:layout_below="@id/extras"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  Help                                                                "
+                            android:textSize="16sp"
+                            android:padding="20dp"
+                            android:drawableLeft="@drawable/ic_help"
+                            android:drawableTint="@color/colorPrimaryDark"
+                            android:drawableRight="@drawable/ic_next"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:id="@+id/extras_share"
+                        android:orientation="vertical"
+                        android:layout_below="@id/extras_help"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="  Invite a friend                                                                "
+                            android:textSize="16sp"
+                            android:padding="20dp"
+                            android:drawableLeft="@drawable/ic_friends"
+                            android:drawableTint="@color/colorPrimaryDark"
+                            android:drawableRight="@drawable/ic_next"/>
+
+                    </LinearLayout>
+
+                    <!--END EXTRAS-->
+
+                </RelativeLayout>
+
+            </android.support.v7.widget.CardView>
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

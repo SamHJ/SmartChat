@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1063945741289",
+    "firebase_url": "https://smart-chat-e8ea5-default-rtdb.firebaseio.com",
+    "project_id": "smart-chat-e8ea5",
+    "storage_bucket": "smart-chat-e8ea5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1063945741289:android:56ce9acd3bc8f46036a178",
+        "android_client_info": {
+          "package_name": "niwigh.com.smartchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1063945741289-uifhjgiqts9effgchi2stgk3g0oe42fc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMcjrmROcAGIn2dIjCHLa1GhLUWyxR2fw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1063945741289-uifhjgiqts9effgchi2stgk3g0oe42fc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

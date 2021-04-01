@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.AddNewGroup">
+
+    <include
+        android:id="@+id/add_friends_in_group_appbar"
+        android:layout_height="55dp"
+        android:layout_width="match_parent"
+        layout="@layout/navigation_opener_toolbar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:scrollbars="none"
+        android:layout_below="@+id/add_friends_in_group_appbar"
+        android:layout_height="match_parent">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/info_layout"
+            tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/login_text"
+                android:text="@string/create_new_group"
+                android:textColor="@color/intro_title_color"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+            <LinearLayout
+                android:id="@+id/image_layout_id"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                tools:ignore="MissingConstraints">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/collection_image"
+                    android:layout_width="@dimen/navigation_drawer_logo_size"
+                    android:layout_height="@dimen/navigation_drawer_logo_size"
+                    android:background="@drawable/navigation_drawer_image_circle_shape"
+                    android:elevation="5dp"
+                    android:src="@drawable/easy_to_use"
+                    app:civ_border_color="@color/colorPrimary"
+                    app:civ_border_width="2dp"
+                    app:layout_constraintBottom_toTopOf="@+id/login_text"
+                    app:layout_constraintEnd_toStartOf="@id/guideline_right"
+                    app:layout_constraintStart_toEndOf="@id/guideline_left"
+                    app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_add_a_photo"
+                    app:layout_constraintEnd_toStartOf="@id/guideline_right"
+                    app:layout_constraintStart_toEndOf="@id/guideline_left"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/collection_image_info"
+                android:text="@string/collection_image"
+                android:textColor="#666666"
+                android:textSize="16sp"
+                android:layout_marginTop="-20dp"
+                android:layout_marginBottom="20dp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:id="@+id/text_input_layout_passeord"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                app:layout_constraintEnd_toStartOf="@id/guideline_right"
+                app:layout_constraintStart_toEndOf="@id/guideline_left"
+                app:layout_constraintTop_toBottomOf="@+id/text_input_layout"
+                android:backgroundTint="@color/colorPrimaryDark">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/collection_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="@string/collection_name"
+                    android:inputType="text"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="0dp"
+                    android:background="@drawable/edit_text_outline"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textColorHint="@color/colorPrimaryDark"/>
+
+            </android.support.design.widget.TextInputLayout>
+
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:id="@+id/text_input_layout_group_layout"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintEnd_toStartOf="@id/guideline_right"
+                app:layout_constraintStart_toEndOf="@id/guideline_left"
+                app:layout_constraintTop_toBottomOf="@+id/text_input_layout"
+                android:backgroundTint="@color/colorPrimaryDark">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/group_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="@string/group_name"
+                    android:inputType="text"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="0dp"
+                    android:background="@drawable/edit_text_outline"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textColorHint="@color/colorPrimaryDark"/>
+
+            </android.support.design.widget.TextInputLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:id="@+id/feed_type_layout"
+                android:layout_height="wrap_content">
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_width="match_parent"
+                    android:id="@+id/type_input_layout"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/colorPrimaryDark">
+
+
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/group_could_join"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:enabled="false"
+                        android:hint="@string/could_join"
+                        android:inputType="text"
+                        android:padding="15dp"
+                        android:background="@drawable/edit_text_outline"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textColorHint="@color/colorPrimaryDark"/>
+
+                </android.support.design.widget.TextInputLayout>
+
+
+                <Spinner
+                    android:id="@+id/spinner"
+                    android:layout_alignParentEnd="true"
+                    android:layout_width="50dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_centerInParent="true"
+                    android:layout_height="50dp"/>
+
+            </RelativeLayout>
+
+
+            <Button
+                android:id="@+id/continue_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_login_style"
+                android:text="Continue"
+                android:textAllCaps="false"
+                android:textColor="@color/intro_slide_bg_color"
+                android:textSize="20sp"
+                android:layout_marginBottom="50dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp" />
+
+        </LinearLayout>
+
+
+
+            <android.support.v7.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:id="@+id/all_friends_to_add_recyclerview"
+                android:layout_height="match_parent" />
+
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_friends_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_done"
+        />
+
+
+
+</RelativeLayout>

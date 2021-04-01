@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:id="@+id/all_posts_drawer_layout"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginBottom="4dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentStart="true"
+            android:id="@+id/username_and_date_layout_"
+            android:padding="5dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/user_post_edit_profile_image"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/navigation_drawer_image_circle_shape"
+                android:elevation="5dp"
+                android:src="@drawable/easy_to_use"
+                app:civ_border_color="@color/colorPrimary"
+                app:civ_border_width="2dp"
+                android:scaleType="centerCrop"
+                android:layout_marginLeft="4dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:id="@+id/edit_post_layout_"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/edit_post_username"
+                    android:layout_width="match_parent"
+                    android:text="User Name"
+                    android:textColor="@color/intro_title_color"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="8dp"
+                    android:textAlignment="textStart"
+                    android:textSize="16sp"
+                    android:layout_height="wrap_content" />
+
+
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:id="@+id/layout_partition_one"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_below="@+id/edit_post_layout_"
+            android:background="#d7d7d7"
+            android:layout_height="1dp">
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_width="match_parent"
+        android:id="@+id/text_input_layout"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimaryDark">
+
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/text_input_edit_post_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Post Title"
+            android:inputType="text"
+            android:padding="15dp"
+            android:background="@drawable/edit_text_outline"
+            android:textColor="@color/colorPrimaryDark"
+            android:textColorHint="@color/colorPrimaryDark"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_width="match_parent"
+        android:id="@+id/description_input_layout_"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_input_layout"
+        android:backgroundTint="@color/colorPrimaryDark">
+
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/text_input_edit_post_description"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:hint="Post Description"
+            android:inputType="textMultiLine"
+            android:padding="20dp"
+            android:maxHeight="250dp"
+            android:background="@drawable/edit_text_outline"
+            android:textColor="@color/colorPrimaryDark"
+            android:textColorHint="@color/colorPrimaryDark"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+
+    <LinearLayout
+        android:id="@+id/layout_partition_two"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/description_input_layout_"
+        android:background="#d7d7d7"
+        android:layout_height="1dp">
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_below="@+id/description_input_layout_"
+        android:layout_marginTop="50dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/cancel_btn"
+                android:layout_width="100dp"
+                android:background="@color/colorPrimaryDark"
+                android:layout_height="50dp"
+                android:textColor="@color/colorWhite"
+                android:text="Cancel"/>
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/publish_btn"
+                android:layout_width="100dp"
+                android:background="@color/colorPrimaryDark"
+                android:layout_height="50dp"
+                android:textColor="@color/colorWhite"
+                android:text="Publish"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>
+
+
+

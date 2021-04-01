@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#21c87a</color>
+    <color name="colorPrimaryDark">#FF2CA96F</color>
+    <color name="colorAccent">#FF2CA96F</color>
+
+    <!--colors for intro slides-->
+    <color name="intro_slide_bg_color">#ffffff</color>
+    <color name="gradient_start_color">#FF2CA96F</color>
+    <color name="gradient_end_color">#21c87a</color>
+    <color name="tab_indicator_gray">#c0c0c0</color>
+    <color name="intro_title_color">#000000</color>
+    <color name="intro_description_color">#656565</color>
+    <color name="unsuccessful_registeration_color">#d50000</color>
+    <color name="light_gray">#C3C3C3</color>
+
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorWhiteTransparent">#80ffffff</color>
+    <color name="dark_green">#006320</color>
+    
+    <!--colors for custom userProfile dialog-->
+    <color name="bluedark">#2f333f</color>
+    <color name="bluelight">#49acd5</color>
+    <color name="green">#45bc62</color>
+    <color name="orange">#eaad43</color>
+
+    <!--color for default chatting area-->
+    <color name="default_chat_color">#fafafa</color>
+
+    <!--color for default video post background-->
+    <color name="default_video_post_bg">#d3e0f2</color>
+
+    <!--color for delivred message-->
+    <color name="delivered_message">#96D4B7</color>
+
+
+
+
+</resources>

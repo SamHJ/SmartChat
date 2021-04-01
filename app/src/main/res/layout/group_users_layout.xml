@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="wrap_content"
+    tools:ignore="UnusedAttribute">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_margin="7dp"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        tools:ignore="UselessParent">
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/navigation_drawer_image_circle_shape"
+            android:elevation="5dp"
+            android:layout_gravity="center"
+            android:src="@drawable/easy_to_use"
+            app:civ_border_color="@color/colorPrimary"
+            app:civ_border_width="2dp"
+            android:transitionName="sharedProfileImageTransition"
+            android:scaleType="centerCrop"
+            android:layout_marginLeft="4dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:layout_toStartOf="@+id/btn_layout"
+                android:layout_gravity="center"
+                android:layout_marginStart="5dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:text="User name"
+                    android:id="@+id/user_name"
+                    android:textColor="@color/intro_title_color"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textAlignment="textStart"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/profile_status"
+                    android:layout_width="match_parent"
+                    android:text="Profile status"
+                    android:textColor="#666666"
+                    android:textSize="14sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textAlignment="textStart"
+                    android:layout_height="wrap_content" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="70dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:id="@+id/btn_layout"
+                android:visibility="gone"
+                android:layout_alignParentEnd="true"
+                android:layout_height="40dp">
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/common_google_signin_btn_icon_light_normal_background"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:text="Admin"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>

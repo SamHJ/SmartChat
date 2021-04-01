@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.Groups">
+
+    <include
+        android:id="@+id/all_groups_appbar"
+        layout="@layout/navigation_opener_toolbar"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/all_groups_appbar">
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:id="@+id/all_groups_recyclerview"
+        android:layout_height="match_parent">
+    </android.support.v7.widget.RecyclerView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_new_group_fab"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_add_group"
+        />
+    </FrameLayout>
+
+
+
+</RelativeLayout>

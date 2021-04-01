@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/posts_main_container"
+    tools:context=".Fragment.PostsFragment">
+
+
+        <include
+            android:id="@+id/userhome_navigation_opener_include"
+            layout="@layout/navigation_opener_toolbar">
+
+        </include>
+
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/userhome_navigation_opener_include"
+            android:layout_height="match_parent">
+
+                <ProgressBar
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="50dp"
+                    android:id="@+id/postsLoader"
+                    android:layout_height="wrap_content" />
+
+
+                <LinearLayout
+                    android:id="@+id/no_posts_layout"
+                    android:orientation="vertical"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:layout_marginTop="-50dp"
+                            android:id="@+id/no_posts_image"
+                            android:layout_width="match_parent"
+                            android:src="@drawable/no_posts"
+                            android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/nothing_found_textview"
+                            android:layout_gravity="center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:gravity="center"
+                            android:textColor="@color/intro_title_color"
+                            android:text="There are no posts at the moment! \n Click the add button below to add a post."
+                            />
+
+                         </LinearLayout>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/all_users_posts_recyclerview"
+                    app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                    android:layout_width="match_parent"
+                    android:visibility="gone"
+                    android:layout_height="match_parent">
+
+                </android.support.v7.widget.RecyclerView>
+
+
+
+
+
+                <com.github.clans.fab.FloatingActionMenu
+                    android:id="@+id/material_design_android_floating_action_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginLeft="11dp"
+                    android:layout_marginRight="11dp"
+                    android:layout_marginBottom="5dp"
+                    fab:menu_animationDelayPerItem="55"
+                    fab:menu_backgroundColor="@android:color/transparent"
+                    fab:menu_buttonSpacing="0dp"
+                    fab:menu_colorNormal="@color/colorPrimaryDark"
+                    fab:menu_colorPressed="@color/colorPrimary"
+                    fab:menu_colorRipple="@color/colorPrimary"
+                    fab:menu_fab_label=""
+                    fab:menu_fab_size="normal"
+                    fab:menu_icon="@drawable/fab_add"
+                    fab:menu_labels_colorNormal="@color/colorPrimary"
+                    fab:menu_labels_colorPressed="@color/colorPrimaryDark"
+                    fab:menu_labels_colorRipple="#66efecec"
+                    fab:menu_labels_cornerRadius="3dp"
+                    fab:menu_labels_ellipsize="none"
+                    fab:menu_labels_hideAnimation="@anim/fab_slide_out_to_right"
+                    fab:menu_labels_margin="0dp"
+                    fab:menu_labels_maxLines="-1"
+                    fab:menu_labels_padding="8dp"
+                    fab:menu_labels_position="left"
+                    fab:menu_labels_showAnimation="@anim/fab_slide_in_from_right"
+                    fab:menu_labels_showShadow="true"
+                    fab:menu_labels_singleLine="false"
+                    fab:menu_labels_textColor="#ffffff"
+                    fab:menu_labels_textSize="15sp"
+                    fab:menu_openDirection="up">
+
+                        <com.github.clans.fab.FloatingActionButton
+                            android:id="@+id/add_post_fab"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_insert_photo"
+                            fab:fab_label="+ Image"
+                            fab:fab_size="mini" />
+
+                        <com.github.clans.fab.FloatingActionButton
+                            android:id="@+id/add_video_post_fab"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_video"
+                            fab:fab_label="+ Video"
+                            fab:fab_size="mini" />
+
+                </com.github.clans.fab.FloatingActionMenu>
+
+        </FrameLayout>
+
+
+
+</RelativeLayout>

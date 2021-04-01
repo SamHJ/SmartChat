@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context=".Activity.FullMessageImageView">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/navigation_opener_toolbar"
+        android:background="#000000"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+    </android.support.v7.widget.Toolbar>
+
+    <RelativeLayout
+        android:layout_below="@+id/navigation_opener_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <niwigh.com.smartchat.Util.TouchImageView
+            android:id="@+id/full_profile_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/easy_to_use"
+            android:layout_gravity="center"
+            android:transitionName="sharedProfileImageTransition"
+            android:adjustViewBounds="true"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

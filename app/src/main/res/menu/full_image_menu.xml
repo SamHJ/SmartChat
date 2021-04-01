@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="niwigh.com.smartchat.Activity.AddNewPost">
+    <item
+        android:id="@+id/full_image_menu_id"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_download"
+        android:title="Download"
+        android:iconTint="@color/colorPrimaryDark"
+        app:showAsAction="never" />
+</menu>
