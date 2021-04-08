@@ -79,21 +79,21 @@ public class FindFriends extends AppCompatActivity {
                     @Override
                     protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
 
-                        viewHolder.setFullname(model.getFullname());
-                        viewHolder.setUsername(model.getUsername());
-                        viewHolder.setUserLocation(model.getUserLocation());
-                        viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
+                            viewHolder.setFullname(model.getFullname());
+                            viewHolder.setUsername(model.getUsername());
+                            viewHolder.setUserLocation(model.getUserLocation());
+                            viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
 
-                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                String visit_user_id = getRef(position).getKey();
-                                Intent viewUserDetailsIntent = new Intent(FindFriends.this, PersonProfile.class);
-                                viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
-                                startActivity(viewUserDetailsIntent);
-                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                            }
-                        });
+                            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    String visit_user_id = getRef(position).getKey();
+                                    Intent viewUserDetailsIntent = new Intent(FindFriends.this, PersonProfile.class);
+                                    viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
+                                    startActivity(viewUserDetailsIntent);
+                                    overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                }
+                            });
 
                     }
                 };
@@ -173,7 +173,11 @@ public class FindFriends extends AppCompatActivity {
         }
 
         public void setFullname(String fullname) {
-            userfullname.setText(fullname);
+            if(fullname == null){
+                mView.setVisibility(View.GONE);
+            }else{
+                userfullname.setText(fullname);
+            }
         }
 
         public void setUsername(String username) {

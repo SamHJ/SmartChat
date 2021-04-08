@@ -1819,22 +1819,28 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
 
-                    rootRef.child("Messages")
-                            .child(userMessagesList.get(position).getTo())
-                            .child(userMessagesList.get(position).getFrom())
-                            .child(userMessagesList.get(position).getMessageID())
-                            .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful()){
-                                Toasty.success(holder.itemView.getContext(),"Message deleted", Toasty.LENGTH_SHORT, true).show();
-                            }else {
-                                Toasty.error(holder.itemView.getContext(),"Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
-                            }
-                            userMessagesList.remove(position);
-                            notifyItemRemoved(position);
-                        }
-                    });
+                    try {
+
+                        rootRef.child("Messages")
+                                .child(userMessagesList.get(position).getTo())
+                                .child(userMessagesList.get(position).getFrom())
+                                .child(userMessagesList.get(position).getMessageID())
+                                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Toasty.success(holder.itemView.getContext(), "Message deleted", Toasty.LENGTH_SHORT, true).show();
+                                } else {
+                                    Toasty.error(holder.itemView.getContext(), "Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
+                                }
+                                userMessagesList.remove(position);
+                                notifyItemRemoved(position);
+                                }
+                        });
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
 
                 }
                 else {

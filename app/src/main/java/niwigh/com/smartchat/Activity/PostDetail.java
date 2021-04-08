@@ -1027,22 +1027,27 @@ public class PostDetail extends AppCompatActivity {
                 if(dataSnapshot.exists()){
                     String postimagenameindatabase = dataSnapshot.child("postfilestoragename").getValue().toString();
 
-                    //now, delete the image from the storage
-                    StorageReference postimageRef = FirebaseStorage.getInstance().getReference()
-                            .child("Post Images").child(postimagenameindatabase);
-                    postimageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            // File deleted successfully
-                            Log.d("SUCCESS:", "onSuccess: deleted file");
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            // Uh-oh, an error occurred!
-                            Log.d("ERROR:", "onFailure: did not delete file");
-                        }
-                    });
+                    try {
+
+                        //now, delete the image from the storage
+                        StorageReference postimageRef = FirebaseStorage.getInstance().getReference()
+                                .child("Post Images").child(postimagenameindatabase);
+                        postimageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                // File deleted successfully
+                                Log.d("SUCCESS:", "onSuccess: deleted file");
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Uh-oh, an error occurred!
+                                Log.d("ERROR:", "onFailure: did not delete file");
+                            }
+                        });
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
 
                     //delete associated likes
                     LikesRef.child(PostKey).child(currentUserID).removeValue();

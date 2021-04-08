@@ -103,65 +103,68 @@
 
 
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/sending_tools_layout"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_gravity="center"
         android:background="@color/colorWhite"
-        android:layout_height="50dp">
+        android:layout_height="60dp">
 
         <ImageButton
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:id="@+id/smiley_btn"
             android:padding="15dp"
+            android:layout_alignParentStart="true"
             android:backgroundTint="@color/colorWhite"
-            android:src="@drawable/ic_smiley"
-            tools:ignore="ContentDescription" />
+            android:src="@drawable/ic_smiley" />
 
 
         <hani.momanii.supernova_emoji_library.Helper.EmojiconEditText
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@+id/add_message_edit_text"
             android:background="@color/colorWhite"
             android:textSize="16sp"
-            android:padding="10dp"
+            android:layout_centerHorizontal="true"
+            android:padding="15dp"
+            android:inputType="textMultiLine|textNoSuggestions"
             android:textColor="@color/colorPrimaryDark"
             android:imeOptions="actionSend"
-            android:hint="@string/write_a_message"
-
-            android:inputType="textMultiLine"/>
+            android:layout_toEndOf="@+id/smiley_btn"
+            android:layout_toStartOf="@+id/mgs_actions_layout"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:hint="@string/write_a_message"/>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_marginStart="-50dp"
+            android:id="@+id/mgs_actions_layout"
+            android:layout_width="wrap_content"
             android:orientation="horizontal"
+            android:layout_alignParentEnd="true"
             android:layout_height="match_parent">
 
             <ImageButton
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:id="@+id/more_options_btn"
                 android:padding="15dp"
                 android:tint="@color/colorPrimaryDark"
                 android:backgroundTint="@color/colorWhite"
-                android:src="@drawable/ic_attach_file"
-                tools:ignore="ContentDescription" />
+                android:src="@drawable/ic_attach_file" />
 
 
             <ImageButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:id="@+id/send_message_btn"
                 android:padding="15dp"
                 android:backgroundTint="@color/colorWhite"
-                android:src="@drawable/ic_comment_send"
-                tools:ignore="ContentDescription" />
+                android:src="@drawable/ic_comment_send" />
+
         </LinearLayout>
-    </LinearLayout>
+
+    </RelativeLayout>
 
 
     <!--only admins layout-->

@@ -236,98 +236,104 @@ public class RequestsFragment extends Fragment {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 if(dataSnapshot.exists()) {
-                                    final String userName = dataSnapshot.child("fullname").getValue().toString();
-                                    final String userLocation = dataSnapshot.child("location").getValue().toString();
-                                    final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+
+                                    try {
+
+                                        final String userName = dataSnapshot.child("fullname").getValue().toString();
+                                        final String userLocation = dataSnapshot.child("location").getValue().toString();
+                                        final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
 
 
-                                    FriendRequestRef.child(online_user_id).addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        FriendRequestRef.child(online_user_id).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                            if(dataSnapshot.exists()){
+                                                if (dataSnapshot.exists()) {
 
-                                                for (DataSnapshot childDatasnapshot : dataSnapshot.getChildren()){
-                                                    final String key = childDatasnapshot.getKey();
+                                                    for (DataSnapshot childDatasnapshot : dataSnapshot.getChildren()) {
+                                                        final String key = childDatasnapshot.getKey();
 
-                                                    FriendRequestRef.child(online_user_id).child(key).addValueEventListener(new ValueEventListener() {
-                                                        @SuppressLint("SetTextI18n")
-                                                        @Override
-                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                            if(dataSnapshot.exists()){
+                                                        FriendRequestRef.child(online_user_id).child(key).addValueEventListener(new ValueEventListener() {
+                                                            @SuppressLint("SetTextI18n")
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                if (dataSnapshot.exists()) {
 
-                                                                String requestType = dataSnapshot.child("request_type").getValue().toString();
+                                                                    String requestType = dataSnapshot.child("request_type").getValue().toString();
 
-                                                                if(requestType.equals("received")){
+                                                                    if (requestType.equals("received")) {
 
-                                                                    viewHolder.setUserName(userName);
-                                                                    viewHolder.setUserLocation(userLocation);
-                                                                    viewHolder.setUserProfileImage(userProfileImage, getContext());
-                                                                    viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
-                                                                        @Override
-                                                                        public void onClick(View v) {
-                                                                            AcceptFriendRequest(key, online_user_id);
-                                                                            String requestAccepted = "Request Accepted";
-                                                                            successToast(requestAccepted);
-                                                                        }
-                                                                    });
-                                                                    viewHolder.decline_reqeust_btn.setOnClickListener(new View.OnClickListener() {
-                                                                        @Override
-                                                                        public void onClick(View v) {
-                                                                            CancelFriendRequest(online_user_id,key);
-                                                                            String requestDeclined = "Request declined";
-                                                                            successToast(requestDeclined);
-                                                                        }
-                                                                    });
-                                                                }else {
+                                                                        viewHolder.setUserName(userName);
+                                                                        viewHolder.setUserLocation(userLocation);
+                                                                        viewHolder.setUserProfileImage(userProfileImage, getContext());
+                                                                        viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
+                                                                            @Override
+                                                                            public void onClick(View v) {
+                                                                                AcceptFriendRequest(key, online_user_id);
+                                                                                String requestAccepted = "Request Accepted";
+                                                                                successToast(requestAccepted);
+                                                                            }
+                                                                        });
+                                                                        viewHolder.decline_reqeust_btn.setOnClickListener(new View.OnClickListener() {
+                                                                            @Override
+                                                                            public void onClick(View v) {
+                                                                                CancelFriendRequest(online_user_id, key);
+                                                                                String requestDeclined = "Request declined";
+                                                                                successToast(requestDeclined);
+                                                                            }
+                                                                        });
+                                                                    } else {
 
-                                                                    viewHolder.setUserName(userName);
-                                                                    viewHolder.setUserLocation(userLocation);
-                                                                    viewHolder.setUserProfileImage(userProfileImage, getContext());
+                                                                        viewHolder.setUserName(userName);
+                                                                        viewHolder.setUserLocation(userLocation);
+                                                                        viewHolder.setUserProfileImage(userProfileImage, getContext());
 
-                                                                    viewHolder.accept_reqeust_btn.setText("Cancel Friend Request");
-                                                                    viewHolder.decline_reqeust_btn.setVisibility(View.GONE);
+                                                                        viewHolder.accept_reqeust_btn.setText("Cancel Friend Request");
+                                                                        viewHolder.decline_reqeust_btn.setVisibility(View.GONE);
 
-                                                                    viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
-                                                                        @Override
-                                                                        public void onClick(View v) {
-                                                                            CancelFriendRequest(online_user_id, key);
-                                                                            String cancelmessage = "Request Cancelled";
-                                                                            successToast(cancelmessage);
-                                                                        }
-                                                                    });
+                                                                        viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
+                                                                            @Override
+                                                                            public void onClick(View v) {
+                                                                                CancelFriendRequest(online_user_id, key);
+                                                                                String cancelmessage = "Request Cancelled";
+                                                                                successToast(cancelmessage);
+                                                                            }
+                                                                        });
 
+                                                                    }
+
+                                                                } else {
+                                                                    all_friend_request_layout.removeAllViews();
+                                                                    all_users_friend_request_lists.setVisibility(View.GONE);
+                                                                    no_friendsRequest_inflate = inflaters.inflate(
+                                                                            R.layout.no_video_posts_query, all_friend_request_layout);
+                                                                    all_friend_request_layout.setVisibility(View.VISIBLE);
+                                                                    TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
+                                                                    displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
                                                                 }
 
-                                                            }else {
-                                                                all_friend_request_layout.removeAllViews();
-                                                                all_users_friend_request_lists.setVisibility(View.GONE);
-                                                                no_friendsRequest_inflate = inflaters.inflate(
-                                                                        R.layout.no_video_posts_query, all_friend_request_layout);
-                                                                all_friend_request_layout.setVisibility(View.VISIBLE);
-                                                                TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
-                                                                displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
                                                             }
 
-                                                        }
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                        @Override
-                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                                        }
-                                                    });
+                                                            }
+                                                        });
+                                                    }
                                                 }
+
+
                                             }
 
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                        }
+                                            }
+                                        });
 
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                        }
-                                    });
-//
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
 

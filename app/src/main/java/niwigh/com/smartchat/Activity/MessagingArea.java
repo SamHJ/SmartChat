@@ -134,7 +134,7 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
 
     String replyMessage,replyMessageType,replyFrom,
             replyMessagePositionInRecyclerview,replyfrom,replyFromId,
-    message;
+    message = "";
 
 
 
@@ -310,6 +310,9 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
                 if((chatter_date_layout.getVisibility() == View.VISIBLE)){
                     SendReplyMessage();
                 }else{
+
+                    message = message.trim();
+
                     SendMessage();
                 }
             }
@@ -351,9 +354,6 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(All_messages_recycler_view);
 
 
-
-
-
         relativeLayout = (RelativeLayout)MessagingArea.this.getLayoutInflater()
                 .inflate(R.layout.chat_messages_layout, null);
 
@@ -371,8 +371,7 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
     @SuppressLint({"SetTextI18n","SimpleDateFormat"})
     private void SendReplyMessage() {
 
-        if(message.trim().isEmpty())
-        {
+        if(message.trim().isEmpty()){
             //before inflating the custom alert dialog layout, we will get the current activity viewgroup
             ViewGroup viewGroup = findViewById(android.R.id.content);
 
@@ -407,8 +406,7 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
 
             alertDialog.show();
 
-        }
-        else {
+        }else {
 
             String message_sender_ref = "Messages/" + messageSenderID + "/" + messageReceiverID;
             String message_receiver_ref = "Messages/" + messageReceiverID + "/" + messageSenderID;
@@ -546,8 +544,7 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
     @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
     private void SendMessage() {
 
-        if(message.trim().isEmpty())
-        {
+        if(message.trim().isEmpty()){
             //before inflating the custom alert dialog layout, we will get the current activity viewgroup
             ViewGroup viewGroup = findViewById(android.R.id.content);
 
@@ -582,8 +579,7 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
 
             alertDialog.show();
 
-        }
-        else {
+        }else {
 
             String message_sender_ref = "Messages/" + messageSenderID + "/" + messageReceiverID;
             String message_receiver_ref = "Messages/" + messageReceiverID + "/" + messageSenderID;
@@ -824,11 +820,17 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 final String key_one = snapshot.getKey();
                                 for(DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
+
                                     MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                    if(messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)){
-                                        HashMap<String, Object> hashMap = new HashMap<>();
-                                        hashMap.put("isseen", true);
-                                        snapshot1.getRef().updateChildren(hashMap);
+
+                                    try {
+                                        if (messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)) {
+                                            HashMap<String, Object> hashMap = new HashMap<>();
+                                            hashMap.put("isseen", true);
+                                            snapshot1.getRef().updateChildren(hashMap);
+                                        }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
 
                                 }
@@ -854,10 +856,14 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
                                 final String key_one = snapshot.getKey();
                                 for(DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
                                     MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                    if(messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)){
-                                        HashMap<String, Object> hashMap = new HashMap<>();
-                                        hashMap.put("isseen", true);
-                                        snapshot1.getRef().updateChildren(hashMap);
+                                    try {
+                                        if (messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)) {
+                                            HashMap<String, Object> hashMap = new HashMap<>();
+                                            hashMap.put("isseen", true);
+                                            snapshot1.getRef().updateChildren(hashMap);
+                                        }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
 
                                 }
@@ -2026,10 +2032,14 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
                                     final String key_one = snapshot.getKey();
                                     for(DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
                                         MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                        if(messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)){
-                                            HashMap<String, Object> hashMap = new HashMap<>();
-                                            hashMap.put("isseen", true);
-                                            snapshot1.getRef().updateChildren(hashMap);
+                                        try {
+                                            if (messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)) {
+                                                HashMap<String, Object> hashMap = new HashMap<>();
+                                                hashMap.put("isseen", true);
+                                                snapshot1.getRef().updateChildren(hashMap);
+                                            }
+                                        }catch (Exception e){
+                                            e.printStackTrace();
                                         }
 
                                     }
@@ -2055,10 +2065,14 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
                                     final String key_one = snapshot.getKey();
                                     for(DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
                                         MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                        if(messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)){
-                                            HashMap<String, Object> hashMap = new HashMap<>();
-                                            hashMap.put("isseen", true);
-                                            snapshot1.getRef().updateChildren(hashMap);
+                                        try {
+                                            if (messagesModel.getTo().equals(messageSenderID) && messagesModel.getFrom().equals(userId)) {
+                                                HashMap<String, Object> hashMap = new HashMap<>();
+                                                hashMap.put("isseen", true);
+                                                snapshot1.getRef().updateChildren(hashMap);
+                                            }
+                                        }catch (Exception e){
+                                            e.printStackTrace();
                                         }
 
                                     }

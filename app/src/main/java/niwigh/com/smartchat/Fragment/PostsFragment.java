@@ -168,7 +168,7 @@ public class PostsFragment extends Fragment {
 
     public void displayAllPosts() {
 
-        allPostsRef.orderByChild("counter").addValueEventListener(new ValueEventListener() {
+        allPostsRef.orderByChild("date").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()) {

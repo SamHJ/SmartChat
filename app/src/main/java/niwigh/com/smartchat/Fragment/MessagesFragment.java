@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -123,6 +124,7 @@ public class MessagesFragment extends Fragment {
                     @Override
                     protected void populateViewHolder(final MessagesViewHolder viewHolder, MessagesFragmentModel model, int position) {
 
+                        try{
 
                         final String usersIDs = getRef(position).getKey();
                         usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
@@ -189,6 +191,10 @@ public class MessagesFragment extends Fragment {
 
                             }
                         });
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                     }
                 };
 
@@ -200,79 +206,84 @@ public class MessagesFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
 
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
 
-                if (dataSnapshot.hasChild("Messages")) {
-                    final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
+            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+            rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    currentuserFriend.child(onlineUserID).addValueEventListener(new ValueEventListener() {
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.hasChildren()) {
+                    if (dataSnapshot.hasChild("Messages")) {
+                        final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
 
-                                int unread = 0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    final String key_one = snapshot.getKey();
-                                    for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
-                                        MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                        String from = messagesModel.getFrom();
-                                        String to = messagesModel.getTo();
-                                        boolean isseen = messagesModel.isIsseen();
-                                        String time = messagesModel.getTime();
-                                        String message = messagesModel.getMessage();
-                                        if (to.equals(onlineUserID) && !isseen) {
-                                            unread++;
+                        currentuserFriend.child(onlineUserID).addValueEventListener(new ValueEventListener() {
+                            @SuppressLint("SetTextI18n")
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.hasChildren()) {
+
+                                    int unread = 0;
+                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                        final String key_one = snapshot.getKey();
+                                        for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
+                                            MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
+                                            String from = messagesModel.getFrom();
+                                            String to = messagesModel.getTo();
+                                            boolean isseen = messagesModel.isIsseen();
+                                            String time = messagesModel.getTime();
+                                            String message = messagesModel.getMessage();
+                                            if (to.equals(onlineUserID) && !isseen) {
+                                                unread++;
+                                            }
+                                            DisplayAllMessages(from, to, isseen, time, message, unread);
+
                                         }
-                                        DisplayAllMessages(from, to, isseen, time, message, unread);
+
 
                                     }
-
-
+                                } else {
+                                    all_friends_layout.removeAllViews();
+                                    no_friends_inflate_two = inflaters.inflate(
+                                            R.layout.no_image_posts_query_result, all_friends_layout);
+                                    all_friends_layout.setVisibility(View.VISIBLE);
+                                    all_user_messages_recyclerview.setVisibility(View.GONE);
+                                    TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
+                                    displayText.setText("You have no messages yet.");
                                 }
-                            }
-                            else {
-                                all_friends_layout.removeAllViews();
-                                no_friends_inflate_two = inflaters.inflate(
-                                        R.layout.no_image_posts_query_result, all_friends_layout);
-                                all_friends_layout.setVisibility(View.VISIBLE);
-                                all_user_messages_recyclerview.setVisibility(View.GONE);
-                                TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
-                                displayText.setText("You have no messages yet.");
+
+
                             }
 
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
+                            }
+                        });
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                    } else {
+                        all_friends_layout.removeAllViews();
+                        no_friends_inflate_two = inflaters.inflate(
+                                R.layout.no_image_posts_query_result, all_friends_layout);
+                        all_friends_layout.setVisibility(View.VISIBLE);
+                        all_user_messages_recyclerview.setVisibility(View.GONE);
+                        TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
+                        displayText.setText("You have no messages yet.");
 
-                        }
-                    });
+                    }
+                }
 
-                } else {
-                    all_friends_layout.removeAllViews();
-                    no_friends_inflate_two = inflaters.inflate(
-                            R.layout.no_image_posts_query_result, all_friends_layout);
-                    all_friends_layout.setVisibility(View.VISIBLE);
-                    all_user_messages_recyclerview.setVisibility(View.GONE);
-                    TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
-                    displayText.setText("You have no messages yet.");
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
-            }
+            });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -334,6 +345,8 @@ public class MessagesFragment extends Fragment {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                    try{
+
                     if (dataSnapshot.hasChild("Messages")) {
                         final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
 
@@ -353,46 +366,52 @@ public class MessagesFragment extends Fragment {
                                             String type = messagesModel.getType();
 
                                             friends_name.setText(time);
-                                            if (type.equals("document")) {
-                                                muser_status.setVisibility(View.GONE);
-                                                msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                msg_type_img_icon.setImageResource(R.drawable.ic_document);
-                                                if(to.equals(onlineUser) && !isseen){
-                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                }
-                                            } else if (type.equals("image")) {
-                                                muser_status.setVisibility(View.GONE);
-                                                msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                msg_type_img_icon.setImageResource(R.drawable.ic_image);
-                                                if(to.equals(onlineUser) && !isseen){
-                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                }
-                                            } else if (type.equals("video")) {
-                                                muser_status.setVisibility(View.GONE);
-                                                msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                msg_type_img_icon.setImageResource(R.drawable.ic_videocam);
-                                                if(to.equals(onlineUser) && !isseen){
-                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                }
-                                            } else if (type.equals("audio")) {
-                                                muser_status.setVisibility(View.GONE);
-                                                msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                msg_type_img_icon.setImageResource(R.drawable.ic_music);
-                                                if(to.equals(onlineUser) && !isseen){
-                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                }
-                                            } else {
-                                                muser_status.setVisibility(View.VISIBLE);
-                                                msg_type_img_icon.setVisibility(View.GONE);
-                                                muser_status.setText(message);
-                                                if(to.equals(onlineUser) && !isseen){
-                                                    muser_status.setTextColor(itemView.getContext().getResources()
-                                                    .getColor(R.color.colorPrimary));
-                                                }
-                                            }
 
-                                            if (to.equals(onlineUser) && !isseen) {
-                                                unread++;
+                                            try {
+                                                if (type.equals("document")) {
+                                                    muser_status.setVisibility(View.GONE);
+                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                    msg_type_img_icon.setImageResource(R.drawable.ic_document);
+                                                    if (to.equals(onlineUser) && !isseen) {
+                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                    }
+                                                } else if (type.equals("image")) {
+                                                    muser_status.setVisibility(View.GONE);
+                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                    msg_type_img_icon.setImageResource(R.drawable.ic_image);
+                                                    if (to.equals(onlineUser) && !isseen) {
+                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                    }
+                                                } else if (type.equals("video")) {
+                                                    muser_status.setVisibility(View.GONE);
+                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                    msg_type_img_icon.setImageResource(R.drawable.ic_videocam);
+                                                    if (to.equals(onlineUser) && !isseen) {
+                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                    }
+                                                } else if (type.equals("audio")) {
+                                                    muser_status.setVisibility(View.GONE);
+                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                    msg_type_img_icon.setImageResource(R.drawable.ic_music);
+                                                    if (to.equals(onlineUser) && !isseen) {
+                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                    }
+                                                } else {
+                                                    muser_status.setVisibility(View.VISIBLE);
+                                                    msg_type_img_icon.setVisibility(View.GONE);
+                                                    muser_status.setText(message);
+                                                    if (to.equals(onlineUser) && !isseen) {
+                                                        muser_status.setTextColor(itemView.getContext().getResources()
+                                                                .getColor(R.color.colorPrimary));
+                                                    }
+                                                }
+
+                                                if (to.equals(onlineUser) && !isseen) {
+                                                    unread++;
+                                                }
+
+                                            }catch (Exception e){
+                                                e.printStackTrace();
                                             }
                                         }
 
@@ -417,6 +436,10 @@ public class MessagesFragment extends Fragment {
                             }
                         });
 
+                    }
+
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
                 }
 
