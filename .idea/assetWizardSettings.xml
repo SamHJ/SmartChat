@@ -18,7 +18,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/image/ic_music_note_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material/icons/materialicons/data_usage/baseline_data_usage_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -29,8 +29,8 @@
                         <option name="values">
                           <map>
                             <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="ic_music" />
-                            <entry key="sourceFile" value="C:\Users\GREENLEAF" />
+                            <entry key="outputName" value="data_usage_ring" />
+                            <entry key="sourceFile" value="$PROJECT_DIR$/C:\Users\GREENLEAF" />
                           </map>
                         </option>
                       </PersistentState>

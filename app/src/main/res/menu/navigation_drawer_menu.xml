@@ -35,6 +35,11 @@
         android:id="@+id/menu_bottom">
 
         <item
+            android:icon="@drawable/data_usage_ring"
+            android:id="@+id/data_sub"
+            android:title="@string/data_subscription" />
+
+        <item
             android:icon="@drawable/ic_star"
             android:id="@+id/nav_drawer_rate"
             android:title="@string/rate" />

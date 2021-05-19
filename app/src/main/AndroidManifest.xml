@@ -14,7 +14,7 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
-        android:name="niwigh.com.smartchat.Activity.SmartMessenger"
+        android:name=".Activity.SmartMessenger"
         android:allowBackup="true"
         android:icon="@drawable/smartchat_logo"
         android:label="@string/app_name"
@@ -22,8 +22,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning,InnerclassSeparator">
-        <activity android:name="niwigh.com.smartchat.Activity.AddGroupToCollection"/>
-        <activity android:name="niwigh.com.smartchat.Activity.UpdateGroupCollection" />
+        <activity android:name=".Activity.DataSub"></activity>
+        <activity android:name=".Activity.AddGroupToCollection" />
+        <activity android:name=".Activity.UpdateGroupCollection" />
 
         <meta-data
             android:name="com.google.android.gms.ads.niwigh.com.smartchat"
@@ -32,9 +33,9 @@
             android:name="com.google.android.gms.ads.AD_MANAGER_APP"
             android:value="true" />
 
-        <activity android:name="niwigh.com.smartchat.Activity.AddFeeds" />
+        <activity android:name=".Activity.AddFeeds" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.SplashScreen"
+            android:name=".Activity.SplashScreen"
             tools:ignore="InnerclassSeparator" />
 
         <meta-data
@@ -42,7 +43,7 @@
             android:resource="@drawable/easy_to_use" />
 
         <service
-            android:name="niwigh.com.smartchat.Notifications.FirebaseIdService"
+            android:name=".Notifications.FirebaseIdService"
             android:enabled="true"
             android:exported="true"
             tools:ignore="InnerclassSeparator">
@@ -51,7 +52,7 @@
             </intent-filter>
         </service>
         <service
-            android:name="niwigh.com.smartchat.Notifications.MyFirebaseMessagingService"
+            android:name=".Notifications.MyFirebaseMessagingService"
             android:enabled="true"
             android:exported="true"
             tools:ignore="InnerclassSeparator">
@@ -64,7 +65,7 @@
         </service>
 
         <activity
-            android:name="niwigh.com.smartchat.Activity.OnboardingIntroSlide"
+            android:name=".Activity.OnboardingIntroSlide"
             tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -73,48 +74,48 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="niwigh.com.smartchat.Activity.Login"
+            android:name=".Activity.Login"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.RecoverPassword"
+            android:name=".Activity.RecoverPassword"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.Register"
+            android:name=".Activity.Register"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.UserHome"
+            android:name=".Activity.UserHome"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.RegisterSetup"
+            android:name=".Activity.RegisterSetup"
             tools:ignore="InnerclassSeparator" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.AddNewPost"
+            android:name=".Activity.AddNewPost"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.PostDetail"
+            android:name=".Activity.PostDetail"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.Settings"
+            android:name=".Activity.Settings"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.ProfileSettings"
+            android:name=".Activity.ProfileSettings"
             android:label="@string/title_activity_profile_settings"
             android:theme="@style/AppTheme"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.Profile"
+            android:name=".Activity.Profile"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.FindFriends"
+            android:name=".Activity.FindFriends"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.PersonProfile"
+            android:name=".Activity.PersonProfile"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.MessagingArea"
+            android:name=".Activity.MessagingArea"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="InnerclassSeparator">
             <intent-filter>
@@ -124,37 +125,37 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="niwigh.com.smartchat.Activity.AllMyPosts"
+            android:name=".Activity.AllMyPosts"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.ViewPersonPosts"
-            android:parentActivityName="niwigh.com.smartchat.Activity.UserHome"
+            android:name=".Activity.ViewPersonPosts"
+            android:parentActivityName=".Activity.UserHome"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.MessagingAreaBackground"
-            android:parentActivityName="niwigh.com.smartchat.Activity.Settings"
+            android:name=".Activity.MessagingAreaBackground"
+            android:parentActivityName=".Activity.Settings"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.AddNewVideoPost"
+            android:name=".Activity.AddNewVideoPost"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.PostVideoDetails"
+            android:name=".Activity.PostVideoDetails"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.FullModeProfileImage"
+            android:name=".Activity.FullModeProfileImage"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.FullPersonProfileImage"
+            android:name=".Activity.FullPersonProfileImage"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.FullMessageImageView"
+            android:name=".Activity.FullMessageImageView"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.FullMessageVideoView"
+            android:name=".Activity.FullMessageVideoView"
             tools:ignore="InnerclassSeparator" />
 
         <service
-            android:name="niwigh.com.smartchat.Notifications.FirebaseNotificationService"
+            android:name=".Notifications.FirebaseNotificationService"
             tools:ignore="InnerclassSeparator">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -166,33 +167,33 @@
             android:value="@string/default_notification_channel_id" />
 
         <activity
-            android:name="niwigh.com.smartchat.Activity.Groups"
+            android:name=".Activity.Groups"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.AddNewGroup"
+            android:name=".Activity.AddNewGroup"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.NotificationsSettings"
+            android:name=".Activity.NotificationsSettings"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.AssociatedGroups"
+            android:name=".Activity.AssociatedGroups"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.GroupMessagingArea"
+            android:name=".Activity.GroupMessagingArea"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.GroupInfo"
+            android:name=".Activity.GroupInfo"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.AddParticipantsToGroup"
+            android:name=".Activity.AddParticipantsToGroup"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name="niwigh.com.smartchat.Activity.GroupSettings"
+            android:name=".Activity.GroupSettings"
             tools:ignore="InnerclassSeparator" />
 
         <provider
-            android:name="niwigh.com.smartchat.provider.GenericFileProvider"
+            android:name=".provider.GenericFileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -200,7 +201,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
-
     </application>
 
 </manifest>

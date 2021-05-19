@@ -134,7 +134,7 @@ public class GroupMessagingArea extends AppCompatActivity implements
         mAuth = FirebaseAuth.getInstance();
         currentUserID = mAuth.getCurrentUser().getUid();
         only_admins_layout = findViewById(R.id.only_admins_layout);
-        sending_tools_layout = findViewById(R.id.sending_tools_layout);
+//        sending_tools_layout = findViewById(R.id.sending_tools_layout);
 
 
         String group_category = getIntent().getStringExtra("group_cat");
@@ -747,10 +747,10 @@ public class GroupMessagingArea extends AppCompatActivity implements
                                 if(dataSnapshot.exists()){
                                     if(dataSnapshot.hasChild("isgroupforadminsonly")){
                                         only_admins_layout.setVisibility(View.GONE);
-                                        sending_tools_layout.setVisibility(View.VISIBLE);
+//                                        sending_tools_layout.setVisibility(View.VISIBLE);
                                     }else {
                                         only_admins_layout.setVisibility(View.GONE);
-                                        sending_tools_layout.setVisibility(View.VISIBLE);
+//                                        sending_tools_layout.setVisibility(View.VISIBLE);
                                     }
                                 }
                             }
@@ -767,10 +767,10 @@ public class GroupMessagingArea extends AppCompatActivity implements
                                 if(dataSnapshot.exists()){
                                     if(dataSnapshot.hasChild("isgroupforadminsonly")){
                                         only_admins_layout.setVisibility(View.VISIBLE);
-                                        sending_tools_layout.setVisibility(View.GONE);
+//                                        sending_tools_layout.setVisibility(View.GONE);
                                     }else {
                                         only_admins_layout.setVisibility(View.GONE);
-                                        sending_tools_layout.setVisibility(View.VISIBLE);
+//                                        sending_tools_layout.setVisibility(View.VISIBLE);
                                     }
                                 }
                             }
@@ -782,7 +782,7 @@ public class GroupMessagingArea extends AppCompatActivity implements
                         });
                     }
                 }else {
-                    sending_tools_layout.setVisibility(View.VISIBLE);
+//                    sending_tools_layout.setVisibility(View.VISIBLE);
                     only_admins_layout.setVisibility(View.GONE);
                 }
             }

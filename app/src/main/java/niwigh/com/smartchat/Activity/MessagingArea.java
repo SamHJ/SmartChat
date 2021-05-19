@@ -127,6 +127,7 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
     ValueEventListener seenListener;
     FirebaseFirestore firebaseFirestore;
     boolean notify = false;
+    boolean hasSentBefore = false;
     LinearLayout vertical_line;
 
     final private String FCM_API = "https://fcm.googleapis.com/";
@@ -145,8 +146,8 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
         setContentView(R.layout.activity_messaging_area);
 
         messageReceiverID = getIntent().getExtras().get("visit_user_id").toString();
-        messageReceiverName = getIntent().getExtras().getString("userName").toString();
-        messageReceiverFullName = getIntent().getExtras().getString("userFullName").toString();
+        messageReceiverName = getIntent().getExtras().getString("userName");
+        messageReceiverFullName = getIntent().getExtras().getString("userFullName");
 
         mAuth = FirebaseAuth.getInstance();
         messageSenderID = mAuth.getCurrentUser().getUid();
@@ -365,6 +366,16 @@ public class MessagingArea extends AppCompatActivity implements RecyclerItemTouc
         seenMessage(messageReceiverID);
 
         updateToken(FirebaseInstanceId.getInstance().getToken());
+
+        String fromDataSub = getIntent().getExtras().getString("fromDataSub");
+
+        if(fromDataSub != null && !hasSentBefore){
+            if(fromDataSub.equals("yes")){
+                message = getIntent().getExtras().getString("data_sub_message");
+                SendMessage();
+                hasSentBefore = true;
+            }
+        }
 
     }
 

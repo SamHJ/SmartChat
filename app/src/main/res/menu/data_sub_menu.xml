@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/data_sub_title"
+        android:enabled="false"
+        app:showAsAction="always"
+        android:title="Data" />
+
+    <item
+        android:icon="@drawable/data_usage_ring"
+        android:id="@+id/data_sub"
+        app:showAsAction="always"
+        android:title="Data" />
+</menu>

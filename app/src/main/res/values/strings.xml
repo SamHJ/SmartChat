@@ -73,4 +73,12 @@
     <string name="update_collection">Update Collection</string>
     <string name="group_image">Group Image</string>
     <string name="your_post_will_be_deleted_after_1_year">Your post will be deleted after 1 year.</string>
+    <string name="bundle_payment_info">Make Payment to the following details and enter your transaction ID below: \n\n Payment Name: Prince K. Telecom \n Payment Number: 0558776576</string>
+    <string name="enter_transaction_id">Enter Transaction ID</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="full_name">Full Name</string>
+    <string name="proceed">Proceed</string>
+    <string name="network_type">Network Type</string>
+    <string name="data_bundle">Data Subscription</string>
+    <string name="data_subscription">Data Subscription</string>
 </resources>

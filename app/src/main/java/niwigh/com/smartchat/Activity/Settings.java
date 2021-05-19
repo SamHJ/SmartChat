@@ -88,7 +88,7 @@ public class Settings extends AppCompatActivity {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
                 String ShareBody = "Hey, check out this cool social media app called SmartChat :" +
-                        "  https://play.google.com/store/apps/details?id=havotechstudios.com.smartmessenger";
+                        "https://play.google.com/store/apps/details?id=niwigh.com.smartchat";
                 String Sharetitle = "Hot Social Messaging App!";
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, Sharetitle);
                 shareIntent.putExtra(Intent.EXTRA_TEXT, ShareBody);

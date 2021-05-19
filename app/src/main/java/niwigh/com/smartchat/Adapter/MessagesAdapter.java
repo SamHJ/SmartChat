@@ -293,9 +293,9 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
         }
     }
 
-    @SuppressLint({"SimpleDateFormat", "SetTextI18n"})
+    @SuppressLint({"SimpleDateFormat", "SetTextI18n","RecyclerView"})
     @Override
-    public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder, final int position) {
+    public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder,final int position) {
         final MessagesModel messagesModel = userMessagesList.get(position);
         messageViewHolder.bind(messagesModel, listener,messageViewHolder.itemView,position);
         String messageSenderID = mAuth.getCurrentUser().getUid();
@@ -1343,172 +1343,167 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
                 @Override
                 public boolean onLongClick(View v) {
 
-                    if(userMessagesList.get(position).getType().equals("document")){
+                    try {
 
-                        CharSequence options_doc[] = new CharSequence[]{
-                                "Delete for me",
-                                "Delete for everyone",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_doc.setTitle("Delete this message?");
+                        MessagesModel mgsDoc = userMessagesList.get(position);
 
-                        builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                        if (mgsDoc != null) {
 
-                                if(which == 0){
+                            if (mgsDoc.getType().equals("document")) {
 
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
+                                CharSequence options_doc[] = new CharSequence[]{
+                                        "Delete for me",
+                                        "Delete for everyone",
+                                        "Cancel"
+                                };
+                                AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                builderoptions_doc.setTitle("Delete this message?");
 
-                                    DeleteForEveryoneMessages(position, messageViewHolder);
-                                    DeleteFileFromStorage(position, messageViewHolder);
-                                }
+                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                        if (which == 0) {
+
+                                            DeleteSentMessages(position, messageViewHolder);
+                                        } else if (which == 1) {
+
+                                            DeleteForEveryoneMessages(position, messageViewHolder);
+                                            DeleteFileFromStorage(position, messageViewHolder);
+                                        }
+                                    }
+                                });
+                                builderoptions_doc.show();
                             }
-                        });
-                        builderoptions_doc.show();
-                    }
+                            else if (mgsDoc.getType().equals("video")) {
 
-                    else if(userMessagesList.get(position).getType().equals("video")){
+                                CharSequence options_doc[] = new CharSequence[]{
+                                        "Delete for me",
+                                        "Delete for everyone",
+                                        "View in full screen",
+                                        "Cancel"
+                                };
+                                AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                builderoptions_doc.setTitle("Delete this message?");
 
-                        CharSequence options_doc[] = new CharSequence[]{
-                                "Delete for me",
-                                "Delete for everyone",
-                                "View in full screen",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_doc.setTitle("Delete this message?");
+                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
 
-                        builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                                        if (which == 0) {
 
-                                if(which == 0){
+                                            DeleteSentMessages(position, messageViewHolder);
+                                        } else if (which == 1) {
 
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
-
-                                    DeleteForEveryoneMessages(position, messageViewHolder);
-                                    DeleteVideoFromStorage(position, messageViewHolder);
-                                }
-                                else if(which == 2){
-                                    //view in full screen intent
-                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageVideoView.class);
-                                    intent.putExtra("url", userMessagesList.get(position).getMessage());
-                                    intent.putExtra("name", userMessagesList.get(position).getName());
-                                    messageViewHolder.itemView.getContext().startActivity(intent);
-                                    activity.overridePendingTransition(R.anim.right_in,R.anim.left_out);
-                                }
+                                            DeleteForEveryoneMessages(position, messageViewHolder);
+                                            DeleteVideoFromStorage(position, messageViewHolder);
+                                        } else if (which == 2) {
+                                            //view in full screen intent
+                                            Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageVideoView.class);
+                                            intent.putExtra("url", userMessagesList.get(position).getMessage());
+                                            intent.putExtra("name", userMessagesList.get(position).getName());
+                                            messageViewHolder.itemView.getContext().startActivity(intent);
+                                            activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                        }
+                                    }
+                                });
+                                builderoptions_doc.show();
                             }
-                        });
-                        builderoptions_doc.show();
-                    }
+                            else if (mgsDoc.getType().equals("audio")) {
 
+                                CharSequence options_doc[] = new CharSequence[]{
+                                        "Delete for me",
+                                        "Delete for everyone",
+                                        "Download Audio",
+                                        "Cancel"
+                                };
+                                AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                builderoptions_doc.setTitle("Delete this message?");
 
-                    else if(userMessagesList.get(position).getType().equals("audio")){
+                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
 
-                        CharSequence options_doc[] = new CharSequence[]{
-                                "Delete for me",
-                                "Delete for everyone",
-                                "Download Audio",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_doc.setTitle("Delete this message?");
+                                        if (which == 0) {
 
-                        builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                                            DeleteSentMessages(position, messageViewHolder);
+                                        } else if (which == 1) {
 
-                                if(which == 0){
-
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
-
-                                    DeleteForEveryoneMessages(position, messageViewHolder);
-                                    DeleteAudioFromStorage(position, messageViewHolder);
-                                }
-                                else if(which == 2){
-                                    DownloadAudio(position, messageViewHolder);
-                                }
+                                            DeleteForEveryoneMessages(position, messageViewHolder);
+                                            DeleteAudioFromStorage(position, messageViewHolder);
+                                        } else if (which == 2) {
+                                            DownloadAudio(position, messageViewHolder);
+                                        }
+                                    }
+                                });
+                                builderoptions_doc.show();
                             }
-                        });
-                        builderoptions_doc.show();
-                    }
+                            else if (mgsDoc.getType().equals("image")) {
 
+                                CharSequence options_image[] = new CharSequence[]{
+                                        "Delete for me",
+                                        "Delete for everyone",
+                                        "View picture",
+                                        "Cancel"
+                                };
+                                AlertDialog.Builder builderoptions_image = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                builderoptions_image.setTitle("Delete message?");
 
+                                builderoptions_image.setItems(options_image, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
 
-                    else  if(userMessagesList.get(position).getType().equals("image")){
+                                        if (which == 0) {
 
-                        CharSequence options_image[] = new CharSequence[]{
-                                "Delete for me",
-                                "Delete for everyone",
-                                "View picture",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_image = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_image.setTitle("Delete message?");
+                                            DeleteSentMessages(position, messageViewHolder);
+                                        } else if (which == 1) {
 
-                        builderoptions_image.setItems(options_image, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if(which == 0){
-
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
-
-                                    DeleteForEveryoneMessages(position, messageViewHolder);
-                                    DeletePictureFromStorage(position, messageViewHolder);
-                                }
-                                else  if(which == 2){
-                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageImageView.class);
-                                    intent.putExtra("url", userMessagesList.get(position).getMessage());
-                                    intent.putExtra("name", userMessagesList.get(position).getName());
-                                    messageViewHolder.itemView.getContext().startActivity(intent);
-                                    activity.overridePendingTransition(R.anim.right_in,R.anim.left_out);
-                                }
+                                            DeleteForEveryoneMessages(position, messageViewHolder);
+                                            DeletePictureFromStorage(position, messageViewHolder);
+                                        } else if (which == 2) {
+                                            Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageImageView.class);
+                                            intent.putExtra("url", userMessagesList.get(position).getMessage());
+                                            intent.putExtra("name", userMessagesList.get(position).getName());
+                                            messageViewHolder.itemView.getContext().startActivity(intent);
+                                            activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                        }
+                                    }
+                                });
+                                builderoptions_image.show();
                             }
-                        });
-                        builderoptions_image.show();
-                    }
+                            else if (mgsDoc.getType().equals("text")) {
 
-                    else if(userMessagesList.get(position).getType().equals("text")){
+                                CharSequence options_text[] = new CharSequence[]{
+                                        "Delete for me",
+                                        "Delete for everyone",
+                                        "Copy message to clipboard",
+                                        "Cancel"
+                                };
+                                AlertDialog.Builder builderoptions_text = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                builderoptions_text.setTitle("Delete message?");
 
-                        CharSequence options_text[] = new CharSequence[]{
-                                "Delete for me",
-                                "Delete for everyone",
-                                "Copy message to clipboard",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_text = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_text.setTitle("Delete message?");
+                                builderoptions_text.setItems(options_text, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
 
-                        builderoptions_text.setItems(options_text, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                                        if (which == 0) {
 
-                                if(which == 0){
+                                            DeleteSentMessages(position, messageViewHolder);
+                                        } else if (which == 1) {
 
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
-
-                                    DeleteForEveryoneMessages(position, messageViewHolder);
-                                }
-                                else if(which == 2){
-                                    CopyToClipBoard(position, messageViewHolder);
-                                    Toasty.success(messageViewHolder.itemView.getContext(),"Message copied", Toasty.LENGTH_SHORT).show();
-                                }
+                                            DeleteForEveryoneMessages(position, messageViewHolder);
+                                        } else if (which == 2) {
+                                            CopyToClipBoard(position, messageViewHolder);
+                                            Toasty.success(messageViewHolder.itemView.getContext(), "Message copied", Toasty.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                                builderoptions_text.show();
                             }
-                        });
-                        builderoptions_text.show();
+
+                        }
+                    }catch(Exception e){
+                        e.printStackTrace();
                     }
 
                     return false;

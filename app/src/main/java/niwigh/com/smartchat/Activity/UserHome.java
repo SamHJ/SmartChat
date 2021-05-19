@@ -448,6 +448,11 @@ public class UserHome extends AppCompatActivity {
                 startActivity(addFeedsIntent);
                 overridePendingTransition(R.anim.right_in, R.anim.left_out);
                 break;
+            case  R.id.data_sub:
+                Intent data_sub_intent = new Intent(this, DataSub.class);
+                startActivity(data_sub_intent);
+                overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                break;
 
             case R.id.nav_drawer_group_add:
                 Intent addGroupsIntent = new Intent(UserHome.this, AddNewGroup.class);

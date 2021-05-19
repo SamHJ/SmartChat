@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 public interface AppConstants {
 
+    String ADMIN_ID = "uSWUholEyAg0Yu05fPlxrhRYf2I3";
 
     String ENGLISH = "en";
 
@@ -13,7 +14,7 @@ public interface AppConstants {
 
 
     /**
-     * Validation ragular expression
+     * Validation regular expression
      */
     Pattern EMAIL_ADDRESS_PATTERN = Pattern
             .compile("^([a-zA-Z0-9._-]+)@{1}(([a-zA-Z0-9_-]{1,67})|([a-zA-Z0-9-]+\\.[a-zA-Z0-9-]{1,67}))\\.(([a-zA-Z0-9]{2,6})(\\.[a-zA-Z0-9]{2,6})?)$");

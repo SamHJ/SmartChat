@@ -13,11 +13,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +47,9 @@ import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import es.dmoral.toasty.Toasty;
+import niwigh.com.smartchat.Activity.DataSub;
 import niwigh.com.smartchat.Activity.FullMessageImageView;
+import niwigh.com.smartchat.Activity.Groups;
 import niwigh.com.smartchat.Model.FeedsModel;
 import niwigh.com.smartchat.R;
 import niwigh.com.smartchat.Util.UpdateHelper;
@@ -332,12 +337,32 @@ public class FeedsFragment extends Fragment implements UpdateHelper.OnUpdateChec
 
     }
 
+    @SuppressLint("RestrictedApi")
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater = getActivity().getMenuInflater();
+        inflater.inflate(R.menu.data_sub_menu, menu);
+        if (menu instanceof MenuBuilder) {
+            MenuBuilder menuBuilder = (MenuBuilder) menu;
+            menuBuilder.setOptionalIconsVisible(true);
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(actionBarDrawerToggle.onOptionsItemSelected(item)){
+        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.data_sub:
+                Intent data_sub_intent = new Intent(getContext(), DataSub.class);
+                startActivity(data_sub_intent);
+                getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 
