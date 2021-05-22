@@ -67,17 +67,18 @@ public class FindFriends extends AppCompatActivity {
     private void DisplayAllUsers() {
 
 
-        FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
-                new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
-                        (
-                                FindFriendsModel.class,
-                                R.layout.all_friends_display_layout,
-                                FindFriendsviewHolder.class,
-                                allUsersRef
+        try {
+            FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
+                    new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
+                            (
+                                    FindFriendsModel.class,
+                                    R.layout.all_friends_display_layout,
+                                    FindFriendsviewHolder.class,
+                                    allUsersRef
 
-                        ) {
-                    @Override
-                    protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
 
                             viewHolder.setFullname(model.getFullname());
                             viewHolder.setUsername(model.getUsername());
@@ -87,57 +88,72 @@ public class FindFriends extends AppCompatActivity {
                             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    String visit_user_id = getRef(position).getKey();
-                                    Intent viewUserDetailsIntent = new Intent(FindFriends.this, PersonProfile.class);
-                                    viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
-                                    startActivity(viewUserDetailsIntent);
-                                    overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                    try {
+                                        String visit_user_id = getRef(position).getKey();
+                                        Intent viewUserDetailsIntent = new Intent(FindFriends.this, PersonProfile.class);
+                                        viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
+                                        startActivity(viewUserDetailsIntent);
+                                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                    }catch(Exception e){
+                                        e.printStackTrace();
+                                    }
                                 }
                             });
 
-                    }
-                };
-        display_find_friends_recyclerview.setAdapter(firebaseRecyclerAdapter);
+                        }
+                    };
+            display_find_friends_recyclerview.setAdapter(firebaseRecyclerAdapter);
 
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void searchForFriends(String searchBoxInput) {
 
-        Query findusersSearchQuery = allUsersRef.orderByChild("fullname")
-                .startAt(searchBoxInput).endAt(searchBoxInput + "\uf8ff");
+        try {
+            Query findusersSearchQuery = allUsersRef.orderByChild("fullname")
+                    .startAt(searchBoxInput).endAt(searchBoxInput + "\uf8ff");
 
-        FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
-                new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
-                        (
-                                FindFriendsModel.class,
-                                R.layout.all_friends_display_layout,
-                                FindFriendsviewHolder.class,
-                                findusersSearchQuery
+            FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
+                    new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
+                            (
+                                    FindFriendsModel.class,
+                                    R.layout.all_friends_display_layout,
+                                    FindFriendsviewHolder.class,
+                                    findusersSearchQuery
 
-                        ) {
-                    @Override
-                    protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
 
-                        viewHolder.setFullname(model.getFullname());
-                        viewHolder.setUsername(model.getUsername());
-                        viewHolder.setUserLocation(model.getUserLocation());
-                        viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
+                            viewHolder.setFullname(model.getFullname());
+                            viewHolder.setUsername(model.getUsername());
+                            viewHolder.setUserLocation(model.getUserLocation());
+                            viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
 
-                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                String visit_user_id = getRef(position).getKey();
-                                Intent viewUserDetailsIntent = new Intent(FindFriends.this, PersonProfile.class);
-                                viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
-                                startActivity(viewUserDetailsIntent);
-                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                            }
-                        });
+                            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    try {
+                                        String visit_user_id = getRef(position).getKey();
+                                        Intent viewUserDetailsIntent = new Intent(FindFriends.this, PersonProfile.class);
+                                        viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
+                                        startActivity(viewUserDetailsIntent);
+                                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                    }catch(Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
 
-                    }
-                };
-        display_find_friends_recyclerview.setAdapter(firebaseRecyclerAdapter);
+                        }
+                    };
+            display_find_friends_recyclerview.setAdapter(firebaseRecyclerAdapter);
 
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public static class FindFriendsviewHolder extends RecyclerView.ViewHolder {
@@ -163,8 +179,11 @@ public class FindFriends extends AppCompatActivity {
 
                            @Override
                            public void onError() {
-
-                               Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(userprofileimage);
+                               try {
+                                   Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(userprofileimage);
+                               }catch(Exception e){
+                                   e.printStackTrace();
+                               }
                            }
                        });
            }catch (Exception e){

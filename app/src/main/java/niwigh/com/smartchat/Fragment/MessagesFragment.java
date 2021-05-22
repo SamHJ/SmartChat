@@ -1,6 +1,5 @@
 package niwigh.com.smartchat.Fragment;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -44,7 +43,6 @@ import niwigh.com.smartchat.Model.MessagesFragmentModel;
 import niwigh.com.smartchat.Model.MessagesModel;
 import niwigh.com.smartchat.R;
 import niwigh.com.smartchat.Util.Utilities;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -109,98 +107,112 @@ public class MessagesFragment extends Fragment {
 
     }
 
-
     private void DisplayAllMessages(final String from, final String to, final boolean isseen, final String time,
                                     final String message, final int unread) {
+        try {
+            FirebaseRecyclerAdapter<MessagesFragmentModel, MessagesViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<MessagesFragmentModel, MessagesViewHolder>
+                            (
+                                    MessagesFragmentModel.class,
+                                    R.layout.all_users_display_layout,
+                                    MessagesViewHolder.class,
+                                    MessagesRef
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final MessagesViewHolder viewHolder, MessagesFragmentModel model, int position) {
 
-        FirebaseRecyclerAdapter<MessagesFragmentModel, MessagesViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<MessagesFragmentModel, MessagesViewHolder>
-                        (
-                                MessagesFragmentModel.class,
-                                R.layout.all_users_display_layout,
-                                MessagesViewHolder.class,
-                                MessagesRef
-                        ) {
-                    @Override
-                    protected void populateViewHolder(final MessagesViewHolder viewHolder, MessagesFragmentModel model, int position) {
+                            try {
 
-                        try{
-
-                        final String usersIDs = getRef(position).getKey();
-                        usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
-                            @SuppressLint("SetTextI18n")
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    if (from.equals(onlineUserID) || to.equals(onlineUserID)) {
-
-                                        final String type;
-                                        final String fullName = dataSnapshot.child("fullname").getValue().toString();
-                                        final String userName = dataSnapshot.child("username").getValue().toString();
-                                        final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+                                final String usersIDs = getRef(position).getKey();
+                                usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
+                                    @SuppressLint("SetTextI18n")
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            try {
+                                                if (from.equals(onlineUserID) || to.equals(onlineUserID)) {
+                                                    try {
+                                                        final String type;
+                                                        final String fullName = dataSnapshot.child("fullname").getValue().toString();
+                                                        final String userName = dataSnapshot.child("username").getValue().toString();
+                                                        final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
 
 
-                                        if (dataSnapshot.hasChild("userState")) {
-                                            type = dataSnapshot.child("userState").child("type").getValue().toString();
+                                                        if (dataSnapshot.hasChild("userState")) {
+                                                            try {
+                                                                type = dataSnapshot.child("userState").child("type").getValue().toString();
 
-                                            if (type.equals("Online")) {
-                                                viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
-                                                viewHolder.offlineStatusImage.setVisibility(View.GONE);
-                                            } else {
-                                                viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
-                                                viewHolder.onlineStatusImage.setVisibility(View.GONE);
+                                                                if (type.equals("Online")) {
+                                                                    viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
+                                                                    viewHolder.offlineStatusImage.setVisibility(View.GONE);
+                                                                } else {
+                                                                    viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
+                                                                    viewHolder.onlineStatusImage.setVisibility(View.GONE);
+                                                                }
+                                                            }catch(Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+
+                                                        viewHolder.setFullname(fullName);
+                                                        viewHolder.setProfileimage(getActivity(), userProfileImage);
+                                                        viewHolder.setMessages(usersIDs);
+                                                        viewHolder.setIssenStatus(isseen, from);
+
+                                                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View v) {
+                                                                Intent message_this_user = new Intent(getActivity(), MessagingArea.class);
+                                                                message_this_user.putExtra("visit_user_id", usersIDs);
+                                                                message_this_user.putExtra("userName", userName);
+                                                                message_this_user.putExtra("userFullName", fullName);
+                                                                startActivity(message_this_user);
+                                                                try {
+                                                                    getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                                }catch(Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
+                                                        });
+                                                    }catch(Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                } else {
+                                                    try {
+                                                        all_friends_layout.removeAllViews();
+                                                        no_friends_inflate_two = inflaters.inflate(
+                                                                R.layout.no_image_posts_query_result, all_friends_layout);
+                                                        all_friends_layout.setVisibility(View.VISIBLE);
+                                                        all_user_messages_recyclerview.setVisibility(View.GONE);
+                                                        TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
+                                                        displayText.setText("You have no messages yet.");
+                                                    }catch(Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            }catch(Exception e) {
+                                                e.printStackTrace();
                                             }
-
                                         }
-
-
-                                        viewHolder.setFullname(fullName);
-                                        viewHolder.setProfileimage(getActivity(), userProfileImage);
-                                        viewHolder.setMessages(usersIDs);
-                                        viewHolder.setIssenStatus(isseen,from);
-
-                                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-
-
-                                                Intent message_this_user = new Intent(getActivity(), MessagingArea.class);
-                                                message_this_user.putExtra("visit_user_id", usersIDs);
-                                                message_this_user.putExtra("userName", userName);
-                                                message_this_user.putExtra("userFullName", fullName);
-                                                startActivity(message_this_user);
-                                                getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
-
-
-                                            }
-                                        });
-                                    } else {
-                                        all_friends_layout.removeAllViews();
-                                        no_friends_inflate_two = inflaters.inflate(
-                                                R.layout.no_image_posts_query_result, all_friends_layout);
-                                        all_friends_layout.setVisibility(View.VISIBLE);
-                                        all_user_messages_recyclerview.setVisibility(View.GONE);
-                                        TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
-                                        displayText.setText("You have no messages yet.");
                                     }
-                                }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
+                        }
+                    };
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    }
-                };
-
-        all_user_messages_recyclerview.setAdapter(firebaseRecyclerAdapter);
+            all_user_messages_recyclerview.setAdapter(firebaseRecyclerAdapter);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
-
 
     @Override
     public void onStart() {
@@ -217,61 +229,81 @@ public class MessagesFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                     if (dataSnapshot.hasChild("Messages")) {
-                        final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
+                        try {
+                            final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
 
-                        currentuserFriend.child(onlineUserID).addValueEventListener(new ValueEventListener() {
-                            @SuppressLint("SetTextI18n")
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.hasChildren()) {
-
-                                    int unread = 0;
-                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                        final String key_one = snapshot.getKey();
-                                        for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
-                                            MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                            String from = messagesModel.getFrom();
-                                            String to = messagesModel.getTo();
-                                            boolean isseen = messagesModel.isIsseen();
-                                            String time = messagesModel.getTime();
-                                            String message = messagesModel.getMessage();
-                                            if (to.equals(onlineUserID) && !isseen) {
-                                                unread++;
+                            currentuserFriend.child(onlineUserID).addValueEventListener(new ValueEventListener() {
+                                @SuppressLint("SetTextI18n")
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.hasChildren()) {
+                                        try {
+                                            int unread = 0;
+                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                try {
+                                                    final String key_one = snapshot.getKey();
+                                                    for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
+                                                        try {
+                                                            MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
+                                                            String from = messagesModel.getFrom();
+                                                            String to = messagesModel.getTo();
+                                                            boolean isseen = messagesModel.isIsseen();
+                                                            String time = messagesModel.getTime();
+                                                            String message = messagesModel.getMessage();
+                                                            if (to.equals(onlineUserID) && !isseen) {
+                                                                unread++;
+                                                            }
+                                                            DisplayAllMessages(from, to, isseen, time, message, unread);
+                                                        }catch(Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }catch(Exception e) {
+                                                    e.printStackTrace();
+                                                }
                                             }
-                                            DisplayAllMessages(from, to, isseen, time, message, unread);
-
+                                        }catch(Exception e) {
+                                            e.printStackTrace();
                                         }
-
-
+                                    } else {
+                                        try {
+                                            all_friends_layout.removeAllViews();
+                                            no_friends_inflate_two = inflaters.inflate(
+                                                    R.layout.no_image_posts_query_result, all_friends_layout);
+                                            all_friends_layout.setVisibility(View.VISIBLE);
+                                            all_user_messages_recyclerview.setVisibility(View.GONE);
+                                            TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
+                                            displayText.setText("You have no messages yet.");
+                                        }catch(Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
-                                } else {
-                                    all_friends_layout.removeAllViews();
-                                    no_friends_inflate_two = inflaters.inflate(
-                                            R.layout.no_image_posts_query_result, all_friends_layout);
-                                    all_friends_layout.setVisibility(View.VISIBLE);
-                                    all_user_messages_recyclerview.setVisibility(View.GONE);
-                                    TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
-                                    displayText.setText("You have no messages yet.");
+
+
                                 }
 
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
+                                }
+                            });
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }catch(Exception e) {
+                            e.printStackTrace();
+                        }
 
-                            }
-                        });
-
-                    } else {
-                        all_friends_layout.removeAllViews();
-                        no_friends_inflate_two = inflaters.inflate(
-                                R.layout.no_image_posts_query_result, all_friends_layout);
-                        all_friends_layout.setVisibility(View.VISIBLE);
-                        all_user_messages_recyclerview.setVisibility(View.GONE);
-                        TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
-                        displayText.setText("You have no messages yet.");
-
+                    }else{
+                        try {
+                            all_friends_layout.removeAllViews();
+                            no_friends_inflate_two = inflaters.inflate(
+                                    R.layout.no_image_posts_query_result, all_friends_layout);
+                            all_friends_layout.setVisibility(View.VISIBLE);
+                            all_user_messages_recyclerview.setVisibility(View.GONE);
+                            TextView displayText = no_friends_inflate_two.findViewById(R.id.tv_one_two);
+                            displayText.setText("You have no messages yet.");
+                        }catch(Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
@@ -286,21 +318,19 @@ public class MessagesFragment extends Fragment {
         }
     }
 
-
     public static class MessagesViewHolder extends RecyclerView.ViewHolder {
 
         ImageView onlineStatusImage, offlineStatusImage, msg_type_img,msg_type_img_icon;
         final CircleImageView friendsprofileimage;
         TextView unread_messages;
         TextView friends_name, muser_status;
-
         View mView;
 
         public MessagesViewHolder(@NonNull View itemView) {
             super(itemView);
             mView = itemView;
-            onlineStatusImage = (ImageView) itemView.findViewById(R.id.user_online_icon);
-            offlineStatusImage = (ImageView) itemView.findViewById(R.id.user_offline_icon);
+            onlineStatusImage = itemView.findViewById(R.id.user_online_icon);
+            offlineStatusImage = itemView.findViewById(R.id.user_offline_icon);
             msg_type_img_icon = itemView.findViewById(R.id.msg_type_img_icon);
             onlineStatusImage.setVisibility(View.INVISIBLE);
             offlineStatusImage.setVisibility(View.INVISIBLE);
@@ -312,7 +342,6 @@ public class MessagesFragment extends Fragment {
         }
 
         public void setProfileimage(final Context ctx, final String profileimage) {
-
             try{
                 Picasso.with(ctx).load(profileimage).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
                         .into(friendsprofileimage, new Callback() {
@@ -323,8 +352,11 @@ public class MessagesFragment extends Fragment {
 
                             @Override
                             public void onError() {
-
-                                Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(friendsprofileimage);
+                                try {
+                                    Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(friendsprofileimage);
+                                }catch(Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         });
             }catch (Exception e){
@@ -333,134 +365,177 @@ public class MessagesFragment extends Fragment {
         }
 
         public void setFullname(String fullname) {
-            TextView friendsfullname = mView.findViewById(R.id.search_all_users_profile_name);
-            friendsfullname.setText(fullname);
+            try {
+                TextView friendsfullname = mView.findViewById(R.id.search_all_users_profile_name);
+                friendsfullname.setText(fullname);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
         }
 
-
         public void setMessages(final String userIDs) {
-            final String onlineUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-            rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            try {
+                final String onlineUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+                rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    try{
+                        try {
 
-                    if (dataSnapshot.hasChild("Messages")) {
-                        final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
+                            if (dataSnapshot.hasChild("Messages")) {
+                                try {
+                                    final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
 
-                        currentuserFriend.child(userIDs).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    int unread = 0;
-                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                        final String key_one = snapshot.getKey();
-                                        for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
-                                            MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                            String time = messagesModel.getTime();
-                                            String message = messagesModel.getMessage();
-                                            String to = messagesModel.getTo();
-                                            boolean isseen = messagesModel.isIsseen();
-                                            String type = messagesModel.getType();
+                                    currentuserFriend.child(userIDs).addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists()) {
+                                                try {
+                                                    int unread = 0;
+                                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                        try {
+                                                            final String key_one = snapshot.getKey();
+                                                            for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
+                                                                try {
+                                                                    MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
+                                                                    String time = messagesModel.getTime();
+                                                                    String message = messagesModel.getMessage();
+                                                                    String to = messagesModel.getTo();
+                                                                    boolean isseen = messagesModel.isIsseen();
+                                                                    String type = messagesModel.getType();
 
-                                            friends_name.setText(time);
+                                                                    friends_name.setText(time);
+                                                                        if (type.equals("document")) {
+                                                                            try {
+                                                                                muser_status.setVisibility(View.GONE);
+                                                                                msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                                                msg_type_img_icon.setImageResource(R.drawable.ic_document);
+                                                                                if (to.equals(onlineUser) && !isseen) {
+                                                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                                                }
+                                                                            }catch(Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                        } else if (type.equals("image")) {
+                                                                            try {
+                                                                                muser_status.setVisibility(View.GONE);
+                                                                                msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                                                msg_type_img_icon.setImageResource(R.drawable.ic_image);
+                                                                                if (to.equals(onlineUser) && !isseen) {
+                                                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                                                }
+                                                                            }catch(Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                        } else if (type.equals("video")) {
+                                                                            try {
+                                                                                muser_status.setVisibility(View.GONE);
+                                                                                msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                                                msg_type_img_icon.setImageResource(R.drawable.ic_videocam);
+                                                                                if (to.equals(onlineUser) && !isseen) {
+                                                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                                                }
+                                                                            }catch(Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                        } else if (type.equals("audio")) {
+                                                                            try {
+                                                                                muser_status.setVisibility(View.GONE);
+                                                                                msg_type_img_icon.setVisibility(View.VISIBLE);
+                                                                                msg_type_img_icon.setImageResource(R.drawable.ic_music);
+                                                                                if (to.equals(onlineUser) && !isseen) {
+                                                                                    msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                                                }
+                                                                            }catch(Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                        } else {
+                                                                            try {
+                                                                                muser_status.setVisibility(View.VISIBLE);
+                                                                                msg_type_img_icon.setVisibility(View.GONE);
+                                                                                muser_status.setText(message);
+                                                                                if (to.equals(onlineUser) && !isseen) {
+                                                                                    muser_status.setTextColor(itemView.getContext().getResources()
+                                                                                            .getColor(R.color.colorPrimary));
+                                                                                }
+                                                                            }catch(Exception e) {
+                                                                                e.printStackTrace();
+                                                                            }
+                                                                        }
 
-                                            try {
-                                                if (type.equals("document")) {
-                                                    muser_status.setVisibility(View.GONE);
-                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                    msg_type_img_icon.setImageResource(R.drawable.ic_document);
-                                                    if (to.equals(onlineUser) && !isseen) {
-                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
+                                                                        if (to.equals(onlineUser) && !isseen) {
+                                                                            unread++;
+                                                                        }
+
+                                                                }catch(Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
+
+                                                            if (unread == 0) {
+                                                                unread_messages.setVisibility(View.GONE);
+                                                            } else {
+                                                                try {
+                                                                    unread_messages.setVisibility(View.VISIBLE);
+                                                                    unread_messages.setText(String.valueOf(unread));
+                                                                }catch(Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
+
+                                                        }catch(Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+
                                                     }
-                                                } else if (type.equals("image")) {
-                                                    muser_status.setVisibility(View.GONE);
-                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                    msg_type_img_icon.setImageResource(R.drawable.ic_image);
-                                                    if (to.equals(onlineUser) && !isseen) {
-                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                    }
-                                                } else if (type.equals("video")) {
-                                                    muser_status.setVisibility(View.GONE);
-                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                    msg_type_img_icon.setImageResource(R.drawable.ic_videocam);
-                                                    if (to.equals(onlineUser) && !isseen) {
-                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                    }
-                                                } else if (type.equals("audio")) {
-                                                    muser_status.setVisibility(View.GONE);
-                                                    msg_type_img_icon.setVisibility(View.VISIBLE);
-                                                    msg_type_img_icon.setImageResource(R.drawable.ic_music);
-                                                    if (to.equals(onlineUser) && !isseen) {
-                                                        msg_type_img_icon.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimary));
-                                                    }
-                                                } else {
-                                                    muser_status.setVisibility(View.VISIBLE);
-                                                    msg_type_img_icon.setVisibility(View.GONE);
-                                                    muser_status.setText(message);
-                                                    if (to.equals(onlineUser) && !isseen) {
-                                                        muser_status.setTextColor(itemView.getContext().getResources()
-                                                                .getColor(R.color.colorPrimary));
-                                                    }
+                                                }catch(Exception e) {
+                                                    e.printStackTrace();
                                                 }
 
-                                                if (to.equals(onlineUser) && !isseen) {
-                                                    unread++;
-                                                }
-
-                                            }catch (Exception e){
-                                                e.printStackTrace();
                                             }
+
+
                                         }
 
-                                        if (unread == 0) {
-                                            unread_messages.setVisibility(View.GONE);
-                                        } else {
-                                            unread_messages.setVisibility(View.VISIBLE);
-                                            unread_messages.setText(String.valueOf(unread));
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                                         }
-
-
-                                    }
-
+                                    });
+                                }catch(Exception e) {
+                                    e.printStackTrace();
                                 }
 
-
                             }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
-                    }catch (Exception e){
-                        e.printStackTrace();
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                     }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
+                });
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
         }
 
         public void setIssenStatus(boolean isseen, String from) {
-
-            if(from.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
-
-                msg_type_img.setVisibility(View.VISIBLE);
-                if (isseen){
-                    msg_type_img.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimaryDark));
-                }else{
-                    msg_type_img.setColorFilter(mView.getContext().getResources().getColor(R.color.light_gray));
+            try {
+                if (from.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                    msg_type_img.setVisibility(View.VISIBLE);
+                    if (isseen) {
+                        msg_type_img.setColorFilter(mView.getContext().getResources().getColor(R.color.colorPrimaryDark));
+                    } else {
+                        msg_type_img.setColorFilter(mView.getContext().getResources().getColor(R.color.light_gray));
+                    }
                 }
-
+            }catch(Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -469,11 +544,15 @@ public class MessagesFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater = getActivity().getMenuInflater();
-        inflater.inflate(R.menu.view_group_menu, menu);
-        if (menu instanceof MenuBuilder) {
-            MenuBuilder menuBuilder = (MenuBuilder) menu;
-            menuBuilder.setOptionalIconsVisible(true);
+        try {
+            inflater = getActivity().getMenuInflater();
+            inflater.inflate(R.menu.view_group_menu, menu);
+            if (menu instanceof MenuBuilder) {
+                MenuBuilder menuBuilder = (MenuBuilder) menu;
+                menuBuilder.setOptionalIconsVisible(true);
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -498,27 +577,41 @@ public class MessagesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
-
-
 
 }

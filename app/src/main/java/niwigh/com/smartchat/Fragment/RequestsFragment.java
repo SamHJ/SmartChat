@@ -1,6 +1,5 @@
 package niwigh.com.smartchat.Fragment;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
@@ -41,14 +40,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import es.dmoral.toasty.Toasty;
 import niwigh.com.smartchat.Model.FriendRequestFragmentModel;
 import niwigh.com.smartchat.R;
 import niwigh.com.smartchat.Util.Utilities;
-
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -112,383 +110,473 @@ public class RequestsFragment extends Fragment {
         all_friend_request_layout.setVisibility(View.GONE);
 
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild("FriendRequests")){
-                    DatabaseReference friendRequestref = FirebaseDatabase.getInstance().getReference()
-                            .child("FriendRequests");
-                    friendRequestref.child(online_user_id).addValueEventListener(new ValueEventListener() {
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                                all_friend_request_layout.setVisibility(View.GONE);
-                                all_users_friend_request_lists.setVisibility(View.VISIBLE);
-                                DisplayFriendRequets();
-                            }else
-                            {
-                                all_friend_request_layout.removeAllViews();
-                                all_users_friend_request_lists.setVisibility(View.GONE);
-                                no_friendsRequest_inflate = inflater.inflate(
-                                        R.layout.no_video_posts_query, all_friend_request_layout);
-                                all_friend_request_layout.setVisibility(View.VISIBLE);
-                                TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
-                                displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
-                            }
+        try {
+            rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.hasChild("FriendRequests")) {
+                        try {
+                            DatabaseReference friendRequestref = FirebaseDatabase.getInstance().getReference()
+                                    .child("FriendRequests");
+                            friendRequestref.child(online_user_id).addValueEventListener(new ValueEventListener() {
+                                @SuppressLint("SetTextI18n")
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        try {
+                                            all_friend_request_layout.setVisibility(View.GONE);
+                                            all_users_friend_request_lists.setVisibility(View.VISIBLE);
+                                            DisplayFriendRequets();
+                                        }catch(Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    } else {
+                                        try {
+                                            all_friend_request_layout.removeAllViews();
+                                            all_users_friend_request_lists.setVisibility(View.GONE);
+                                            no_friendsRequest_inflate = inflater.inflate(
+                                                    R.layout.no_video_posts_query, all_friend_request_layout);
+                                            all_friend_request_layout.setVisibility(View.VISIBLE);
+                                            TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
+                                            displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
+                                        }catch(Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
 
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }catch(Exception e) {
+                            e.printStackTrace();
                         }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    } else {
+                        try {
+                            all_friend_request_layout.removeAllViews();
+                            all_users_friend_request_lists.setVisibility(View.VISIBLE);
+                            no_friendsRequest_inflate = inflater.inflate(
+                                    R.layout.no_video_posts_query, all_friend_request_layout);
+                            all_friend_request_layout.setVisibility(View.VISIBLE);
+                        }catch(Exception e) {
+                            e.printStackTrace();
                         }
-                    });
-                }else {
-                    all_friend_request_layout.removeAllViews();
-                    all_users_friend_request_lists.setVisibility(View.VISIBLE);
-                   no_friendsRequest_inflate = inflater.inflate(
-                            R.layout.no_video_posts_query, all_friend_request_layout);
-                    all_friend_request_layout.setVisibility(View.VISIBLE);
-                    TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
-                    displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
+                        TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
+                        displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-
-
+                }
+            });
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
 
         return requestsFragmentView;
     }
 
     private void CheckForFriendRequests() {
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild("FriendRequests")){
-                    DatabaseReference friendRequestref = FirebaseDatabase.getInstance().getReference()
-                            .child("FriendRequests");
-                    friendRequestref.child(online_user_id).addValueEventListener(new ValueEventListener() {
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                                all_friend_request_layout.setVisibility(View.GONE);
-                                all_users_friend_request_lists.setVisibility(View.VISIBLE);
-                                DisplayFriendRequets();
-                            }else
-                            {
-                                all_friend_request_layout.removeAllViews();
-                                all_users_friend_request_lists.setVisibility(View.GONE);
-                                no_friendsRequest_inflate = inflaters.inflate(
-                                        R.layout.no_video_posts_query, all_friend_request_layout);
-                                all_friend_request_layout.setVisibility(View.VISIBLE);
-                                TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
-                                displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
-                            }
+        try {
+            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+            rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.hasChild("FriendRequests")) {
+                        try {
+                            DatabaseReference friendRequestref = FirebaseDatabase.getInstance().getReference()
+                                    .child("FriendRequests");
+                            friendRequestref.child(online_user_id).addValueEventListener(new ValueEventListener() {
+                                @SuppressLint("SetTextI18n")
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot){
+                                    if(dataSnapshot.exists()){
+                                        all_friend_request_layout.setVisibility(View.GONE);
+                                        all_users_friend_request_lists.setVisibility(View.VISIBLE);
+                                        DisplayFriendRequets();
+                                    }else{
+                                        try {
+                                            all_friend_request_layout.removeAllViews();
+                                            all_users_friend_request_lists.setVisibility(View.GONE);
+                                            no_friendsRequest_inflate = inflaters.inflate(
+                                                    R.layout.no_video_posts_query, all_friend_request_layout);
+                                            all_friend_request_layout.setVisibility(View.VISIBLE);
+                                        }catch(Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                        TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
+                                        displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
+                                    }
+                                }
 
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }catch(Exception e) {
+                            e.printStackTrace();
                         }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    } else {
+                        try {
+                            all_friend_request_layout.removeAllViews();
+                            all_users_friend_request_lists.setVisibility(View.GONE);
+                            no_friendsRequest_inflate = inflaters.inflate(
+                                    R.layout.no_video_posts_query, all_friend_request_layout);
+                            all_friend_request_layout.setVisibility(View.VISIBLE);
+                        }catch(Exception e) {
+                            e.printStackTrace();
                         }
-                    });
-                }else {
-                    all_friend_request_layout.removeAllViews();
-                    all_users_friend_request_lists.setVisibility(View.GONE);
-                   no_friendsRequest_inflate = inflaters.inflate(
-                            R.layout.no_video_posts_query, all_friend_request_layout);
-                    all_friend_request_layout.setVisibility(View.VISIBLE);
-                    TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
-                    displayText.setText("You have no friend request yet. \n  Your friend requests will appear here.");
+                        TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
+                        displayText.setText("You have no friend request yet. \n  Your friend requests will appear here.");
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void DisplayFriendRequets() {
-        FirebaseRecyclerAdapter<FriendRequestFragmentModel, RequestViewHolder> firebaseRecyclerAdapter =
-                new FirebaseRecyclerAdapter<FriendRequestFragmentModel, RequestViewHolder>
-                        (
-                                FriendRequestFragmentModel.class,
-                                R.layout.all_users_friend_request_layout,
-                                RequestViewHolder.class,
-                                FriendRequestRef.child(online_user_id)
+        try {
+            FirebaseRecyclerAdapter<FriendRequestFragmentModel, RequestViewHolder> firebaseRecyclerAdapter =
+                    new FirebaseRecyclerAdapter<FriendRequestFragmentModel, RequestViewHolder>
+                            (
+                                    FriendRequestFragmentModel.class,
+                                    R.layout.all_users_friend_request_layout,
+                                    RequestViewHolder.class,
+                                    FriendRequestRef.child(online_user_id)
 
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final RequestViewHolder viewHolder, FriendRequestFragmentModel model, int position) {
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final RequestViewHolder viewHolder, FriendRequestFragmentModel model, int position) {
+                            try {
+                                final String list_user_id = getRef(position).getKey();
 
-                        final String list_user_id = getRef(position).getKey();
+                                if (list_user_id != null) {
+                                    UsersRef.child(list_user_id).addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists()) {
 
-                        UsersRef.child(list_user_id).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if(dataSnapshot.exists()) {
+                                                try {
 
-                                    try {
-
-                                        final String userName = dataSnapshot.child("fullname").getValue().toString();
-                                        final String userLocation = dataSnapshot.child("location").getValue().toString();
-                                        final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+                                                    final String userName = Objects.requireNonNull(dataSnapshot.child("fullname").getValue()).toString();
+                                                    final String userLocation = Objects.requireNonNull(dataSnapshot.child("location").getValue()).toString();
+                                                    final String userProfileImage = Objects.requireNonNull(dataSnapshot.child("profileimage").getValue()).toString();
 
 
-                                        FriendRequestRef.child(online_user_id).addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    FriendRequestRef.child(online_user_id).addValueEventListener(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                                if (dataSnapshot.exists()) {
+                                                            if (dataSnapshot.exists()) {
 
-                                                    for (DataSnapshot childDatasnapshot : dataSnapshot.getChildren()) {
-                                                        final String key = childDatasnapshot.getKey();
+                                                                for (DataSnapshot childDatasnapshot : dataSnapshot.getChildren()) {
 
-                                                        FriendRequestRef.child(online_user_id).child(key).addValueEventListener(new ValueEventListener() {
-                                                            @SuppressLint("SetTextI18n")
-                                                            @Override
-                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                if (dataSnapshot.exists()) {
+                                                                    if(childDatasnapshot.exists()) {
 
-                                                                    String requestType = dataSnapshot.child("request_type").getValue().toString();
+                                                                        final String key = childDatasnapshot.getKey();
 
-                                                                    if (requestType.equals("received")) {
+                                                                        if (key != null) {
+                                                                            FriendRequestRef.child(online_user_id).child(key).addValueEventListener(new ValueEventListener() {
+                                                                                @SuppressLint("SetTextI18n")
+                                                                                @Override
+                                                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                    if (dataSnapshot.exists()) {
 
-                                                                        viewHolder.setUserName(userName);
-                                                                        viewHolder.setUserLocation(userLocation);
-                                                                        viewHolder.setUserProfileImage(userProfileImage, getContext());
-                                                                        viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
-                                                                            @Override
-                                                                            public void onClick(View v) {
-                                                                                AcceptFriendRequest(key, online_user_id);
-                                                                                String requestAccepted = "Request Accepted";
-                                                                                successToast(requestAccepted);
-                                                                            }
-                                                                        });
-                                                                        viewHolder.decline_reqeust_btn.setOnClickListener(new View.OnClickListener() {
-                                                                            @Override
-                                                                            public void onClick(View v) {
-                                                                                CancelFriendRequest(online_user_id, key);
-                                                                                String requestDeclined = "Request declined";
-                                                                                successToast(requestDeclined);
-                                                                            }
-                                                                        });
-                                                                    } else {
+                                                                                        try {
 
-                                                                        viewHolder.setUserName(userName);
-                                                                        viewHolder.setUserLocation(userLocation);
-                                                                        viewHolder.setUserProfileImage(userProfileImage, getContext());
+                                                                                            String requestType = Objects.requireNonNull(dataSnapshot.child("request_type").getValue()).toString();
 
-                                                                        viewHolder.accept_reqeust_btn.setText("Cancel Friend Request");
-                                                                        viewHolder.decline_reqeust_btn.setVisibility(View.GONE);
+                                                                                            if (requestType.equals("received")) {
+                                                                                                try {
+                                                                                                    viewHolder.setUserName(userName);
+                                                                                                    viewHolder.setUserLocation(userLocation);
+                                                                                                    viewHolder.setUserProfileImage(userProfileImage, getContext());
+                                                                                                    viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
+                                                                                                        @Override
+                                                                                                        public void onClick(View v) {
+                                                                                                            AcceptFriendRequest(key, online_user_id);
+                                                                                                            String requestAccepted = "Request Accepted";
+                                                                                                            successToast(requestAccepted);
+                                                                                                        }
+                                                                                                    });
+                                                                                                    viewHolder.decline_reqeust_btn.setOnClickListener(new View.OnClickListener() {
+                                                                                                        @Override
+                                                                                                        public void onClick(View v) {
+                                                                                                            CancelFriendRequest(online_user_id, key);
+                                                                                                            String requestDeclined = "Request declined";
+                                                                                                            successToast(requestDeclined);
+                                                                                                        }
+                                                                                                    });
+                                                                                                } catch (Exception e) {
+                                                                                                    e.printStackTrace();
+                                                                                                }
+                                                                                            } else {
+                                                                                                try {
 
-                                                                        viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
-                                                                            @Override
-                                                                            public void onClick(View v) {
-                                                                                CancelFriendRequest(online_user_id, key);
-                                                                                String cancelmessage = "Request Cancelled";
-                                                                                successToast(cancelmessage);
-                                                                            }
-                                                                        });
+                                                                                                    viewHolder.setUserName(userName);
+                                                                                                    viewHolder.setUserLocation(userLocation);
+                                                                                                    viewHolder.setUserProfileImage(userProfileImage, getContext());
 
+                                                                                                    viewHolder.accept_reqeust_btn.setText("Cancel Friend Request");
+                                                                                                    viewHolder.decline_reqeust_btn.setVisibility(View.GONE);
+
+                                                                                                    viewHolder.accept_reqeust_btn.setOnClickListener(new View.OnClickListener() {
+                                                                                                        @Override
+                                                                                                        public void onClick(View v) {
+                                                                                                            CancelFriendRequest(online_user_id, key);
+                                                                                                            String cancelmessage = "Request Cancelled";
+                                                                                                            successToast(cancelmessage);
+                                                                                                        }
+                                                                                                    });
+                                                                                                } catch (Exception e) {
+                                                                                                    e.printStackTrace();
+                                                                                                }
+
+                                                                                            }
+                                                                                        } catch (Exception e) {
+                                                                                            e.printStackTrace();
+                                                                                        }
+
+                                                                                    } else {
+                                                                                        try {
+                                                                                            all_friend_request_layout.removeAllViews();
+                                                                                            all_users_friend_request_lists.setVisibility(View.GONE);
+                                                                                            no_friendsRequest_inflate = inflaters.inflate(
+                                                                                                    R.layout.no_video_posts_query, all_friend_request_layout);
+                                                                                            all_friend_request_layout.setVisibility(View.VISIBLE);
+                                                                                        }catch (Exception e) {
+                                                                                            e.printStackTrace();
+                                                                                        }
+                                                                                        TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
+                                                                                        displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
+                                                                                    }
+
+                                                                                }
+
+                                                                                @Override
+                                                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                }
+                                                                            });
+                                                                        }
                                                                     }
-
-                                                                } else {
-                                                                    all_friend_request_layout.removeAllViews();
-                                                                    all_users_friend_request_lists.setVisibility(View.GONE);
-                                                                    no_friendsRequest_inflate = inflaters.inflate(
-                                                                            R.layout.no_video_posts_query, all_friend_request_layout);
-                                                                    all_friend_request_layout.setVisibility(View.VISIBLE);
-                                                                    TextView displayText = no_friendsRequest_inflate.findViewById(R.id.tv_one_two);
-                                                                    displayText.setText("You have no friend request yet. \n Your friend requests will appear here.");
                                                                 }
-
                                                             }
 
-                                                            @Override
-                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                                            }
-                                                        });
-                                                    }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+                                                }catch (Exception e) {
+                                                    e.printStackTrace();
                                                 }
-
-
                                             }
+                                        }
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                            }
-                                        });
-
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    }
+                                        }
+                                    });
                                 }
+
+                            }catch(Exception e) {
+                                e.printStackTrace();
                             }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        });
+                        }
 
 
-
-                    }
-
-
-                };
-        all_users_friend_request_lists.setAdapter(firebaseRecyclerAdapter);
+                    };
+            all_users_friend_request_lists.setAdapter(firebaseRecyclerAdapter);
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
-
     public void AcceptFriendRequest(final String senderUserID, final String receiverUserID) {
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
+
+        try {
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
 
 
+            UsersRef.child(online_user_id).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            String friednusername = Objects.requireNonNull(dataSnapshot.child("username").getValue()).toString();
+                            final Map<String, Object> friendsMap = new HashMap<String, Object>();
+                            friendsMap.put("friendsname", friednusername);
+                            friendsMap.put("date", saveCurrentDate);
 
-        UsersRef.child(online_user_id).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    String friednusername = dataSnapshot.child("username").getValue().toString();
-                    final Map<String,Object> friendsMap = new HashMap<String, Object>();
-                    friendsMap.put("friendsname", friednusername);
-                    friendsMap.put("date", saveCurrentDate);
+                            UsersRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        try {
+                                            String onlineuserfriednusername = Objects.requireNonNull(dataSnapshot.child("username").getValue()).toString();
+                                            final Map<String, Object> onlineUserfriendsMap = new HashMap<String, Object>();
+                                            onlineUserfriendsMap.put("friendsname", onlineuserfriednusername);
+                                            onlineUserfriendsMap.put("date", saveCurrentDate);
 
-                    UsersRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                                String onlineuserfriednusername = dataSnapshot.child("username").getValue().toString();
-                                final Map<String,Object> onlineUserfriendsMap = new HashMap<String, Object>();
-                                onlineUserfriendsMap.put("friendsname", onlineuserfriednusername);
-                                onlineUserfriendsMap.put("date", saveCurrentDate);
+                                            FriendsRef.child(senderUserID).child(receiverUserID).updateChildren(friendsMap)
+                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
 
-                                FriendsRef.child(senderUserID).child(receiverUserID).updateChildren(friendsMap)
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
+                                                            if (task.isSuccessful()) {
+                                                                try {
+                                                                    FriendsRef.child(receiverUserID).child(senderUserID).updateChildren(onlineUserfriendsMap)
+                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                @Override
+                                                                                public void onComplete(@NonNull Task<Void> task) {
 
-                                                if(task.isSuccessful()){
-
-                                                    FriendsRef.child(receiverUserID).child(senderUserID).updateChildren(onlineUserfriendsMap)
-                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<Void> task) {
-
-                                                                    if(task.isSuccessful()){
-
-                                                                        FriendRequestRef.child(receiverUserID).child(senderUserID)
-                                                                                .removeValue()
-                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                    @Override
-                                                                                    public void onComplete(@NonNull Task<Void> task) {
-
-                                                                                        if(task.isSuccessful()){
-
-                                                                                            NotificationsRef.child(receiverUserID).removeValue()
+                                                                                    if (task.isSuccessful()) {
+                                                                                        try {
+                                                                                            FriendRequestRef.child(receiverUserID).child(senderUserID)
+                                                                                                    .removeValue()
                                                                                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                                                         @Override
                                                                                                         public void onComplete(@NonNull Task<Void> task) {
-                                                                                                            if(task.isSuccessful()){
-                                                                                                                FriendRequestRef.child(senderUserID).child(receiverUserID)
-                                                                                                                        .removeValue()
-                                                                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                                                            @Override
-                                                                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                                            if (task.isSuccessful()) {
+                                                                                                                try {
+                                                                                                                    NotificationsRef.child(receiverUserID).removeValue()
+                                                                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                                                                @Override
+                                                                                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                                                                                    if (task.isSuccessful()) {
+                                                                                                                                        try {
+                                                                                                                                            FriendRequestRef.child(senderUserID).child(receiverUserID)
+                                                                                                                                                    .removeValue()
+                                                                                                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                                                                                        @Override
+                                                                                                                                                        public void onComplete(@NonNull Task<Void> task) {
 
-                                                                                                                                if(task.isSuccessful()){
-                                                                                                                                    CheckForFriendRequests();
+                                                                                                                                                            if (task.isSuccessful()) {
+                                                                                                                                                                CheckForFriendRequests();
+                                                                                                                                                            }
+                                                                                                                                                        }
+                                                                                                                                                    });
+                                                                                                                                        }catch(Exception e) {
+                                                                                                                                            e.printStackTrace();
+                                                                                                                                        }
+                                                                                                                                    }
                                                                                                                                 }
-                                                                                                                            }
-                                                                                                                        });
+                                                                                                                            });
+                                                                                                                }catch(Exception e) {
+                                                                                                                    e.printStackTrace();
+                                                                                                                }
                                                                                                             }
                                                                                                         }
                                                                                                     });
+                                                                                        }catch(Exception e) {
+                                                                                            e.printStackTrace();
                                                                                         }
                                                                                     }
-                                                                                });
-                                                                    }
-                                                                }
-                                                            });
-                                                }
-                                            }
-                                        });
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-    }
-
-
-    private void CancelFriendRequest( final String senderUserID, final String receiverUserID) {
-
-        FriendRequestRef.child(receiverUserID).child(senderUserID)
-                .removeValue()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                        if(task.isSuccessful()){
-                            NotificationsRef.child(receiverUserID)
-                                    .removeValue()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-
-                                            if(task.isSuccessful()){
-
-                                                FriendRequestRef.child(senderUserID).child(receiverUserID).removeValue()
-                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
-
-                                                                if(task.isSuccessful()){
-                                                                    CheckForFriendRequests();
+                                                                                }
+                                                                            });
+                                                                }catch(Exception e) {
+                                                                    e.printStackTrace();
                                                                 }
                                                             }
-                                                        });
-                                            }
+                                                        }
+                                                    });
+                                        }catch(Exception e) {
+                                            e.printStackTrace();
                                         }
-                                    });
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }catch(Exception e) {
+                            e.printStackTrace();
                         }
                     }
-                });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
 
     }
+
+    private void CancelFriendRequest( final String senderUserID, final String receiverUserID) {
+        try {
+            FriendRequestRef.child(receiverUserID).child(senderUserID)
+                    .removeValue()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                try {
+                                    NotificationsRef.child(receiverUserID)
+                                            .removeValue()
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        try {
+                                                            FriendRequestRef.child(senderUserID).child(receiverUserID).removeValue()
+                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            if (task.isSuccessful()) {
+                                                                                CheckForFriendRequests();
+                                                                            }
+                                                                        }
+                                                                    });
+                                                        }catch(Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                }catch(Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void successToast(String message){
         Toasty.success(getActivity(),message, Toasty.LENGTH_SHORT, true).show();
     }
@@ -496,7 +584,6 @@ public class RequestsFragment extends Fragment {
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
         View mView;
         Button accept_reqeust_btn,decline_reqeust_btn;
-
 
         public RequestViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -518,8 +605,11 @@ public class RequestsFragment extends Fragment {
 
                     @Override
                     public void onError() {
-
-                        Picasso.with(ctx).load(userProfileImage).placeholder(R.drawable.easy_to_use).into(userprofileimage);
+                        try {
+                            Picasso.with(ctx).load(userProfileImage).placeholder(R.drawable.easy_to_use).into(userprofileimage);
+                        }catch(Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }catch (Exception e){
@@ -528,26 +618,27 @@ public class RequestsFragment extends Fragment {
         }
 
         public void setUserName(String userName) {
-            TextView userfullname = mView.findViewById(R.id.friend_request_user_fullname);
-            userfullname.setText(userName);
-
+            try {
+                TextView userfullname = mView.findViewById(R.id.friend_request_user_fullname);
+                userfullname.setText(userName);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
         }
 
         public void setUserLocation(String userSchool) {
-            TextView userschool = mView.findViewById(R.id.friend_request_user_school);
-            userschool.setText(String.format("From: %s", userSchool));
+            try {
+                TextView userschool = mView.findViewById(R.id.friend_request_user_school);
+                userschool.setText(String.format("From: %s", userSchool));
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
         }
-
 
     }
 
-
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.data_sub_menu, menu);
-
-
-        MenuItem tittle = menu.findItem(R.id.data_sub_title);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -562,31 +653,51 @@ public class RequestsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch(Exception e){
+        e.printStackTrace();
+    }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try{
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try{
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 

@@ -23,9 +23,15 @@ public class FirebaseIdService extends FirebaseInstanceIdService {
     }
 
     private void updateToken(String refreshtoken) {
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
-        Token token = new Token(refreshtoken);
-        reference.child(firebaseUser.getUid()).setValue(token);
+        try {
+            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
+            Token token = new Token(refreshtoken);
+            if (firebaseUser != null) {
+                reference.child(firebaseUser.getUid()).setValue(token);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

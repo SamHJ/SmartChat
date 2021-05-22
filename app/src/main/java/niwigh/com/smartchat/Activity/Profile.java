@@ -88,11 +88,15 @@ public class Profile extends AppCompatActivity {
         editProfilebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent profile_to_settings = new Intent(Profile.this, ProfileSettings.class);
-                Pair[] pairs = new Pair[1];
-                pairs[0] = new Pair<View, String>(userprofile_image, "sharedProfileImageTransition");
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Profile.this, pairs);
-                startActivity(profile_to_settings, options.toBundle());
+                try {
+                    Intent profile_to_settings = new Intent(Profile.this, ProfileSettings.class);
+                    Pair[] pairs = new Pair[1];
+                    pairs[0] = new Pair<View, String>(userprofile_image, "sharedProfileImageTransition");
+                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Profile.this, pairs);
+                    startActivity(profile_to_settings, options.toBundle());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -101,14 +105,16 @@ public class Profile extends AppCompatActivity {
         userprofile_image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                try {
+                    Intent dialog_to_profile = new Intent(Profile.this, FullModeProfileImage.class);
+                    Pair[] pairs = new Pair[1];
+                    pairs[0] = new Pair<View, String>(userprofile_image, "sharedProfileImageTransition");
 
-                Intent dialog_to_profile = new Intent(Profile.this, FullModeProfileImage.class);
-                Pair[] pairs = new Pair[1];
-                pairs[0] = new Pair<View, String>(userprofile_image, "sharedProfileImageTransition");
-
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Profile.this, pairs);
-                startActivity(dialog_to_profile, options.toBundle());
-
+                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Profile.this, pairs);
+                    startActivity(dialog_to_profile, options.toBundle());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -121,109 +127,118 @@ public class Profile extends AppCompatActivity {
             }
         });
 
-        PostsRef.orderByChild("uid")
-                .startAt(currentUserID).endAt(currentUserID + "\uf8ff")
-                .addValueEventListener(new ValueEventListener() {
-                    @SuppressLint("SetTextI18n")
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        try {
+            PostsRef.orderByChild("uid")
+                    .startAt(currentUserID).endAt(currentUserID + "\uf8ff")
+                    .addValueEventListener(new ValueEventListener() {
+                        @SuppressLint("SetTextI18n")
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        if(dataSnapshot.exists()){
+                            if (dataSnapshot.exists()) {
 
-                            countPosts = (int)dataSnapshot.getChildrenCount();
-                            no_of_user_posts.setText(Integer.toString(countPosts));
+                                countPosts = (int) dataSnapshot.getChildrenCount();
+                                no_of_user_posts.setText(Integer.toString(countPosts));
+                            } else {
+
+                                no_of_user_posts.setText("0");
+                            }
                         }
-                        else {
 
-                            no_of_user_posts.setText("0");
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+                    });
 
 
-        FriendsRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            FriendsRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists()){
-
-                    countFriends = (int) dataSnapshot.getChildrenCount();
-                    no_of_user_friends.setText(Integer.toString(countFriends));
-                }
-                else {
-                    no_of_user_friends.setText("0");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-        profileUserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.exists()){
-                    try{
-                        final String profile_image = dataSnapshot.child("profileimage").getValue().toString();
-                        String user_fullname = dataSnapshot.child("fullname").getValue().toString();
-                        String user_name = dataSnapshot.child("username").getValue().toString();
-                        String user_phone_p = dataSnapshot.child("phone").getValue().toString();
-                        String interested_in = dataSnapshot.child("interestedin").getValue().toString();
-                        String user_gender_name = dataSnapshot.child("gender").getValue().toString();
-                        String user_status = dataSnapshot.child("profilestatus").getValue().toString();
-                        String user_dob = dataSnapshot.child("dob").getValue().toString();
-                        String user_location_name = dataSnapshot.child("location").getValue().toString();
-                        location_in_text.setText(user_location_name);
-
-                        try{
-                            Picasso.with(Profile.this).load(profile_image).networkPolicy(NetworkPolicy.OFFLINE)
-                                    .placeholder(R.drawable.easy_to_use).into(userprofile_image, new
-                                    Callback() {
-                                        @Override
-                                        public void onSuccess() {
-
-                                        }
-
-                                        @Override
-                                        public void onError() {
-
-                                            Picasso.with(Profile.this).load(profile_image).placeholder(R.drawable.easy_to_use).into(userprofile_image);
-                                        }
-                                    });
+                    if (dataSnapshot.exists()) {
+                        try {
+                            countFriends = (int) dataSnapshot.getChildrenCount();
+                            no_of_user_friends.setText(Integer.toString(countFriends));
                         }catch (Exception e){
                             e.printStackTrace();
                         }
-
-                        full_name.setText(user_fullname);
-                        username_text.setText("@" + user_name);
-                        userprofile_status.setText(user_status);
-                        user_interested_in.setText(interested_in);
-                        user_phone.setText(user_phone_p);
-                        user_gender.setText(user_gender_name);
-                        dob.setText(user_dob);
-
-                    }catch (Exception e){
-                        e.printStackTrace();
+                    } else {
+                        no_of_user_friends.setText("0");
                     }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
-            }
+            });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+            profileUserRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                    if (dataSnapshot.exists()) {
+                        try {
+                            final String profile_image = dataSnapshot.child("profileimage").getValue().toString();
+                            String user_fullname = dataSnapshot.child("fullname").getValue().toString();
+                            String user_name = dataSnapshot.child("username").getValue().toString();
+                            String user_phone_p = dataSnapshot.child("phone").getValue().toString();
+                            String interested_in = dataSnapshot.child("interestedin").getValue().toString();
+                            String user_gender_name = dataSnapshot.child("gender").getValue().toString();
+                            String user_status = dataSnapshot.child("profilestatus").getValue().toString();
+                            String user_dob = dataSnapshot.child("dob").getValue().toString();
+                            String user_location_name = dataSnapshot.child("location").getValue().toString();
+                            location_in_text.setText(user_location_name);
+
+                            try {
+                                Picasso.with(Profile.this).load(profile_image).networkPolicy(NetworkPolicy.OFFLINE)
+                                        .placeholder(R.drawable.easy_to_use).into(userprofile_image, new
+                                        Callback() {
+                                            @Override
+                                            public void onSuccess() {
+
+                                            }
+
+                                            @Override
+                                            public void onError() {
+                                                try {
+                                                    Picasso.with(Profile.this).load(profile_image).placeholder(R.drawable.easy_to_use).into(userprofile_image);
+                                                }catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            full_name.setText(user_fullname);
+                            username_text.setText("@" + user_name);
+                            userprofile_status.setText(user_status);
+                            user_interested_in.setText(interested_in);
+                            user_phone.setText(user_phone_p);
+                            user_gender.setText(user_gender_name);
+                            dob.setText(user_dob);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {

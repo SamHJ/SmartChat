@@ -79,11 +79,14 @@ public class Register extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-            //send user to home activity
-            sendUserToHomeActivity();
+        try {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser != null) {
+                //send user to home activity
+                sendUserToHomeActivity();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -95,88 +98,91 @@ public class Register extends AppCompatActivity {
     }
 
     public void performRegisteration(){
-        final String email_reg, pass_reg;
-        email_reg = register_email.getText().toString();
-        pass_reg = register_password.getText().toString();
+        try {
+            final String email_reg, pass_reg;
+            email_reg = register_email.getText().toString();
+            pass_reg = register_password.getText().toString();
 
-        if(email_reg.isEmpty() || pass_reg.isEmpty() ){
-            showErrorCustomDialog();
-        }
-        else {
-            if(validateEmail(email_reg)) {
+            if (email_reg.isEmpty() || pass_reg.isEmpty()) {
+                showErrorCustomDialog();
+            } else {
+                if (validateEmail(email_reg)) {
 
-                if(pass_reg.length() > 5 ){
+                    if (pass_reg.length() > 5) {
 
-                    //perform registeration
-                    loadingBar.setTitle("Creating account...");
-                    loadingBar.setMessage("a moment please");
-                    loadingBar.show();
-                    loadingBar.setCanceledOnTouchOutside(false);
+                        //perform registeration
+                        loadingBar.setTitle("Creating account...");
+                        loadingBar.setMessage("a moment please");
+                        loadingBar.show();
+                        loadingBar.setCanceledOnTouchOutside(false);
 
-                    mAuth.createUserWithEmailAndPassword(email_reg, pass_reg).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(task.isSuccessful()){
+                        mAuth.createUserWithEmailAndPassword(email_reg, pass_reg).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
 
-                                sendUserToSetupActivity();
-                                loadingBar.dismiss();
-                                successToast();
+                                    sendUserToSetupActivity();
+                                    loadingBar.dismiss();
+                                    successToast();
 
-                            }
-                            else {
-                                String message = task.getException().getMessage();
-                                //{.....................
-                                //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                                ViewGroup viewGroup = findViewById(android.R.id.content);
+                                } else {
+                                    try {
+                                        String message = task.getException().getMessage();
+                                        //{.....................
+                                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                                        ViewGroup viewGroup = findViewById(android.R.id.content);
 
-                                //then we will inflate the custom alert dialog xml that we created
-                                View dialogView = LayoutInflater.from(Register.this).inflate(R.layout.error_dialog, viewGroup, false);
+                                        //then we will inflate the custom alert dialog xml that we created
+                                        View dialogView = LayoutInflater.from(Register.this).inflate(R.layout.error_dialog, viewGroup, false);
 
 
-                                //Now we need an AlertDialog.Builder object
-                                AlertDialog.Builder builder = new AlertDialog.Builder(Register.this);
+                                        //Now we need an AlertDialog.Builder object
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(Register.this);
 
-                                //setting the view of the builder to our custom view that we already inflated
-                                builder.setView(dialogView);
+                                        //setting the view of the builder to our custom view that we already inflated
+                                        builder.setView(dialogView);
 
-                                //finally creating the alert dialog and displaying it
-                                final AlertDialog alertDialog = builder.create();
+                                        //finally creating the alert dialog and displaying it
+                                        final AlertDialog alertDialog = builder.create();
 
-                                Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                                TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                                TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+                                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
 
-                                dialog_btn.setText("OK");
-                                success_title.setText("Error");
-                                success_text.setText(message);
+                                        dialog_btn.setText("OK");
+                                        success_title.setText("Error");
+                                        success_text.setText(message);
 
-                                // if the OK button is clicked, close the success dialog
-                                dialog_btn.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
+                                        // if the OK button is clicked, close the success dialog
+                                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                alertDialog.dismiss();
+                                            }
+                                        });
+
+                                        alertDialog.show();
+                                        //...................}
+
+                                        loadingBar.dismiss();
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
-                                });
-
-                                alertDialog.show();
-                                //...................}
-
-                                loadingBar.dismiss();
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    } else {
+                        //display password too short error dialog
+                        password_too_short_dialog();
+                    }
 
-                else {
-                    //display password too short error dialog
-                    password_too_short_dialog();
+                } else {
+                    //display invalid email error
+                    invalid_email_address_erro_CustomDialog();
                 }
-
             }
-            else {
-                //display invalid email error
-                invalid_email_address_erro_CustomDialog();
-            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

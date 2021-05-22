@@ -152,139 +152,144 @@ public class AddFeeds extends AppCompatActivity {
     }
 
     public void validatePostInfo(){
+        try {
 
-        feedTitle = feed_title_edit_text.getText().toString().trim();
-        feedUrl = feed_url_edit_text.getText().toString().trim();
-        feedType = feed_type_edit_text.getText().toString().trim();
+            feedTitle = feed_title_edit_text.getText().toString().trim();
+            feedUrl = feed_url_edit_text.getText().toString().trim();
+            feedType = feed_type_edit_text.getText().toString().trim();
 
 
-        if(feed_image.getTag() == null){
-            showErrorCustomDialog();
+            if (feed_image.getTag() == null) {
+                showErrorCustomDialog();
+            } else if (feedTitle.isEmpty()) {
+                //all fields are required dialog
+                showAllFieldsAreRequired();
+            } else {
+
+                storeImageToFirebaseStorage(feedTitle, feedUrl, feedType);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        else if(feedTitle.isEmpty()){
-            //all fields are required dialog
-            showAllFieldsAreRequired();
-        }
-        else {
-
-            storeImageToFirebaseStorage(feedTitle,feedUrl,feedType);
-        }
-
     }
 
     @SuppressLint("SimpleDateFormat")
     private void storeImageToFirebaseStorage(final String feedTitle, final String feedUrl, final String feedType) {
+        try {
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
+            //for time
+            Calendar calFordTime = Calendar.getInstance();
+            SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
+            saveCurrentTime = currentTime.format(calFordTime.getTime());
 
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
-        //for time
-        Calendar calFordTime = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
-        saveCurrentTime = currentTime.format(calFordTime.getTime());
+            postRandomName = saveCurrentDate + saveCurrentTime;
+            final Uri compressedPostImageUri = Uri.parse(feed_image.getTag().toString());
 
-        postRandomName = saveCurrentDate + saveCurrentTime;
-        final Uri compressedPostImageUri = Uri.parse(feed_image.getTag().toString());
-
-        final StorageReference filePath = postsImagesStorageRef.child("Feed Images")
-                .child(compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
+            final StorageReference filePath = postsImagesStorageRef.child("Feed Images")
+                    .child(compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
 
 
+            filePath.putFile(compressedPostImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
-        filePath.putFile(compressedPostImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-
-                if(task.isSuccessful()){
-
-                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Uri downUrl = uri;
-                            final String fileUrl = downUrl.toString();
-
-                            Map<String,Object> feedMap = new HashMap<String, Object>();
-                            feedMap.put("image_url",fileUrl);
-                            feedMap.put("title",feedTitle);
-                            feedMap.put("type",feedType);
-                            feedMap.put("url",feedUrl);
-                            feedMap.put("feedimagestoragename",compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
-
-                            feedsRef.child(feedTitle.toLowerCase()).updateChildren(feedMap)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    if (task.isSuccessful()) {
+                        try {
+                            filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(task.isSuccessful()){
-                                        loadingBar.dismiss();
-                                        Toasty.success(AddFeeds.this,"Feed added successfully!",Toasty.LENGTH_SHORT).show();
-                                        feed_title_edit_text.setText("");
-                                        feed_url_edit_text.setText("");
-                                        feed_image.setImageDrawable(getResources().getDrawable(R.drawable.easy_to_use));
-                                    }
+                                public void onSuccess(Uri uri) {
+                                    Uri downUrl = uri;
+                                    final String fileUrl = downUrl.toString();
+
+                                    Map<String, Object> feedMap = new HashMap<String, Object>();
+                                    feedMap.put("image_url", fileUrl);
+                                    feedMap.put("title", feedTitle);
+                                    feedMap.put("type", feedType);
+                                    feedMap.put("url", feedUrl);
+                                    feedMap.put("feedimagestoragename", compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
+
+                                    feedsRef.child(feedTitle.toLowerCase()).updateChildren(feedMap)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        loadingBar.dismiss();
+                                                        Toasty.success(AddFeeds.this, "Feed added successfully!", Toasty.LENGTH_SHORT).show();
+                                                        feed_title_edit_text.setText("");
+                                                        feed_url_edit_text.setText("");
+                                                        feed_image.setImageDrawable(getResources().getDrawable(R.drawable.easy_to_use));
+                                                    }
+                                                }
+                                            });
+
                                 }
                             });
-
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
-                    });
+
+                    } else {
+                        String message = task.getException().getMessage();
+
+                        //{.....................
+                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                        ViewGroup viewGroup = findViewById(android.R.id.content);
+
+                        //then we will inflate the custom alert dialog xml that we created
+                        View dialogView = LayoutInflater.from(AddFeeds.this)
+                                .inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                        //Now we need an AlertDialog.Builder object
+                        AlertDialog.Builder builder = new AlertDialog.Builder(AddFeeds.this);
+
+                        //setting the view of the builder to our custom view that we already inflated
+                        builder.setView(dialogView);
+
+                        //finally creating the alert dialog and displaying it
+                        final AlertDialog alertDialog = builder.create();
+
+                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                        dialog_btn.setText("OK");
+                        success_title.setText("Error");
+                        success_text.setText(message);
+
+                        // if the OK button is clicked, close the success dialog
+                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertDialog.dismiss();
+                            }
+                        });
+
+                        alertDialog.show();
+                        //...................}
+                        loadingBar.dismiss();
+                    }
 
                 }
-                else{
-                    String message = task.getException().getMessage();
-
-                    //{.....................
-                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                    ViewGroup viewGroup = findViewById(android.R.id.content);
-
-                    //then we will inflate the custom alert dialog xml that we created
-                    View dialogView = LayoutInflater.from(AddFeeds.this)
-                            .inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                    //Now we need an AlertDialog.Builder object
-                    AlertDialog.Builder builder = new AlertDialog.Builder(AddFeeds.this);
-
-                    //setting the view of the builder to our custom view that we already inflated
-                    builder.setView(dialogView);
-
-                    //finally creating the alert dialog and displaying it
-                    final AlertDialog alertDialog = builder.create();
-
-                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                    dialog_btn.setText("OK");
-                    success_title.setText("Error");
-                    success_text.setText(message);
-
-                    // if the OK button is clicked, close the success dialog
-                    dialog_btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            alertDialog.dismiss();
-                        }
-                    });
-
-                    alertDialog.show();
-                    //...................}
-                    loadingBar.dismiss();
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    loadingBar.setTitle("Uploading Feed");
+                    loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
+                    loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingBar.setProgress((int) progress);
+                    loadingBar.show();
+                    loadingBar.setCanceledOnTouchOutside(false);
                 }
-
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                loadingBar.setTitle("Uploading Feed");
-                loadingBar.setMessage(taskSnapshot.getBytesTransferred()/(1024*1024) + " / " + taskSnapshot.getTotalByteCount()/(1024*1024) + "MB");
-                loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                loadingBar.setProgress((int)progress);
-                loadingBar.show();
-                loadingBar.setCanceledOnTouchOutside(false);
-            }
-        });
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -364,18 +369,22 @@ public class AddFeeds extends AppCompatActivity {
     }
 
     private void requestPermission() {
-        if(PackageManager.PERMISSION_GRANTED !=
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
-            }else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
+        try {
+            if (PackageManager.PERMISSION_GRANTED !=
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                }
+            } else {
+                //Permission Granted, lets go pick photo
+                selectFeedImageFromGallery();
             }
-        }else {
-            //Permission Granted, lets go pick photo
-            selectFeedImageFromGallery();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -384,17 +393,21 @@ public class AddFeeds extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == gallery_Pic && resultCode == RESULT_OK &&
                 data != null) {
-            //extract absolute image path from Uri
-            Uri uri = data.getData();
-            Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), uri, new String[]{MediaStore.Images.Media.DATA});
+            try {
+                //extract absolute image path from Uri
+                Uri uri = data.getData();
+                Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), uri, new String[]{MediaStore.Images.Media.DATA});
 
-            if(cursor != null && cursor.moveToFirst()) {
-                String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+                if (cursor != null && cursor.moveToFirst()) {
+                    String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
 
-                //Create ImageCompressTask and execute with Executor.
-                imageCompressTask = new ImageCompressTask(this, path, iImageCompressTaskListener);
+                    //Create ImageCompressTask and execute with Executor.
+                    imageCompressTask = new ImageCompressTask(this, path, iImageCompressTaskListener);
 
-                mExecutorService.execute(imageCompressTask);
+                    mExecutorService.execute(imageCompressTask);
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
         }
     }
@@ -403,18 +416,21 @@ public class AddFeeds extends AppCompatActivity {
     private IImageCompressTaskListener iImageCompressTaskListener = new IImageCompressTaskListener() {
         @Override
         public void onComplete(List<File> compressed) {
-            //photo compressed. Yay!
+            try {
+                //photo compressed. Yay!
 
-            //prepare for uploads. Use an Http library like Retrofit, Volley or async-http-client (My favourite)
+                //prepare for uploads. Use an Http library like Retrofit, Volley or async-http-client (My favourite)
 
-            File file = compressed.get(0);
-            Uri compressedImageUri = Uri.fromFile(file);
+                File file = compressed.get(0);
+                Uri compressedImageUri = Uri.fromFile(file);
 
-            Log.d("ImageCompressor", "New photo size ==> " + file.length()); //log new file size.
+                Log.d("ImageCompressor", "New photo size ==> " + file.length()); //log new file size.
 
-            feed_image.setImageURI(compressedImageUri);
-            feed_image.setTag(compressedImageUri);
-
+                feed_image.setImageURI(compressedImageUri);
+                feed_image.setTag(compressedImageUri);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -424,7 +440,6 @@ public class AddFeeds extends AppCompatActivity {
             Log.wtf("ImageCompressor", "Error occurred", error);
         }
     };
-
 
     private void selectFeedImageFromGallery() {
         Intent gallery_intent = new Intent();

@@ -29,8 +29,7 @@ public class TimeAgo {
 
         Date nowTime = new Date();
 
-        Date pasTime = date;
-        long dateDiff = nowTime.getTime() - pasTime.getTime();
+        long dateDiff = nowTime.getTime() - date.getTime();
 
         long second = TimeUnit.MILLISECONDS.toSeconds(dateDiff);
         long minute = TimeUnit.MILLISECONDS.toMinutes(dateDiff);

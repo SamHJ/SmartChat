@@ -86,44 +86,45 @@ public class FullMessageVideoView extends AppCompatActivity {
             @Override
             public void onPrepared(MediaPlayer mp) {
 
-                mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                    @Override
-                    public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                        mediaController = new MediaController(FullMessageVideoView.this);
-                        full_message_video.setMediaController(mediaController);
-                        mediaController.setAnchorView(full_message_video);
-                    }
-                });
-
-
-                mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                    @Override
-                    public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                        if(what == mp.MEDIA_INFO_BUFFERING_END){
-                            loading_video_progress_bar.setVisibility(View.INVISIBLE);
-                            return true;
+                try {
+                    mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+                        @Override
+                        public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                            mediaController = new MediaController(FullMessageVideoView.this);
+                            full_message_video.setMediaController(mediaController);
+                            mediaController.setAnchorView(full_message_video);
                         }
-                        else if(what == mp.MEDIA_INFO_BUFFERING_START){
-                            loading_video_progress_bar.setVisibility(View.VISIBLE);
+                    });
+
+
+                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                        @Override
+                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                            if (what == mp.MEDIA_INFO_BUFFERING_END) {
+                                loading_video_progress_bar.setVisibility(View.INVISIBLE);
+                                return true;
+                            } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
+                                loading_video_progress_bar.setVisibility(View.VISIBLE);
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
+                    });
 
-                full_message_video.start();
-                full_message_video.setBackgroundColor(0);
-                loading_video_progress_bar.setVisibility(View.INVISIBLE);
-
-
-                full_message_video.seekTo(full_message_video.getCurrentPosition());
-                if(full_message_video.getCurrentPosition() != 0){
                     full_message_video.start();
+                    full_message_video.setBackgroundColor(0);
+                    loading_video_progress_bar.setVisibility(View.INVISIBLE);
 
-                }else {
-                    full_message_video.pause();
+
+                    full_message_video.seekTo(full_message_video.getCurrentPosition());
+                    if (full_message_video.getCurrentPosition() != 0) {
+                        full_message_video.start();
+
+                    } else {
+                        full_message_video.pause();
+                    }
+                }catch(Exception e){
+                    e.printStackTrace();
                 }
-
-
             }
         });
     }
@@ -196,25 +197,27 @@ public class FullMessageVideoView extends AppCompatActivity {
 
     public void DownloadImageToPhone(){
 
-        String fileName = getIntent().getStringExtra("name");
-        String fileUrl = getIntent().getStringExtra("url");
+        try {
+            String fileName = getIntent().getStringExtra("name");
+            String fileUrl = getIntent().getStringExtra("url");
 
-        File root = Environment.getExternalStorageDirectory();
-        root.mkdirs();
-        String path = root.toString();
-        String FileName = fileName;
-        String FileExtension = ".mp4";
-        String DestinationDirectory = path + "/SmartChat" + "/Messages" + "/Videos";
+            File root = Environment.getExternalStorageDirectory();
+            root.mkdirs();
+            String path = root.toString();
+            String FileName = fileName;
+            String FileExtension = ".mp4";
+            String DestinationDirectory = path + "/SmartChat" + "/Messages" + "/Videos";
 
-        DownloadManager downloadManager = (DownloadManager) FullMessageVideoView.this.getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri1 = Uri.parse(fileUrl);
-        DownloadManager.Request request = new DownloadManager.Request(uri1);
-        request.setTitle("SmartChat (" + FileName + FileExtension +")");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(FullMessageVideoView.this, DestinationDirectory, FileName + FileExtension);
-        downloadManager.enqueue(request);
-
-
+            DownloadManager downloadManager = (DownloadManager) FullMessageVideoView.this.getSystemService(Context.DOWNLOAD_SERVICE);
+            Uri uri1 = Uri.parse(fileUrl);
+            DownloadManager.Request request = new DownloadManager.Request(uri1);
+            request.setTitle("SmartChat (" + FileName + FileExtension + ")");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalFilesDir(FullMessageVideoView.this, DestinationDirectory, FileName + FileExtension);
+            downloadManager.enqueue(request);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
     }
 

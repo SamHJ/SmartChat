@@ -124,169 +124,181 @@ public class AddNewPost extends AppCompatActivity {
     }
 
     private void requestPermission() {
-        if(PackageManager.PERMISSION_GRANTED !=
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
-            }else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
+        try {
+            if (PackageManager.PERMISSION_GRANTED !=
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                }
+            } else {
+                //Permission Granted, lets go pick photo
+                selectPostImageFromGallery();
             }
-        }else {
-            //Permission Granted, lets go pick photo
-            selectPostImageFromGallery();
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
 
     public void validatePostInfo() {
+        try {
+            post_Title = post_title.getText().toString();
+            post_Description = post_description.getText().toString();
 
-        post_Title = post_title.getText().toString();
-        post_Description = post_description.getText().toString();
 
-
-         if(post_Title.isEmpty() || post_Description.isEmpty()){
-            //all fields are required dialog
-            showAllFieldsAreRequired();
-        }
-        else {
-             if(post_image.getTag() == null){
-                 uploadPost();
-             }else{
-                 storeImageToFirebaseStorage();
-             }
+            if (post_Title.isEmpty() || post_Description.isEmpty()) {
+                //all fields are required dialog
+                showAllFieldsAreRequired();
+            } else {
+                if (post_image.getTag() == null) {
+                    uploadPost();
+                } else {
+                    storeImageToFirebaseStorage();
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
 
     @SuppressLint("SimpleDateFormat")
     private void uploadPost(){
-        loadingBar.setTitle("Uploading post");
-        loadingBar.setMessage("a moment please...");
-        loadingBar.setCancelable(false);
-        loadingBar.setCanceledOnTouchOutside(false);
-        loadingBar.show();
+        try {
+            loadingBar.setTitle("Uploading post");
+            loadingBar.setMessage("a moment please...");
+            loadingBar.setCancelable(false);
+            loadingBar.setCanceledOnTouchOutside(false);
+            loadingBar.show();
 
 
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
-        //for time
-        Calendar calFordTime = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
-        saveCurrentTime = currentTime.format(calFordTime.getTime());
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
+            //for time
+            Calendar calFordTime = Calendar.getInstance();
+            SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
+            saveCurrentTime = currentTime.format(calFordTime.getTime());
 
-        usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists()){
-                    //get the user details
-                    String userFullName = dataSnapshot.child("fullname").getValue().toString();
-                    String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
-                    String post_title_lowercase = post_Title.toLowerCase();
+                    if (dataSnapshot.exists()) {
+                        //get the user details
+                        String userFullName = dataSnapshot.child("fullname").getValue().toString();
+                        String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+                        String post_title_lowercase = post_Title.toLowerCase();
 
-                    //save the posts details to database
-                    Map<String,Object> postsMap = new HashMap<String, Object>();
-                    postsMap.put("uid", currentUserID);
-                    postsMap.put("date", saveCurrentDate);
-                    postsMap.put("time", saveCurrentTime);
-                    postsMap.put("title", post_Title);
-                    postsMap.put("description", post_Description);
-                    postsMap.put("postimage", "");
-                    postsMap.put("profileimage", userProfileImage);
-                    postsMap.put("fullname", userFullName);
-                    postsMap.put("type", "image");
-                    postsMap.put("posttitletolowercase", post_title_lowercase);
-                    postsMap.put("timestamp", ServerValue.TIMESTAMP);
-                    postsMap.put("postfilestoragename", "");
-                    postsMap.put("counter", countPosts);
+                        //save the posts details to database
+                        Map<String, Object> postsMap = new HashMap<String, Object>();
+                        postsMap.put("uid", currentUserID);
+                        postsMap.put("date", saveCurrentDate);
+                        postsMap.put("time", saveCurrentTime);
+                        postsMap.put("title", post_Title);
+                        postsMap.put("description", post_Description);
+                        postsMap.put("postimage", "");
+                        postsMap.put("profileimage", userProfileImage);
+                        postsMap.put("fullname", userFullName);
+                        postsMap.put("type", "image");
+                        postsMap.put("posttitletolowercase", post_title_lowercase);
+                        postsMap.put("timestamp", ServerValue.TIMESTAMP);
+                        postsMap.put("postfilestoragename", "");
+                        postsMap.put("counter", countPosts);
 
-                    allPostsRef.child(currentUserID + postRandomName).updateChildren(postsMap)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @SuppressLint("SetTextI18n")
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(task.isSuccessful()){
-                                        post_image.setImageResource(R.drawable.easy_to_use);
-                                        post_title.setText("");
-                                        post_description.setText("");
-                                        loadingBar.dismiss();
-                                        finish();
+                        allPostsRef.child(currentUserID + postRandomName).updateChildren(postsMap)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @SuppressLint("SetTextI18n")
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            post_image.setImageResource(R.drawable.easy_to_use);
+                                            post_title.setText("");
+                                            post_description.setText("");
+                                            loadingBar.dismiss();
+                                            finish();
+                                        } else {
+                                            //{.....................
+                                            //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                                            ViewGroup viewGroup = findViewById(android.R.id.content);
+
+                                            //then we will inflate the custom alert dialog xml that we created
+                                            View dialogView = LayoutInflater.from(AddNewPost.this).inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                                            //Now we need an AlertDialog.Builder object
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(AddNewPost.this);
+
+                                            //setting the view of the builder to our custom view that we already inflated
+                                            builder.setView(dialogView);
+
+                                            //finally creating the alert dialog and displaying it
+                                            final AlertDialog alertDialog = builder.create();
+
+                                            Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                                            TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                                            TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                                            dialog_btn.setText("OK");
+                                            success_title.setText("Error");
+                                            success_text.setText("An unexpected error occured while uploading your post.");
+
+                                            // if the OK button is clicked, close the success dialog
+                                            dialog_btn.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    alertDialog.dismiss();
+                                                }
+                                            });
+
+                                            alertDialog.show();
+                                            //...................}
+                                            loadingBar.dismiss();
+                                        }
                                     }
-                                    else {
-                                        //{.....................
-                                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                                        ViewGroup viewGroup = findViewById(android.R.id.content);
+                                });
 
-                                        //then we will inflate the custom alert dialog xml that we created
-                                        View dialogView = LayoutInflater.from(AddNewPost.this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                                        //Now we need an AlertDialog.Builder object
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(AddNewPost.this);
-
-                                        //setting the view of the builder to our custom view that we already inflated
-                                        builder.setView(dialogView);
-
-                                        //finally creating the alert dialog and displaying it
-                                        final AlertDialog alertDialog = builder.create();
-
-                                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                                        dialog_btn.setText("OK");
-                                        success_title.setText("Error");
-                                        success_text.setText("An unexpected error occured while uploading your post.");
-
-                                        // if the OK button is clicked, close the success dialog
-                                        dialog_btn.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                alertDialog.dismiss();
-                                            }
-                                        });
-
-                                        alertDialog.show();
-                                        //...................}
-                                        loadingBar.dismiss();
-                                    }
-                                }
-                            });
+                    }
 
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
+                }
+            });
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == gallery_Pic && resultCode == RESULT_OK &&
-                data != null) {
-            //extract absolute image path from Uri
-            Uri uri = data.getData();
-            Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), uri, new String[]{MediaStore.Images.Media.DATA});
+        try {
+            if (requestCode == gallery_Pic && resultCode == RESULT_OK &&
+                    data != null) {
+                //extract absolute image path from Uri
+                Uri uri = data.getData();
+                Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), uri, new String[]{MediaStore.Images.Media.DATA});
 
-            if(cursor != null && cursor.moveToFirst()) {
-                String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+                if (cursor != null && cursor.moveToFirst()) {
+                    String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
 
-                //Create ImageCompressTask and execute with Executor.
-                imageCompressTask = new ImageCompressTask(this, path, iImageCompressTaskListener);
+                    //Create ImageCompressTask and execute with Executor.
+                    imageCompressTask = new ImageCompressTask(this, path, iImageCompressTaskListener);
 
-                mExecutorService.execute(imageCompressTask);
+                    mExecutorService.execute(imageCompressTask);
+                }
             }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -294,18 +306,21 @@ public class AddNewPost extends AppCompatActivity {
     private IImageCompressTaskListener iImageCompressTaskListener = new IImageCompressTaskListener() {
         @Override
         public void onComplete(List<File> compressed) {
-            //photo compressed. Yay!
+            try {
+                //photo compressed. Yay!
 
-            //prepare for uploads. Use an Http library like Retrofit, Volley or async-http-client (My favourite)
+                //prepare for uploads. Use an Http library like Retrofit, Volley or async-http-client (My favourite)
 
-            File file = compressed.get(0);
-            Uri compressedImageUri = Uri.fromFile(file);
+                File file = compressed.get(0);
+                Uri compressedImageUri = Uri.fromFile(file);
 
-            Log.d("ImageCompressor", "New photo size ==> " + file.length()); //log new file size.
+                Log.d("ImageCompressor", "New photo size ==> " + file.length()); //log new file size.
 
-            post_image.setImageURI(compressedImageUri);
-            post_image.setTag(compressedImageUri);
-
+                post_image.setImageURI(compressedImageUri);
+                post_image.setTag(compressedImageUri);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -320,200 +335,203 @@ public class AddNewPost extends AppCompatActivity {
     @SuppressLint("SimpleDateFormat")
     private void storeImageToFirebaseStorage() {
 
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
-        //for time
-        Calendar calFordTime = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
-        saveCurrentTime = currentTime.format(calFordTime.getTime());
+        try {
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
+            //for time
+            Calendar calFordTime = Calendar.getInstance();
+            SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
+            saveCurrentTime = currentTime.format(calFordTime.getTime());
 
-        postRandomName = saveCurrentDate + saveCurrentTime;
-        final Uri compressedPostImageUri = Uri.parse(post_image.getTag().toString());
+            postRandomName = saveCurrentDate + saveCurrentTime;
+            final Uri compressedPostImageUri = Uri.parse(post_image.getTag().toString());
 
-        final StorageReference filePath = postsImagesStorageRef.child("Post Images").child(compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
+            final StorageReference filePath = postsImagesStorageRef.child("Post Images").child(compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
 
 
+            filePath.putFile(compressedPostImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
-        filePath.putFile(compressedPostImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
 
-                if(task.isSuccessful()){
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                final String fileUrl = uri.toString();
 
-                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Uri downUrl = uri;
-                            final String fileUrl = downUrl.toString();
+                                allPostsRef.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            allPostsRef.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
 
-                                    if(dataSnapshot.exists()){
+                                            countPosts = dataSnapshot.getChildrenCount();
+                                        } else {
 
-                                        countPosts = dataSnapshot.getChildrenCount();
+                                            countPosts = 0;
+                                        }
                                     }
-                                    else {
 
-                                        countPosts = 0;
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                                     }
-                                }
+                                });
+                                usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        if (dataSnapshot.exists()) {
+                                            try {
+                                                //get the user details
+                                                String userFullName = dataSnapshot.child("fullname").getValue().toString();
+                                                String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+                                                String post_title_lowercase = post_Title.toLowerCase();
 
-                                }
-                            });
-                            usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                //save the posts details to database
+                                                Map<String, Object> postsMap = new HashMap<String, Object>();
+                                                postsMap.put("uid", currentUserID);
+                                                postsMap.put("date", saveCurrentDate);
+                                                postsMap.put("time", saveCurrentTime);
+                                                postsMap.put("title", post_Title);
+                                                postsMap.put("description", post_Description);
+                                                postsMap.put("postimage", fileUrl);
+                                                postsMap.put("profileimage", userProfileImage);
+                                                postsMap.put("fullname", userFullName);
+                                                postsMap.put("type", "image");
+                                                postsMap.put("posttitletolowercase", post_title_lowercase);
+                                                postsMap.put("timestamp", ServerValue.TIMESTAMP);
+                                                postsMap.put("postfilestoragename", compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
+                                                postsMap.put("counter", countPosts);
 
-                                    if(dataSnapshot.exists()){
-                                        //get the user details
-                                        String userFullName = dataSnapshot.child("fullname").getValue().toString();
-                                        String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
-                                        String post_title_lowercase = post_Title.toLowerCase();
+                                                allPostsRef.child(currentUserID + postRandomName).updateChildren(postsMap)
+                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @SuppressLint("SetTextI18n")
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if (task.isSuccessful()) {
+                                                                    post_image.setImageResource(R.drawable.easy_to_use);
+                                                                    post_title.setText("");
+                                                                    post_description.setText("");
+                                                                    loadingBar.dismiss();
+                                                                    finish();
+                                                                } else {
+                                                                    //{.....................
+                                                                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                                                                    ViewGroup viewGroup = findViewById(android.R.id.content);
 
-                                        //save the posts details to database
-                                        Map<String,Object> postsMap = new HashMap<String, Object>();
-                                        postsMap.put("uid", currentUserID);
-                                        postsMap.put("date", saveCurrentDate);
-                                        postsMap.put("time", saveCurrentTime);
-                                        postsMap.put("title", post_Title);
-                                        postsMap.put("description", post_Description);
-                                        postsMap.put("postimage", fileUrl);
-                                        postsMap.put("profileimage", userProfileImage);
-                                        postsMap.put("fullname", userFullName);
-                                        postsMap.put("type", "image");
-                                        postsMap.put("posttitletolowercase", post_title_lowercase);
-                                        postsMap.put("timestamp", ServerValue.TIMESTAMP);
-                                        postsMap.put("postfilestoragename", compressedPostImageUri.getLastPathSegment() + postRandomName + ".jpg");
-                                        postsMap.put("counter", countPosts);
-
-                                        allPostsRef.child(currentUserID + postRandomName).updateChildren(postsMap)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @SuppressLint("SetTextI18n")
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if(task.isSuccessful()){
-                                                            post_image.setImageResource(R.drawable.easy_to_use);
-                                                            post_title.setText("");
-                                                            post_description.setText("");
-                                                            loadingBar.dismiss();
-                                                            finish();
-                                                        }
-                                                        else {
-                                                            //{.....................
-                                                            //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                                                            ViewGroup viewGroup = findViewById(android.R.id.content);
-
-                                                            //then we will inflate the custom alert dialog xml that we created
-                                                            View dialogView = LayoutInflater.from(AddNewPost.this).inflate(R.layout.error_dialog, viewGroup, false);
+                                                                    //then we will inflate the custom alert dialog xml that we created
+                                                                    View dialogView = LayoutInflater.from(AddNewPost.this).inflate(R.layout.error_dialog, viewGroup, false);
 
 
-                                                            //Now we need an AlertDialog.Builder object
-                                                            AlertDialog.Builder builder = new AlertDialog.Builder(AddNewPost.this);
+                                                                    //Now we need an AlertDialog.Builder object
+                                                                    AlertDialog.Builder builder = new AlertDialog.Builder(AddNewPost.this);
 
-                                                            //setting the view of the builder to our custom view that we already inflated
-                                                            builder.setView(dialogView);
+                                                                    //setting the view of the builder to our custom view that we already inflated
+                                                                    builder.setView(dialogView);
 
-                                                            //finally creating the alert dialog and displaying it
-                                                            final AlertDialog alertDialog = builder.create();
+                                                                    //finally creating the alert dialog and displaying it
+                                                                    final AlertDialog alertDialog = builder.create();
 
-                                                            Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                                                            TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                                                            TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+                                                                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                                                                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                                                                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
 
-                                                            dialog_btn.setText("OK");
-                                                            success_title.setText("Error");
-                                                            success_text.setText("An unexpected error occured while uploading your post.");
+                                                                    dialog_btn.setText("OK");
+                                                                    success_title.setText("Error");
+                                                                    success_text.setText("An unexpected error occured while uploading your post.");
 
-                                                            // if the OK button is clicked, close the success dialog
-                                                            dialog_btn.setOnClickListener(new View.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(View v) {
-                                                                    alertDialog.dismiss();
+                                                                    // if the OK button is clicked, close the success dialog
+                                                                    dialog_btn.setOnClickListener(new View.OnClickListener() {
+                                                                        @Override
+                                                                        public void onClick(View v) {
+                                                                            alertDialog.dismiss();
+                                                                        }
+                                                                    });
+
+                                                                    alertDialog.show();
+                                                                    //...................}
+                                                                    loadingBar.dismiss();
                                                                 }
-                                                            });
-
-                                                            alertDialog.show();
-                                                            //...................}
-                                                            loadingBar.dismiss();
-                                                        }
-                                                    }
-                                                });
+                                                            }
+                                                        });
+                                            }catch(Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
 
                                     }
 
-                                }
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    }
+                                });
 
-                                }
-                            });
+                            }
+                        });
 
-                        }
-                    });
+                    } else {
+                        String message = task.getException().getMessage();
+
+                        //{.....................
+                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                        ViewGroup viewGroup = findViewById(android.R.id.content);
+
+                        //then we will inflate the custom alert dialog xml that we created
+                        View dialogView = LayoutInflater.from(AddNewPost.this).inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                        //Now we need an AlertDialog.Builder object
+                        AlertDialog.Builder builder = new AlertDialog.Builder(AddNewPost.this);
+
+                        //setting the view of the builder to our custom view that we already inflated
+                        builder.setView(dialogView);
+
+                        //finally creating the alert dialog and displaying it
+                        final AlertDialog alertDialog = builder.create();
+
+                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                        dialog_btn.setText("OK");
+                        success_title.setText("Error");
+                        success_text.setText(message);
+
+                        // if the OK button is clicked, close the success dialog
+                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertDialog.dismiss();
+                            }
+                        });
+
+                        alertDialog.show();
+                        //...................}
+                        loadingBar.dismiss();
+                    }
 
                 }
-                else{
-                    String message = task.getException().getMessage();
-
-                    //{.....................
-                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                    ViewGroup viewGroup = findViewById(android.R.id.content);
-
-                    //then we will inflate the custom alert dialog xml that we created
-                    View dialogView = LayoutInflater.from(AddNewPost.this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                    //Now we need an AlertDialog.Builder object
-                    AlertDialog.Builder builder = new AlertDialog.Builder(AddNewPost.this);
-
-                    //setting the view of the builder to our custom view that we already inflated
-                    builder.setView(dialogView);
-
-                    //finally creating the alert dialog and displaying it
-                    final AlertDialog alertDialog = builder.create();
-
-                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                    dialog_btn.setText("OK");
-                    success_title.setText("Error");
-                    success_text.setText(message);
-
-                    // if the OK button is clicked, close the success dialog
-                    dialog_btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            alertDialog.dismiss();
-                        }
-                    });
-
-                    alertDialog.show();
-                    //...................}
-                    loadingBar.dismiss();
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    loadingBar.setTitle("Uploading Post");
+                    loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
+                    loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingBar.setProgress((int) progress);
+                    loadingBar.show();
+                    loadingBar.setCanceledOnTouchOutside(false);
                 }
+            });
 
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                loadingBar.setTitle("Uploading Post");
-                loadingBar.setMessage(taskSnapshot.getBytesTransferred()/(1024*1024) + " / " + taskSnapshot.getTotalByteCount()/(1024*1024) + "MB");
-                loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                loadingBar.setProgress((int)progress);
-                loadingBar.show();
-                loadingBar.setCanceledOnTouchOutside(false);
-            }
-        });
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -558,45 +576,6 @@ public class AddNewPost extends AppCompatActivity {
         gallery_intent.setAction(Intent.ACTION_GET_CONTENT);
         gallery_intent.setType("image/*");
         startActivityForResult(Intent.createChooser(gallery_intent, "Select image"), gallery_Pic);
-    }
-
-
-    public void showErrorCustomDialog() {
-        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-        ViewGroup viewGroup = findViewById(android.R.id.content);
-
-        //then we will inflate the custom alert dialog xml that we created
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-        //Now we need an AlertDialog.Builder object
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        //setting the view of the builder to our custom view that we already inflated
-        builder.setView(dialogView);
-
-        //finally creating the alert dialog and displaying it
-        final AlertDialog alertDialog = builder.create();
-
-        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-        dialog_btn.setText("OK");
-        success_title.setText("Error");
-        success_text.setText("Please select an image for this post!");
-
-        // if the OK button is clicked, close the success dialog
-        dialog_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                alertDialog.dismiss();
-            }
-        });
-
-        alertDialog.show();
-
-
     }
 
     @Override
@@ -656,11 +635,15 @@ public class AddNewPost extends AppCompatActivity {
         super.onDestroy();
         Utilities.getInstance(this).updateUserStatus("Offline");
 
-        //clean up!
-        mExecutorService.shutdown();
+        try {
+            //clean up!
+            mExecutorService.shutdown();
 
-        mExecutorService = null;
-        imageCompressTask = null;
+            mExecutorService = null;
+            imageCompressTask = null;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

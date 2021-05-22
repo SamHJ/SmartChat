@@ -85,15 +85,18 @@ public class Settings extends AppCompatActivity {
         shareLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                String ShareBody = "Hey, check out this cool social media app called SmartChat :" +
-                        "https://play.google.com/store/apps/details?id=niwigh.com.smartchat";
-                String Sharetitle = "Hot Social Messaging App!";
-                shareIntent.putExtra(Intent.EXTRA_SUBJECT, Sharetitle);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, ShareBody);
-                startActivity(Intent.createChooser(shareIntent, "Share SmartChat  using"));
-
+                try {
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType("text/plain");
+                    String ShareBody = "Hey, check out this cool social media app called SmartChat :" +
+                            "https://play.google.com/store/apps/details?id=niwigh.com.smartchat";
+                    String Sharetitle = "Hot Social Messaging App!";
+                    shareIntent.putExtra(Intent.EXTRA_SUBJECT, Sharetitle);
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, ShareBody);
+                    startActivity(Intent.createChooser(shareIntent, "Share SmartChat  using"));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -118,58 +121,71 @@ public class Settings extends AppCompatActivity {
         });
 
 
-        UserRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        try {
+            UserRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists()){
-                    if(dataSnapshot.hasChild("profileimage")){
-                        final String profile_image = dataSnapshot.child("profileimage").getValue().toString();
-                        try {
-                            Picasso.with(Settings.this).load(profile_image)
-                                    .networkPolicy(NetworkPolicy.OFFLINE)
-                                    .placeholder(R.drawable.easy_to_use).into(settins_user_profile_image, new
-                                    Callback() {
-                                        @Override
-                                        public void onSuccess() {
+                    if (dataSnapshot.exists()) {
+                        if (dataSnapshot.hasChild("profileimage")) {
+                            final String profile_image = dataSnapshot.child("profileimage").getValue().toString();
+                            try {
+                                Picasso.with(Settings.this).load(profile_image)
+                                        .networkPolicy(NetworkPolicy.OFFLINE)
+                                        .placeholder(R.drawable.easy_to_use).into(settins_user_profile_image, new
+                                        Callback() {
+                                            @Override
+                                            public void onSuccess() {
 
-                                        }
+                                            }
 
-                                        @Override
-                                        public void onError() {
+                                            @Override
+                                            public void onError() {
+                                                try {
+                                                    Picasso.with(Settings.this).load(profile_image).placeholder(R.drawable.easy_to_use).into(settins_user_profile_image);
+                                                }catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
 
-                                            Picasso.with(Settings.this).load(profile_image).placeholder(R.drawable.easy_to_use).into(settins_user_profile_image);
-
-                                        }
-                                    });
-                        }catch (Exception e){
-                            e.printStackTrace();
+                        }
+                        if (dataSnapshot.hasChild("username")) {
+                            try {
+                                String user_name = dataSnapshot.child("username").getValue().toString();
+                                settings_username.setText(user_name);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
                         }
 
-                    }
-                    if(dataSnapshot.hasChild("username")){
-                        String user_name = dataSnapshot.child("username").getValue().toString();
-                        settings_username.setText(user_name);
+                        if (dataSnapshot.hasChild("profilestatus")) {
+                            try {
+                                String user_status = dataSnapshot.child("profilestatus").getValue().toString();
+                                settings_status.setText(user_status);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
 
-                    }
 
-                    if(dataSnapshot.hasChild("profilestatus")){
-                        String user_status = dataSnapshot.child("profilestatus").getValue().toString();
-                        settings_status.setText(user_status);
                     }
 
 
                 }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
+                }
+            });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 

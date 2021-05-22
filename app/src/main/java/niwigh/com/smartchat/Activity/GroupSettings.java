@@ -202,43 +202,86 @@ public class GroupSettings extends AppCompatActivity {
     }
 
     private void convertGroupToAdmins() {
-        final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Converting group");
-        progressDialog.setMessage("A moment please");
-        progressDialog.setCanceledOnTouchOutside(false);
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        try {
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setTitle("Converting group");
+            progressDialog.setMessage("A moment please");
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
 
-        String group_category = getIntent().getStringExtra("group_category");
-        String group_key = getIntent().getStringExtra("group_key");
+            String group_category = getIntent().getStringExtra("group_category");
+            String group_key = getIntent().getStringExtra("group_key");
 
-        final DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(group_category)
-                .child("groups").child(group_key);
+            final DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(group_category)
+                    .child("groups").child(group_key);
 
-        Map<String,Object> groupSettingsMap = new HashMap<>();
-        groupSettingsMap.put("isgroupforadminsonly",true);
-        groupsRef.updateChildren(groupSettingsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    bookmark_switch.setChecked(true);
-                    progressDialog.dismiss();
-                    final Snackbar snackbar = Snackbar
-                            .make(settingsLayout, "Only admins can chat in this group!", Snackbar.LENGTH_SHORT);
+            Map<String, Object> groupSettingsMap = new HashMap<>();
+            groupSettingsMap.put("isgroupforadminsonly", true);
+            groupsRef.updateChildren(groupSettingsMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        bookmark_switch.setChecked(true);
+                        progressDialog.dismiss();
+                        final Snackbar snackbar = Snackbar
+                                .make(settingsLayout, "Only admins can chat in this group!", Snackbar.LENGTH_SHORT);
 
-                    snackbar.setAction("OK", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            snackbar.dismiss();
-                        }
-                    });
+                        snackbar.setAction("OK", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                snackbar.dismiss();
+                            }
+                        });
 
-                    snackbar.setActionTextColor(getResources().getColor(R.color.colorAccent));
-                    View sbView = snackbar.getView();
-                    TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
-                    textView.setTextColor(getResources().getColor(R.color.intro_slide_bg_color));
-                    snackbar.show();
-                }else {
+                        snackbar.setActionTextColor(getResources().getColor(R.color.colorAccent));
+                        View sbView = snackbar.getView();
+                        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+                        textView.setTextColor(getResources().getColor(R.color.intro_slide_bg_color));
+                        snackbar.show();
+                    } else {
+                        bookmark_switch.setChecked(false);
+                        //{.....................
+                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                        ViewGroup viewGroup = findViewById(android.R.id.content);
+
+                        //then we will inflate the custom alert dialog xml that we created
+                        View dialogView = LayoutInflater.from(GroupSettings.this).inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                        //Now we need an AlertDialog.Builder object
+                        AlertDialog.Builder builder = new AlertDialog.Builder(GroupSettings.this);
+
+                        //setting the view of the builder to our custom view that we already inflated
+                        builder.setView(dialogView);
+
+                        //finally creating the alert dialog and displaying it
+                        final AlertDialog alertDialog = builder.create();
+
+                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                        dialog_btn.setText("OK");
+                        success_title.setText("Error");
+                        success_text.setText("An error occurred!");
+
+                        // if the OK button is clicked, close the success dialog
+                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertDialog.dismiss();
+                            }
+                        });
+
+                        alertDialog.show();
+                        //...................}
+                        progressDialog.dismiss();
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
                     bookmark_switch.setChecked(false);
                     //{.....................
                     //before inflating the custom alert dialog layout, we will get the current activity viewgroup
@@ -263,7 +306,7 @@ public class GroupSettings extends AppCompatActivity {
 
                     dialog_btn.setText("OK");
                     success_title.setText("Error");
-                    success_text.setText("An error occurred!");
+                    success_text.setText(e.getMessage());
 
                     // if the OK button is clicked, close the success dialog
                     dialog_btn.setOnClickListener(new View.OnClickListener() {
@@ -277,77 +320,43 @@ public class GroupSettings extends AppCompatActivity {
                     //...................}
                     progressDialog.dismiss();
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                bookmark_switch.setChecked(false);
-                //{.....................
-                //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                ViewGroup viewGroup = findViewById(android.R.id.content);
+            });
 
-                //then we will inflate the custom alert dialog xml that we created
-                View dialogView = LayoutInflater.from(GroupSettings.this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                //Now we need an AlertDialog.Builder object
-                AlertDialog.Builder builder = new AlertDialog.Builder(GroupSettings.this);
-
-                //setting the view of the builder to our custom view that we already inflated
-                builder.setView(dialogView);
-
-                //finally creating the alert dialog and displaying it
-                final AlertDialog alertDialog = builder.create();
-
-                Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                dialog_btn.setText("OK");
-                success_title.setText("Error");
-                success_text.setText(e.getMessage());
-
-                // if the OK button is clicked, close the success dialog
-                dialog_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        alertDialog.dismiss();
-                    }
-                });
-
-                alertDialog.show();
-                //...................}
-                progressDialog.dismiss();
-            }
-        });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void checkGroupStatus() {
-        String group_category = getIntent().getStringExtra("group_category");
-        String group_key = getIntent().getStringExtra("group_key");
+        try {
+            String group_category = getIntent().getStringExtra("group_category");
+            String group_key = getIntent().getStringExtra("group_key");
 
-        DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(group_category)
-                .child("groups").child(group_key);
+            DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(group_category)
+                    .child("groups").child(group_key);
 
-        groupsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    if(dataSnapshot.hasChild("isgroupforadminsonly")){
-                        bookmark_switch.setChecked(true);
-                    }else {
+            groupsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        if (dataSnapshot.hasChild("isgroupforadminsonly")) {
+                            bookmark_switch.setChecked(true);
+                        } else {
+                            bookmark_switch.setChecked(false);
+                        }
+                    } else {
                         bookmark_switch.setChecked(false);
                     }
-                }else {
-                    bookmark_switch.setChecked(false);
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

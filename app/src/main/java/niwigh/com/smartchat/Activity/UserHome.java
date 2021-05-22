@@ -148,117 +148,126 @@ public class UserHome extends AppCompatActivity {
             }
         });
 
-        UserRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+        try {
+            UserRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            if (dataSnapshot.hasChild("fullname")) {
+                                String fullname = dataSnapshot.child("fullname").getValue().toString();
+                                NavDrawerProfileUsername.setText(fullname);
 
-                    if(dataSnapshot.hasChild("fullname")){
-                        String fullname = dataSnapshot.child("fullname").getValue().toString();
-                        NavDrawerProfileUsername.setText(fullname);
+                            }
+                            if (dataSnapshot.hasChild("profileimage")) {
+                                try {
+                                    final String profileimage = dataSnapshot.child("profileimage").getValue().toString();
+                                    Picasso.with(UserHome.this).load(profileimage)
+                                            .networkPolicy(NetworkPolicy.OFFLINE)
+                                            .placeholder(R.drawable.easy_to_use).into(NavDrawerProfileImage, new
+                                            Callback() {
+                                                @Override
+                                                public void onSuccess() {
 
+                                                }
+
+                                                @Override
+                                                public void onError() {
+                                                    try {
+                                                        Picasso.with(UserHome.this).load(profileimage).placeholder(R.drawable.easy_to_use).into(NavDrawerProfileImage);
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            });
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }
-                    if(dataSnapshot.hasChild("profileimage")){
-                       try{
-                           final String profileimage = dataSnapshot.child("profileimage").getValue().toString();
-                           Picasso.with(UserHome.this).load(profileimage)
-                                   .networkPolicy(NetworkPolicy.OFFLINE)
-                                   .placeholder(R.drawable.easy_to_use).into(NavDrawerProfileImage, new
-                                   Callback() {
-                                       @Override
-                                       public void onSuccess() {
+                }
 
-                                       }
-
-                                       @Override
-                                       public void onError() {
-
-                                           Picasso.with(UserHome.this).load(profileimage).placeholder(R.drawable.easy_to_use).into(NavDrawerProfileImage);
-
-                                       }
-                                   });
-                       }catch (Exception e){
-                           e.printStackTrace();
-                       }
-
-                    }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+            });
 
 
-        //bottom navigation on selected item listener
-        mMainNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-                                                         @Override
-                                                         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                                                             switch (menuItem.getItemId()) {
+            //bottom navigation on selected item listener
+            mMainNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+                                                             @Override
+                                                             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                                                                 switch (menuItem.getItemId()) {
 
-                                                                 case R.id.nav_feeds :
-                                                                     setFragment(feedsFragment); //loads the feeds Fragment
-                                                                     return true;
+                                                                     case R.id.nav_feeds:
+                                                                         setFragment(feedsFragment); //loads the feeds Fragment
+                                                                         return true;
 
-                                                                 case R.id.nav_posts :
-                                                                     setFragment(postsFragment); //loads the posts Fragment
-                                                                     return true;
+                                                                     case R.id.nav_posts:
+                                                                         setFragment(postsFragment); //loads the posts Fragment
+                                                                         return true;
 
-                                                                 case R.id.nav_messages :
-                                                                     setFragment(messagesFragment); //loads the messages Fragment
-                                                                     return true;
+                                                                     case R.id.nav_messages:
+                                                                         setFragment(messagesFragment); //loads the messages Fragment
+                                                                         return true;
 
-                                                                 case R.id.nav_friends :
-                                                                     setFragment(friendsFragment); //loads the friends Fragment
-                                                                     return true;
+                                                                     case R.id.nav_friends:
+                                                                         setFragment(friendsFragment); //loads the friends Fragment
+                                                                         return true;
 
-                                                                 case R.id.nav_requests :
-                                                                     setFragment(requestsFragment); //loads the requests Fragment
-                                                                     return true;
+                                                                     case R.id.nav_requests:
+                                                                         setFragment(requestsFragment); //loads the requests Fragment
+                                                                         return true;
 
-                                                                 default:
-                                                                     return false;
+                                                                     default:
+                                                                         return false;
+                                                                 }
                                                              }
+
+
                                                          }
+            );
 
+            //navigation view on selected item listener
+            navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                    userMenuSelector(menuItem);
+                    return false;
+                }
+            });
 
-                                                     }
-        );
+            final Menu menu = navigationView.getMenu();
 
-        //navigation view on selected item listener
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                userMenuSelector(menuItem);
-                return false;
-            }
-        });
+            UserRef.child(currentUserID).child("userState").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        if (dataSnapshot.hasChild("usertype")) {
 
-        final Menu menu = navigationView.getMenu();
+                            menu.findItem(R.id.nav_drawer_feeds_add).setVisible(true);
+                            menu.findItem(R.id.nav_drawer_group_add).setVisible(true);
 
-        UserRef.child(currentUserID).child("userState").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    if(dataSnapshot.hasChild("usertype")){
-
-                    menu.findItem(R.id.nav_drawer_feeds_add).setVisible(true);
-                    menu.findItem(R.id.nav_drawer_group_add).setVisible(true);
-
-                    }else{
-                        menu.findItem(R.id.nav_drawer_feeds_add).setVisible(false);
+                        } else {
+                            menu.findItem(R.id.nav_drawer_feeds_add).setVisible(false);
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -267,17 +276,20 @@ public class UserHome extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        AppRater.app_launched(this);
+        try {
+            AppRater.app_launched(this);
 
-        Utilities.getInstance(this).updateUserStatus("Online");
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser == null){
-            //send user to login activity
-            sendUserToLoginActivity();
-        }
-        else {
+            Utilities.getInstance(this).updateUserStatus("Online");
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser == null) {
+                //send user to login activity
+                sendUserToLoginActivity();
+            } else {
 
-            checkUserExistence();
+                checkUserExistence();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -309,90 +321,112 @@ public class UserHome extends AppCompatActivity {
     }
 
     public void checkformessages(){
+        try {
+            rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.hasChild("Messages")) {
+                        final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
 
-                if(dataSnapshot.hasChild("Messages")){
-                    final DatabaseReference currentuserFriend = FirebaseDatabase.getInstance().getReference().child("Messages");
+                        currentuserFriend.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    currentuserFriend.child(currentUserID).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    try {
 
-                            if(dataSnapshot.exists()){
+                                        int unread = 0;
+                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                            try {
+                                                final String key_one = snapshot.getKey();
+                                                for (DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
+                                                    try {
+                                                        MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
+                                                        String to = messagesModel.getTo();
+                                                        boolean isseen = messagesModel.isIsseen();
+                                                        if (to.equals(currentUserID) && !isseen) {
+                                                            unread++;
 
-                                int unread = 0;
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    final String key_one = snapshot.getKey();
-                                    for(DataSnapshot snapshot1 : dataSnapshot.child(key_one).getChildren()) {
-                                        MessagesModel messagesModel = snapshot1.getValue(MessagesModel.class);
-                                        String to = messagesModel.getTo();
-                                        boolean isseen = messagesModel.isIsseen();
-                                        if(to.equals(currentUserID) && !isseen){
-                                            unread++;
+                                                            if (unread == 0) {
 
-                                            if(unread == 0){
+                                                                no_of_unread_messages.setVisibility(View.GONE);
 
-                                                no_of_unread_messages.setVisibility(View.GONE);
+                                                            } else {
 
-                                            }else {
+                                                                no_of_unread_messages.setText("new");
+                                                                no_of_unread_messages.setVisibility(View.VISIBLE);
+                                                            }
+                                                        } else {
+                                                            no_of_unread_messages.setVisibility(View.GONE);
+                                                        }
+                                                    }catch (Exception e){
+                                                        e.printStackTrace();
+                                                    }
+                                                }
 
-                                                no_of_unread_messages.setText("new");
-                                                no_of_unread_messages.setVisibility(View.VISIBLE);
+                                            }catch (Exception e){
+                                                e.printStackTrace();
                                             }
-                                        }else{
-                                            no_of_unread_messages.setVisibility(View.GONE);
                                         }
 
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
 
-
+                                } else {
+                                    no_of_unread_messages.setVisibility(View.GONE);
                                 }
 
-                            }else{
-                                no_of_unread_messages.setVisibility(View.GONE);
                             }
 
-                        }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            }
+                        });
 
-                        }
-                    });
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void checkUserExistence() {
-        final String current_user_id = mAuth.getCurrentUser().getUid();
-        UserRef.child(current_user_id).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    if( (!dataSnapshot.hasChild("fullname")) || (!dataSnapshot.hasChild("username")) ||
-                            (!dataSnapshot.hasChild("location")) ){
+        try {
+            final String current_user_id = mAuth.getCurrentUser().getUid();
+            UserRef.child(current_user_id).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            if ((!dataSnapshot.hasChild("fullname")) || (!dataSnapshot.hasChild("username")) ||
+                                    (!dataSnapshot.hasChild("location"))) {
+                                sendUserToSetupActivity();
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    } else {
                         sendUserToSetupActivity();
                     }
-                }else{
-                    sendUserToSetupActivity();
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void sendUserToSetupActivity() {
@@ -468,13 +502,16 @@ public class UserHome extends AppCompatActivity {
                 break;
 
             case R.id.nav_drawer_logout:
-                Map<String, Object> tokenMap = new HashMap<>();
-                tokenMap.put("token_id", FieldValue.delete());
-                firebaseFirestore.collection("Users").document(currentUserID).update(tokenMap);
-                Utilities.getInstance(this).updateUserStatus("Offline");
-                mAuth.signOut();
-                sendUserToLoginActivity();
-
+                try {
+                    Map<String, Object> tokenMap = new HashMap<>();
+                    tokenMap.put("token_id", FieldValue.delete());
+                    firebaseFirestore.collection("Users").document(currentUserID).update(tokenMap);
+                    Utilities.getInstance(this).updateUserStatus("Offline");
+                    mAuth.signOut();
+                    sendUserToLoginActivity();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 break;
 
             case R.id.nav_drawer_rate:
@@ -484,30 +521,38 @@ public class UserHome extends AppCompatActivity {
     }
 
     public static void showRateDialog(final Context mContext) {
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(mContext);
-        builder.setTitle("Rate " + APP_TITLE);
-        builder.setMessage("If you enjoy using " + APP_TITLE + ", please take a moment to rate it. Thanks for your support!");
+        try {
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(mContext);
+            builder.setTitle("Rate " + APP_TITLE);
+            builder.setMessage("If you enjoy using " + APP_TITLE + ", please take a moment to rate it. Thanks for your support!");
 
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-            }
-        }).setIcon(R.mipmap.ic_launcher).setPositiveButton("RATE", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + APP_PNAME)));
-                dialogInterface.dismiss();
-            }
-        });
-        builder.show();
+            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            }).setIcon(R.mipmap.ic_launcher).setPositiveButton("RATE", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + APP_PNAME)));
+                    dialogInterface.dismiss();
+                }
+            });
+            builder.show();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void setFragment(Fragment fragment) {
-        checkformessages();
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.main_frame, fragment);
-        fragmentTransaction.commit();
+        try {
+            checkformessages();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.main_frame, fragment);
+            fragmentTransaction.commit();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

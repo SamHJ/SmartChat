@@ -73,22 +73,30 @@ public class ViewPersonPosts extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        //display the this user's name at the actionbar
-        UserRef.child(receiverUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    String user_name = dataSnapshot.child("username").getValue().toString();
-                    getSupportActionBar().setTitle("@" + user_name + "'s Posts");
+        try {
+            //display the this user's name at the actionbar
+            UserRef.child(receiverUserID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            String user_name = dataSnapshot.child("username").getValue().toString();
+                            getSupportActionBar().setTitle("@" + user_name + "'s Posts");
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
 
         all_users_posts_recyclerview = findViewById(R.id.all_users_posts_recyclerview);
@@ -110,146 +118,155 @@ public class ViewPersonPosts extends AppCompatActivity {
 
 
     private void DisplayAllCurrentUserPosts() {
+        try {
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        if (dataSnapshot.hasChildren()) {
 
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    if (dataSnapshot.hasChildren()) {
+                            postsModelList.clear();
 
-                        postsModelList.clear();
+                            for (final DataSnapshot snapshots : dataSnapshot.getChildren()) {
+                                try {
+                                    String postKey = snapshots.getKey();
+                                    String uid = snapshots.child("uid").getValue().toString();
+                                    String date = snapshots.child("date").getValue().toString();
+                                    String time = snapshots.child("time").getValue().toString();
+                                    String title = snapshots.child("title").getValue().toString();
+                                    String description = snapshots.child("description").getValue().toString();
+                                    String profileimage = snapshots.child("profileimage").getValue().toString();
+                                    String fullname = snapshots.child("fullname").getValue().toString();
+                                    String type = snapshots.child("type").getValue().toString();
+                                    String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
+                                            snapshots.child("posttitletolowercase").getValue().toString() : "";
+                                    String timestamp = snapshots.child("timestamp").getValue().toString();
+                                    String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
+                                    String counter = snapshots.child("counter").getValue().toString();
+                                    String postimage = snapshots.child("postimage").getValue() != null ?
+                                            snapshots.child("postimage").getValue().toString() : "";
+                                    String postvideo = snapshots.child("postvideo").getValue() != null ?
+                                            snapshots.child("postvideo").getValue().toString() : "";
 
-                        for (final DataSnapshot snapshots : dataSnapshot.getChildren()){
+                                    postsModelList.add(new PostsModel(uid, date, time, title, description, postimage,
+                                            profileimage, fullname, type, posttitletolowercase, timestamp,
+                                            postfilestoragename, counter, postvideo, postKey));
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
 
-                            String postKey = snapshots.getKey();
-                            String uid = snapshots.child("uid").getValue().toString();
-                            String date = snapshots.child("date").getValue().toString();
-                            String time = snapshots.child("time").getValue().toString();
-                            String title = snapshots.child("title").getValue().toString();
-                            String description = snapshots.child("description").getValue().toString();
-                            String profileimage = snapshots.child("profileimage").getValue().toString();
-                            String fullname = snapshots.child("fullname").getValue().toString();
-                            String type = snapshots.child("type").getValue().toString();
-                            String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
-                                    snapshots.child("posttitletolowercase").getValue().toString() : "";
-                            String timestamp = snapshots.child("timestamp").getValue().toString();
-                            String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
-                            String counter = snapshots.child("counter").getValue().toString();
-                            String postimage = snapshots.child("postimage").getValue() != null ?
-                                    snapshots.child("postimage").getValue().toString() : "";
-                            String postvideo = snapshots.child("postvideo").getValue() != null ?
-                                    snapshots.child("postvideo").getValue().toString() : "";
+                            postsLoader.setVisibility(View.GONE);
+                            all_users_posts_recyclerview.setVisibility(View.VISIBLE);
+                            no_posts_layout.setVisibility(View.GONE);
+                            adapter = new AllPostsAdapter(ViewPersonPosts.this, postsModelList);
+                            adapter.setHasStableIds(true);
+                            all_users_posts_recyclerview.setAdapter(adapter);
+                            adapter.notifyDataSetChanged();
 
-                            postsModelList.add(new PostsModel(uid,date,time,title,description,postimage,
-                                    profileimage,fullname,type,posttitletolowercase,timestamp,
-                                    postfilestoragename,counter,postvideo,postKey));
-
+                        } else {
+                            postsLoader.setVisibility(View.GONE);
+                            all_users_posts_recyclerview.setVisibility(View.GONE);
+                            no_posts_layout.setVisibility(View.VISIBLE);
                         }
-
-                        postsLoader.setVisibility(View.GONE);
-                        all_users_posts_recyclerview.setVisibility(View.VISIBLE);
-                        no_posts_layout.setVisibility(View.GONE);
-                        adapter = new AllPostsAdapter(ViewPersonPosts.this,postsModelList);
-                        adapter.setHasStableIds(true);
-                        all_users_posts_recyclerview.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-
-                    }else{
+                    } else {
                         postsLoader.setVisibility(View.GONE);
                         all_users_posts_recyclerview.setVisibility(View.GONE);
                         no_posts_layout.setVisibility(View.VISIBLE);
                     }
-                }else{
-                    postsLoader.setVisibility(View.GONE);
-                    all_users_posts_recyclerview.setVisibility(View.GONE);
-                    no_posts_layout.setVisibility(View.VISIBLE);
+
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
     public void firebasePostsSearch(String searchText){
+        try {
+            if (!searchText.isEmpty()) {
 
-        if(!searchText.isEmpty()) {
+                allPostsRef.orderByChild("uid")
+                        .startAt(receiverUserID).endAt(receiverUserID + "\uf0ff");
 
-            allPostsRef.orderByChild("uid")
-                    .startAt(receiverUserID).endAt(receiverUserID + "\uf0ff");
+                allPostsRef.orderByChild("posttitletolowercase").startAt(searchText).endAt(searchText + "\uf0ff")
+                        .addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    if (dataSnapshot.hasChildren()) {
 
-            allPostsRef.orderByChild("posttitletolowercase").startAt(searchText).endAt(searchText + "\uf0ff")
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                if (dataSnapshot.hasChildren()) {
+                                        postsModelList.clear();
 
-                                    postsModelList.clear();
+                                        for (final DataSnapshot snapshots : dataSnapshot.getChildren()) {
+                                            try {
+                                                String postKey = snapshots.getKey();
+                                                String uid = snapshots.child("uid").getValue().toString();
+                                                String date = snapshots.child("date").getValue().toString();
+                                                String time = snapshots.child("time").getValue().toString();
+                                                String title = snapshots.child("title").getValue().toString();
+                                                String description = snapshots.child("description").getValue().toString();
+                                                String profileimage = snapshots.child("profileimage").getValue().toString();
+                                                String fullname = snapshots.child("fullname").getValue().toString();
+                                                String type = snapshots.child("type").getValue().toString();
+                                                String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
+                                                        snapshots.child("posttitletolowercase").getValue().toString() : "";
+                                                String timestamp = snapshots.child("timestamp").getValue().toString();
+                                                String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
+                                                String counter = snapshots.child("counter").getValue().toString();
+                                                String postimage = snapshots.child("postimage").getValue() != null ?
+                                                        snapshots.child("postimage").getValue().toString() : "";
+                                                String postvideo = snapshots.child("postvideo").getValue() != null ?
+                                                        snapshots.child("postvideo").getValue().toString() : "";
 
-                                    for (final DataSnapshot snapshots : dataSnapshot.getChildren()) {
+                                                postsModelList.add(new PostsModel(uid, date, time, title, description, postimage,
+                                                        profileimage, fullname, type, posttitletolowercase, timestamp,
+                                                        postfilestoragename, counter, postvideo, postKey));
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
 
-                                        String postKey = snapshots.getKey();
-                                        String uid = snapshots.child("uid").getValue().toString();
-                                        String date = snapshots.child("date").getValue().toString();
-                                        String time = snapshots.child("time").getValue().toString();
-                                        String title = snapshots.child("title").getValue().toString();
-                                        String description = snapshots.child("description").getValue().toString();
-                                        String profileimage = snapshots.child("profileimage").getValue().toString();
-                                        String fullname = snapshots.child("fullname").getValue().toString();
-                                        String type = snapshots.child("type").getValue().toString();
-                                        String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
-                                                snapshots.child("posttitletolowercase").getValue().toString() : "";
-                                        String timestamp = snapshots.child("timestamp").getValue().toString();
-                                        String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
-                                        String counter = snapshots.child("counter").getValue().toString();
-                                        String postimage = snapshots.child("postimage").getValue() != null ?
-                                                snapshots.child("postimage").getValue().toString() : "";
-                                        String postvideo = snapshots.child("postvideo").getValue() != null ?
-                                                snapshots.child("postvideo").getValue().toString() : "";
+                                        postsLoader.setVisibility(View.GONE);
+                                        all_users_posts_recyclerview.setVisibility(View.VISIBLE);
+                                        no_posts_layout.setVisibility(View.GONE);
+                                        adapter = new AllPostsAdapter(ViewPersonPosts.this, postsModelList);
+                                        adapter.setHasStableIds(true);
+                                        all_users_posts_recyclerview.setAdapter(adapter);
+                                        adapter.notifyDataSetChanged();
 
-                                        postsModelList.add(new PostsModel(uid, date, time, title, description, postimage,
-                                                profileimage, fullname, type, posttitletolowercase, timestamp,
-                                                postfilestoragename, counter, postvideo, postKey));
-
+                                    } else {
+                                        postsLoader.setVisibility(View.GONE);
+                                        all_users_posts_recyclerview.setVisibility(View.GONE);
+                                        nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
+                                        no_posts_layout.setVisibility(View.VISIBLE);
                                     }
-
-                                    postsLoader.setVisibility(View.GONE);
-                                    all_users_posts_recyclerview.setVisibility(View.VISIBLE);
-                                    no_posts_layout.setVisibility(View.GONE);
-                                    adapter = new AllPostsAdapter(ViewPersonPosts.this, postsModelList);
-                                    adapter.setHasStableIds(true);
-                                    all_users_posts_recyclerview.setAdapter(adapter);
-                                    adapter.notifyDataSetChanged();
-
                                 } else {
                                     postsLoader.setVisibility(View.GONE);
                                     all_users_posts_recyclerview.setVisibility(View.GONE);
                                     nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
                                     no_posts_layout.setVisibility(View.VISIBLE);
                                 }
-                            } else {
-                                postsLoader.setVisibility(View.GONE);
-                                all_users_posts_recyclerview.setVisibility(View.GONE);
-                                nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
-                                no_posts_layout.setVisibility(View.VISIBLE);
+
                             }
 
-                        }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-        }else{
-            DisplayAllCurrentUserPosts();
+                            }
+                        });
+            } else {
+                DisplayAllCurrentUserPosts();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
     }
 
 

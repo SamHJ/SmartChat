@@ -260,58 +260,70 @@ public class DataSub extends AppCompatActivity {
     }
 
     public void AcceptFriendRequest(final String senderUserID, final String receiverUserID) {
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
+        try {
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
 
+            usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            String friednusername = dataSnapshot.child("username").getValue().toString();
+                            final Map<String, Object> friendsMap = new HashMap<String, Object>();
+                            friendsMap.put("friendsname", friednusername);
+                            friendsMap.put("date", saveCurrentDate);
 
+                            usersRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.exists()) {
+                                        try {
+                                            String onlineuserfriednusername = dataSnapshot.child("username").getValue().toString();
+                                            final Map<String, Object> onlineUserfriendsMap = new HashMap<String, Object>();
+                                            onlineUserfriendsMap.put("friendsname", onlineuserfriednusername);
+                                            onlineUserfriendsMap.put("date", saveCurrentDate);
 
-        usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    String friednusername = dataSnapshot.child("username").getValue().toString();
-                    final Map<String,Object> friendsMap = new HashMap<String, Object>();
-                    friendsMap.put("friendsname", friednusername);
-                    friendsMap.put("date", saveCurrentDate);
+                                            FriendsRef.child(senderUserID).child(receiverUserID).updateChildren(friendsMap)
+                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            if (task.isSuccessful()) {
+                                                                try {
+                                                                    FriendsRef.child(receiverUserID).child(senderUserID).updateChildren(onlineUserfriendsMap);
+                                                                } catch (Exception e) {
+                                                                    e.printStackTrace();
+                                                                }
+                                                            }
+                                                        }
+                                                    });
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
 
-                    usersRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-                                String onlineuserfriednusername = dataSnapshot.child("username").getValue().toString();
-                                final Map<String,Object> onlineUserfriendsMap = new HashMap<String, Object>();
-                                onlineUserfriendsMap.put("friendsname", onlineuserfriednusername);
-                                onlineUserfriendsMap.put("date", saveCurrentDate);
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                FriendsRef.child(senderUserID).child(receiverUserID).updateChildren(friendsMap)
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if(task.isSuccessful()){
-                                                    FriendsRef.child(receiverUserID).child(senderUserID).updateChildren(onlineUserfriendsMap);
-                                                }
-                                            }
-                                        });
-                            }
+                                }
+                            });
+                        }catch(Exception e){
+                            e.printStackTrace();
                         }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-
-
+                }
+            });
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

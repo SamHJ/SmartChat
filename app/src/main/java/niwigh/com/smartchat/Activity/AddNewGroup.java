@@ -243,29 +243,35 @@ public class AddNewGroup extends AppCompatActivity {
     }
 
     private void requestPermission() {
-
-        if(PackageManager.PERMISSION_GRANTED !=
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
-            }else {
-                //Yeah! I want both block to do the same thing, you can write your own logic, but this works for me.
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
+        try {
+            if (PackageManager.PERMISSION_GRANTED !=
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    //Yeah! I want both block to do the same thing, you can write your own logic, but this works for me.
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                }
+            } else {
+                //Permission Granted, lets go pick photo
+                startImageSelect();
             }
-        }else {
-            //Permission Granted, lets go pick photo
-            startImageSelect();
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
     private void startImageSelect() {
-
-        CropImage.activity()
-                .setGuidelines(CropImageView.Guidelines.ON)
-                .setAspectRatio(1,1)
-                .start(AddNewGroup.this);
+        try {
+            CropImage.activity()
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(1, 1)
+                    .start(AddNewGroup.this);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -273,414 +279,454 @@ public class AddNewGroup extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE){
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+        try {
+            if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
 
-            if(resultCode == RESULT_OK) {
+                if (resultCode == RESULT_OK) {
+                    try {
 
-                Uri resultUri = result.getUri();
-                File compressed_image_path = new File(resultUri.getPath());
-                try {
+                        Uri resultUri = result.getUri();
+                        File compressed_image_path = new File(resultUri.getPath());
+                        try {
 
-                    compressed_bitmap = new Compressor(this)
-                            .setMaxWidth(500)
-                            .setMaxHeight(500)
-                            .setQuality(80)
-                            .compressToBitmap(compressed_image_path);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                            compressed_bitmap = new Compressor(this)
+                                    .setMaxWidth(500)
+                                    .setMaxHeight(500)
+                                    .setQuality(80)
+                                    .compressToBitmap(compressed_image_path);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        compressed_bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+                        compressed_byte = byteArrayOutputStream.toByteArray();
+                        collection_image_select.setImageBitmap(compressed_bitmap);
+
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
                 }
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                compressed_bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
-                compressed_byte = byteArrayOutputStream.toByteArray();
-                collection_image_select.setImageBitmap(compressed_bitmap);
             }
+
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
     }
 
     @SuppressLint("SimpleDateFormat")
     private void uploadCollectionImage(final String collection_name){
+        try {
+            Calendar calFordTime = Calendar.getInstance();
+            SimpleDateFormat currentTime = new SimpleDateFormat("dd-MMMM-yyyy HH:mm");
+            saveCurrentTime = currentTime.format(calFordTime.getTime());
 
-        Calendar calFordTime = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("dd-MMMM-yyyy HH:mm");
-        saveCurrentTime = currentTime.format(calFordTime.getTime());
+            final StorageReference filePath = groupsImageRef.child(saveCurrentTime + "-collection-image.jpg");
+            filePath.putBytes(compressed_byte).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        //tell them that the image was stored in the storage
+                        //first we get the link of this image uploaded
 
-        final StorageReference filePath = groupsImageRef.child(saveCurrentTime + "-collection-image.jpg");
-                filePath.putBytes(compressed_byte).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @SuppressLint("SetTextI18n")
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            //tell them that the image was stored in the storage
-                            //first we get the link of this image uploaded
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                Uri downUrl = uri;
+                                final String fileUrl = downUrl.toString();
 
-                            filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    Uri downUrl = uri;
-                                    final String fileUrl = downUrl.toString();
+                                Map<String, Object> groupCollectionMap = new HashMap<String, Object>();
+                                groupCollectionMap.put("image", fileUrl);
+                                groupCollectionMap.put("name", collection_name);
 
-                                    Map<String, Object> groupCollectionMap = new HashMap<String, Object>();
-                                    groupCollectionMap.put("image", fileUrl);
-                                    groupCollectionMap.put("name", collection_name);
-
-                                    groupsRef.child(collection_name)
-                                            .updateChildren(groupCollectionMap)
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                getSupportActionBar().setTitle(group_name);
-                                                getSupportActionBar().setSubtitle("Add participants");
-                                                info_layout.setVisibility(View.GONE);
-                                                all_friends_to_add_recyclerview.setVisibility(View.VISIBLE);
-                                                loadingBar.dismiss();
+                                groupsRef.child(collection_name)
+                                        .updateChildren(groupCollectionMap)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    getSupportActionBar().setTitle(group_name);
+                                                    getSupportActionBar().setSubtitle("Add participants");
+                                                    info_layout.setVisibility(View.GONE);
+                                                    all_friends_to_add_recyclerview.setVisibility(View.VISIBLE);
+                                                    loadingBar.dismiss();
+                                                }
                                             }
-                                        }
-                                    });
+                                        });
 
-                                }
-                            });
-                        } else {
-                            String message = task.getException().getMessage();
-                            //{.....................
-                            //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                            ViewGroup viewGroup = findViewById(android.R.id.content);
+                            }
+                        });
+                    } else {
+                        String message = task.getException().getMessage();
+                        //{.....................
+                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                        ViewGroup viewGroup = findViewById(android.R.id.content);
 
-                            //then we will inflate the custom alert dialog xml that we created
-                            View dialogView = LayoutInflater.from(AddNewGroup.this).inflate(R.layout.error_dialog, viewGroup, false);
+                        //then we will inflate the custom alert dialog xml that we created
+                        View dialogView = LayoutInflater.from(AddNewGroup.this).inflate(R.layout.error_dialog, viewGroup, false);
 
 
-                            //Now we need an AlertDialog.Builder object
-                            AlertDialog.Builder builder = new AlertDialog.Builder(AddNewGroup.this);
+                        //Now we need an AlertDialog.Builder object
+                        AlertDialog.Builder builder = new AlertDialog.Builder(AddNewGroup.this);
 
-                            //setting the view of the builder to our custom view that we already inflated
-                            builder.setView(dialogView);
+                        //setting the view of the builder to our custom view that we already inflated
+                        builder.setView(dialogView);
 
-                            //finally creating the alert dialog and displaying it
-                            final AlertDialog alertDialog = builder.create();
+                        //finally creating the alert dialog and displaying it
+                        final AlertDialog alertDialog = builder.create();
 
-                            Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                            TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                            TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
 
-                            dialog_btn.setText("OK");
-                            success_title.setText("Error");
-                            success_text.setText(message);
+                        dialog_btn.setText("OK");
+                        success_title.setText("Error");
+                        success_text.setText(message);
 
-                            // if the OK button is clicked, close the success dialog
-                            dialog_btn.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    alertDialog.dismiss();
-                                }
-                            });
+                        // if the OK button is clicked, close the success dialog
+                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertDialog.dismiss();
+                            }
+                        });
 
-                            alertDialog.show();
-                            //...................}
-                            loadingBar.dismiss();
-                        }
-
+                        alertDialog.show();
+                        //...................}
+                        loadingBar.dismiss();
                     }
-                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                        loadingBar.setTitle("Uploading Collection Image");
-                        loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
-                        loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                        loadingBar.setProgress((int) progress);
-                        loadingBar.show();
-                        loadingBar.setCanceledOnTouchOutside(false);
-                    }
-                });
+
+                }
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    loadingBar.setTitle("Uploading Collection Image");
+                    loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
+                    loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingBar.setProgress((int) progress);
+                    loadingBar.show();
+                    loadingBar.setCanceledOnTouchOutside(false);
+                }
+            });
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 
     @SuppressLint({"SetTextI18n","SimpleDateFormat"})
     private void createNewGroup(Map<String, Object> usersMap) {
-        //add admin to the group
-        usersMap.put(currentUserID,currentUserID);
 
-        loadingBar.setTitle("Creating " + group_name +" group");
-        loadingBar.setMessage("a moment please...");
-        loadingBar.show();
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
-        //for time
-        Calendar calFordTime = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm");
-        saveCurrentTime = currentTime.format(calFordTime.getTime());
-        Map<String,Object> adminMap = new HashMap<String, Object>();
-        adminMap.put(currentUserID,currentUserID);
+        try {
+            //add admin to the group
+            usersMap.put(currentUserID, currentUserID);
 
-        Map<String, Object> group_details_map = new HashMap<>();
-        group_details_map.put("groupname", group_name);
-        group_details_map.put("users", usersMap);
-        group_details_map.put("couldjoin",could_join);
-        group_details_map.put("datecreated", saveCurrentDate);
-        group_details_map.put("timecreated", saveCurrentTime);
-        group_details_map.put("admins",adminMap);
-        group_details_map.put("groupdescription","");
+            loadingBar.setTitle("Creating " + group_name + " group");
+            loadingBar.setMessage("a moment please...");
+            loadingBar.show();
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
+            //for time
+            Calendar calFordTime = Calendar.getInstance();
+            SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm");
+            saveCurrentTime = currentTime.format(calFordTime.getTime());
+            Map<String, Object> adminMap = new HashMap<String, Object>();
+            adminMap.put(currentUserID, currentUserID);
 
-        groupsRef.child(collection_name).child("groups").child(group_name)
-                .setValue(group_details_map).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            Map<String, Object> group_details_map = new HashMap<>();
+            group_details_map.put("groupname", group_name);
+            group_details_map.put("users", usersMap);
+            group_details_map.put("couldjoin", could_join);
+            group_details_map.put("datecreated", saveCurrentDate);
+            group_details_map.put("timecreated", saveCurrentTime);
+            group_details_map.put("admins", adminMap);
+            group_details_map.put("groupdescription", "");
 
-                if(task.isSuccessful()){
-                    loadingBar.dismiss();
-                    Toasty.success(AddNewGroup.this,
-                            group_name + " group created successfully", Toasty.LENGTH_SHORT).show();
-                    finish();
-                    overridePendingTransition(R.anim.left_in, R.anim.right_out);
+            groupsRef.child(collection_name).child("groups").child(group_name)
+                    .setValue(group_details_map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+
+                    if (task.isSuccessful()) {
+                        loadingBar.dismiss();
+                        Toasty.success(AddNewGroup.this,
+                                group_name + " group created successfully", Toasty.LENGTH_SHORT).show();
+                        finish();
+                        overridePendingTransition(R.anim.left_in, R.anim.right_out);
+                    }
                 }
-            }
-        });
+            });
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void DisplayAllFriends() {
 
-        final int[] count = {0};
+        try {
+            final int[] count = {0};
 
-        usersMap = new HashMap<>();
+            usersMap = new HashMap<>();
 
-        FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder>
-                        (
-                                FindFriendsModel.class,
-                                R.layout.all_users_display_layout,
-                                FriendsViewHolder.class,
-                                usersRef.orderByChild("fullname")
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final FriendsViewHolder viewHolder,
-                                                      FindFriendsModel model, final int position) {
+            FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder>
+                            (
+                                    FindFriendsModel.class,
+                                    R.layout.all_users_display_layout,
+                                    FriendsViewHolder.class,
+                                    usersRef.orderByChild("fullname")
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final FriendsViewHolder viewHolder,
+                                                          FindFriendsModel model, final int position) {
 
-                        viewHolder.setStatus(model.getStatus());
-                        viewHolder.setUsername(model.getUsername());
+                            viewHolder.setStatus(model.getStatus());
+                            viewHolder.setUsername(model.getUsername());
 
-                        final String usersIDs = getRef(position).getKey();
-                        usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            final String usersIDs = getRef(position).getKey();
+                            usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                if(dataSnapshot.exists()){
-
-                                    final String type;
-                                    final String fullName = dataSnapshot.child("fullname").getValue() != null ? dataSnapshot.child("fullname").getValue().toString() : null;
-                                    final String userName = dataSnapshot.child("username").getValue() != null ? dataSnapshot.child("username").getValue().toString() : null;
-                                    final String userProfileImage = dataSnapshot.child("profileimage").getValue() != null ? dataSnapshot.child("profileimage").getValue().toString() : null;
-                                    final String userStatus = dataSnapshot.child("profilestatus").getValue() != null ? dataSnapshot.child("profilestatus").getValue().toString() : null;
-                                    final String userId = dataSnapshot.child("id").getValue() != null ? dataSnapshot.child("id").getValue().toString() : null;
-
-
+                                    if (dataSnapshot.exists()) {
+                                        try {
+                                            final String type;
+                                            final String fullName = dataSnapshot.child("fullname").getValue() != null ? dataSnapshot.child("fullname").getValue().toString() : null;
+                                            final String userName = dataSnapshot.child("username").getValue() != null ? dataSnapshot.child("username").getValue().toString() : null;
+                                            final String userProfileImage = dataSnapshot.child("profileimage").getValue() != null ? dataSnapshot.child("profileimage").getValue().toString() : null;
+                                            final String userStatus = dataSnapshot.child("profilestatus").getValue() != null ? dataSnapshot.child("profilestatus").getValue().toString() : null;
+                                            final String userId = dataSnapshot.child("id").getValue() != null ? dataSnapshot.child("id").getValue().toString() : null;
 
 
-                                    if(dataSnapshot.hasChild("userState")){
-                                        type = dataSnapshot.child("userState").child("type").getValue().toString();
-                                        if(type.equals("Online")){
-                                            viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
-                                            viewHolder.offlineStatusImage.setVisibility(View.GONE);
-                                        }
-                                        else {
-                                            viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
-                                            viewHolder.onlineStatusImage.setVisibility(View.GONE);
-                                        }
-
-                                    }
-
-
-                                    viewHolder.setFullname(fullName);
-                                    viewHolder.setUsername(userName);
-                                    viewHolder.setStatus(userStatus);
-                                    viewHolder.setProfileimage(AddNewGroup.this, userProfileImage);
-
-
-                                    viewHolder.selected_friend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                        @SuppressLint("RestrictedApi")
-                                        @Override
-                                        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-
-                                            if(compoundButton.isChecked()){
-                                                usersMap.put(userId,userId);
-                                                if(usersMap.isEmpty()){
-                                                    add_friends_fab.setVisibility(View.GONE);
-                                                    count[0] = 0;
-                                                }else {
-                                                    add_friends_fab.setVisibility(View.VISIBLE);
-                                                    count[0] = count[0] +1;
+                                            if (dataSnapshot.hasChild("userState")) {
+                                                type = dataSnapshot.child("userState").child("type").getValue().toString();
+                                                if (type.equals("Online")) {
+                                                    viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
+                                                    viewHolder.offlineStatusImage.setVisibility(View.GONE);
+                                                } else {
+                                                    viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
+                                                    viewHolder.onlineStatusImage.setVisibility(View.GONE);
                                                 }
-                                            }else {
-                                                if(usersMap.containsKey(userId)){
-                                                    usersMap.remove(userId);
-                                                    if (usersMap.isEmpty()){
-                                                        add_friends_fab.setVisibility(View.GONE);
-                                                        count[0] = 0;
-                                                    }else {
-                                                        add_friends_fab.setVisibility(View.VISIBLE);
-                                                        count[0] = count[0] -1;
-                                                    }
-                                                }
+
                                             }
 
-                                            getSupportActionBar().setSubtitle("Add Participants" + " ("+ count[0] +")");
 
-                                            add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                            viewHolder.setFullname(fullName);
+                                            viewHolder.setUsername(userName);
+                                            viewHolder.setStatus(userStatus);
+                                            viewHolder.setProfileimage(AddNewGroup.this, userProfileImage);
+
+
+                                            viewHolder.selected_friend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                                @SuppressLint("RestrictedApi")
                                                 @Override
-                                                public void onClick(View view) {
-                                                    if(usersMap.isEmpty()){
-                                                        utilities.customErrorDialog(currentView,
-                                                                "OK","Error",
-                                                                "Select atleast one participant for this group!");
-                                                    }else{
-                                                        createNewGroup(usersMap);
+                                                public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                                                    try {
+                                                        if (compoundButton.isChecked()) {
+                                                            usersMap.put(userId, userId);
+                                                            if (usersMap.isEmpty()) {
+                                                                add_friends_fab.setVisibility(View.GONE);
+                                                                count[0] = 0;
+                                                            } else {
+                                                                add_friends_fab.setVisibility(View.VISIBLE);
+                                                                count[0] = count[0] + 1;
+                                                            }
+                                                        } else {
+                                                            if (usersMap.containsKey(userId)) {
+                                                                usersMap.remove(userId);
+                                                                if (usersMap.isEmpty()) {
+                                                                    add_friends_fab.setVisibility(View.GONE);
+                                                                    count[0] = 0;
+                                                                } else {
+                                                                    add_friends_fab.setVisibility(View.VISIBLE);
+                                                                    count[0] = count[0] - 1;
+                                                                }
+                                                            }
+                                                        }
+
+                                                        getSupportActionBar().setSubtitle("Add Participants" + " (" + count[0] + ")");
+
+                                                        add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(View view) {
+                                                                if (usersMap.isEmpty()) {
+                                                                    utilities.customErrorDialog(currentView,
+                                                                            "OK", "Error",
+                                                                            "Select atleast one participant for this group!");
+                                                                } else {
+                                                                    createNewGroup(usersMap);
+                                                                }
+                                                            }
+                                                        });
+
+                                                    } catch (Exception e) {
+                                                        e.printStackTrace();
                                                     }
+
                                                 }
                                             });
-
+                                        }catch(Exception e){
+                                            e.printStackTrace();
                                         }
-                                    });
+                                        }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
                                 }
-                            }
+                            });
+                        }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                        @Override
+                        public int getItemCount() {
+                            return super.getItemCount();
+                        }
+                    };
 
-                            }
-                        });
-                    }
+            all_friends_to_add_recyclerview.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
 
-                    @Override
-                    public int getItemCount() {
-                        return super.getItemCount();
-                    }
-                };
-
-        all_friends_to_add_recyclerview.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void FirebaseFriends(String searchText){
+        try {
+            final int[] count = {0};
 
-        final int[] count = {0};
+            usersMap = new HashMap<>();
 
-        usersMap = new HashMap<>();
+            Query firebaseSearchQuery = usersRef.orderByChild("fullname").startAt(searchText).endAt(searchText + "\uf0ff");
 
-        Query firebaseSearchQuery = usersRef.orderByChild("fullname").startAt(searchText).endAt(searchText + "\uf0ff");
+            FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder>
+                            (
+                                    FindFriendsModel.class,
+                                    R.layout.all_users_display_layout,
+                                    FriendsViewHolder.class,
+                                    firebaseSearchQuery
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final FriendsViewHolder viewHolder, FindFriendsModel model, int position) {
 
-        FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<FindFriendsModel, FriendsViewHolder>
-                        (
-                                FindFriendsModel.class,
-                                R.layout.all_users_display_layout,
-                                FriendsViewHolder.class,
-                                firebaseSearchQuery
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final FriendsViewHolder viewHolder, FindFriendsModel model, int position) {
+                            try {
+                                viewHolder.setStatus(model.getStatus());
+                                viewHolder.setUsername(model.getUsername());
 
-                        viewHolder.setStatus(model.getStatus());
-                        viewHolder.setUsername(model.getUsername());
+                                final String usersIDs = getRef(position).getKey();
+                                usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        final String usersIDs = getRef(position).getKey();
-                        usersRef.child(usersIDs).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                if(dataSnapshot.exists()){
-                                    final String type;
-                                    final String fullName = dataSnapshot.child("fullname").getValue() != null ? dataSnapshot.child("fullname").getValue().toString() : null;
-                                    final String userName = dataSnapshot.child("username").getValue() != null ? dataSnapshot.child("username").getValue().toString() : null;
-                                    final String userProfileImage = dataSnapshot.child("profileimage").getValue() != null ? dataSnapshot.child("profileimage").getValue().toString() : null;
-                                    final String userStatus = dataSnapshot.child("profilestatus").getValue() != null ? dataSnapshot.child("profilestatus").getValue().toString() : null;
-                                    final String userId = dataSnapshot.child("id").getValue() != null ? dataSnapshot.child("id").getValue().toString() : null;
-
+                                        if (dataSnapshot.exists()) {
+                                            try {
+                                                final String type;
+                                                final String fullName = dataSnapshot.child("fullname").getValue() != null ? dataSnapshot.child("fullname").getValue().toString() : null;
+                                                final String userName = dataSnapshot.child("username").getValue() != null ? dataSnapshot.child("username").getValue().toString() : null;
+                                                final String userProfileImage = dataSnapshot.child("profileimage").getValue() != null ? dataSnapshot.child("profileimage").getValue().toString() : null;
+                                                final String userStatus = dataSnapshot.child("profilestatus").getValue() != null ? dataSnapshot.child("profilestatus").getValue().toString() : null;
+                                                final String userId = dataSnapshot.child("id").getValue() != null ? dataSnapshot.child("id").getValue().toString() : null;
 
 
-                                    if(dataSnapshot.hasChild("userState")){
-                                        type = dataSnapshot.child("userState").child("type").getValue().toString();
-                                        if(type.equals("Online")){
-                                            viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
-                                            viewHolder.offlineStatusImage.setVisibility(View.GONE);
-                                        }
-                                        else {
-                                            viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
-                                            viewHolder.onlineStatusImage.setVisibility(View.GONE);
+                                                if (dataSnapshot.hasChild("userState")) {
+                                                    type = dataSnapshot.child("userState").child("type").getValue().toString();
+                                                    if (type.equals("Online")) {
+                                                        viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
+                                                        viewHolder.offlineStatusImage.setVisibility(View.GONE);
+                                                    } else {
+                                                        viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
+                                                        viewHolder.onlineStatusImage.setVisibility(View.GONE);
+                                                    }
+
+                                                }
+
+
+                                                viewHolder.setFullname(fullName);
+                                                viewHolder.setUsername(userName);
+                                                viewHolder.setStatus(userStatus);
+                                                viewHolder.setProfileimage(AddNewGroup.this, userProfileImage);
+
+                                                viewHolder.selected_friend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                                    @SuppressLint("RestrictedApi")
+                                                    @Override
+                                                    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                                                        try {
+                                                            if (compoundButton.isChecked()) {
+                                                                usersMap.put(userId, userId);
+                                                                if (usersMap.isEmpty()) {
+                                                                    add_friends_fab.setVisibility(View.GONE);
+                                                                    count[0] = 0;
+                                                                } else {
+                                                                    add_friends_fab.setVisibility(View.VISIBLE);
+                                                                    count[0] = count[0] + 1;
+                                                                }
+                                                            } else {
+                                                                if (usersMap.containsKey(userId)) {
+                                                                    usersMap.remove(userId);
+                                                                    if (usersMap.isEmpty()) {
+                                                                        add_friends_fab.setVisibility(View.GONE);
+                                                                        count[0] = 0;
+                                                                    } else {
+                                                                        add_friends_fab.setVisibility(View.VISIBLE);
+                                                                        count[0] = count[0] - 1;
+                                                                    }
+                                                                }
+                                                            }
+                                                            getSupportActionBar().setSubtitle("Add Participants" + " (" + count[0] + ")");
+
+                                                            add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(View view) {
+                                                                    if (usersMap.isEmpty()) {
+                                                                        utilities.customErrorDialog(currentView,
+                                                                                "OK", "Error",
+                                                                                "Select atleast one participant for this group!");
+                                                                    } else {
+                                                                        createNewGroup(usersMap);
+                                                                    }
+                                                                }
+                                                            });
+
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+
+                                                    }
+                                                });
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
                                         }
 
                                     }
 
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                    viewHolder.setFullname(fullName);
-                                    viewHolder.setUsername(userName);
-                                    viewHolder.setStatus(userStatus);
-                                    viewHolder.setProfileimage(AddNewGroup.this, userProfileImage);
+                                    }
+                                });
 
-                                    viewHolder.selected_friend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                        @SuppressLint("RestrictedApi")
-                                        @Override
-                                        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                                            if(compoundButton.isChecked()){
-                                                usersMap.put(userId,userId);
-                                                if(usersMap.isEmpty()){
-                                                    add_friends_fab.setVisibility(View.GONE);
-                                                    count[0] = 0;
-                                                }else {
-                                                    add_friends_fab.setVisibility(View.VISIBLE);
-                                                    count[0] = count[0] +1;
-                                                }
-                                            }else {
-                                                if(usersMap.containsKey(userId)){
-                                                    usersMap.remove(userId);
-                                                    if (usersMap.isEmpty()){
-                                                        add_friends_fab.setVisibility(View.GONE);
-                                                        count[0] = 0;
-                                                    }else {
-                                                        add_friends_fab.setVisibility(View.VISIBLE);
-                                                        count[0] = count[0] -1;
-                                                    }
-                                                }
-                                            }
-                                            getSupportActionBar().setSubtitle("Add Participants" + " ("+ count[0] +")");
-
-                                            add_friends_fab.setOnClickListener(new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View view) {
-                                                    if(usersMap.isEmpty()){
-                                                        utilities.customErrorDialog(currentView,
-                                                                "OK","Error",
-                                                                "Select atleast one participant for this group!");
-                                                    }else{
-                                                        createNewGroup(usersMap);
-                                                    }
-                                                }
-                                            });
-
-                                        }
-                                    });
-
-                                }
-
+                            }catch(Exception e){
+                                e.printStackTrace();
                             }
+                        }
+                    };
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+            all_friends_to_add_recyclerview.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
 
-                            }
-                        });
-                    }
-                };
-
-        all_friends_to_add_recyclerview.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
-
+        }catch(Exception e){
+        e.printStackTrace();
+    }
     }
 
     public static class FriendsViewHolder extends RecyclerView.ViewHolder {
@@ -714,8 +760,11 @@ public class AddNewGroup extends AppCompatActivity {
 
                           @Override
                           public void onError() {
-
-                              Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(friendsprofileimage);
+                              try {
+                                  Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(friendsprofileimage);
+                              }catch(Exception e){
+                                  e.printStackTrace();
+                              }
                           }
                       });
           }catch (Exception e){

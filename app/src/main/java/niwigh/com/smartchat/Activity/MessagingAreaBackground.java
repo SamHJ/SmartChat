@@ -185,18 +185,22 @@ public class MessagingAreaBackground extends AppCompatActivity {
 
 
     private void requestPermission() {
-        if(PackageManager.PERMISSION_GRANTED !=
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
-            }else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
+        try {
+            if (PackageManager.PERMISSION_GRANTED !=
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                }
+            } else {
+                //Permission Granted, lets go pick photo
+                selectImageFromGallery();
             }
-        }else {
-            //Permission Granted, lets go pick photo
-            selectImageFromGallery();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -210,20 +214,24 @@ public class MessagingAreaBackground extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == gallery_Pic && resultCode == RESULT_OK &&
-                data != null) {
-            //extract absolute image path from Uri
-            Uri uri = data.getData();
-            Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), uri, new String[]{MediaStore.Images.Media.DATA});
+        try {
+            if (requestCode == gallery_Pic && resultCode == RESULT_OK &&
+                    data != null) {
+                //extract absolute image path from Uri
+                Uri uri = data.getData();
+                Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), uri, new String[]{MediaStore.Images.Media.DATA});
 
-            if(cursor != null && cursor.moveToFirst()) {
-                String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+                if (cursor != null && cursor.moveToFirst()) {
+                    String path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
 
-                //Create ImageCompressTask and execute with Executor.
-                imageCompressTask = new ImageCompressTask(this, path, iImageCompressTaskListener);
+                    //Create ImageCompressTask and execute with Executor.
+                    imageCompressTask = new ImageCompressTask(this, path, iImageCompressTaskListener);
 
-                mExecutorService.execute(imageCompressTask);
+                    mExecutorService.execute(imageCompressTask);
+                }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -231,40 +239,43 @@ public class MessagingAreaBackground extends AppCompatActivity {
     private IImageCompressTaskListener iImageCompressTaskListener = new IImageCompressTaskListener() {
         @Override
         public void onComplete(List<File> compressed) {
-            //photo compressed. Yay!
+            try {
+                //photo compressed. Yay!
 
-            //prepare for uploads. Use an Http library like Retrofit, Volley or async-http-client (My favourite)
+                //prepare for uploads. Use an Http library like Retrofit, Volley or async-http-client (My favourite)
 
-            File file = compressed.get(0);
-            final Uri compressedImageUri = Uri.fromFile(file);
+                File file = compressed.get(0);
+                final Uri compressedImageUri = Uri.fromFile(file);
 
-            Log.d("ImageCompressor", "New photo size ==> " + file.length()); //log new file size.
+                Log.d("ImageCompressor", "New photo size ==> " + file.length()); //log new file size.
 
-            try{
-                Picasso.with(MessagingAreaBackground.this).load(compressedImageUri).into(new Target(){
+                try {
+                    Picasso.with(MessagingAreaBackground.this).load(compressedImageUri).into(new Target() {
 
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        bg_settings_layout.setBackground(new BitmapDrawable(getResources(), bitmap));
-                        storeImageToPref(compressedImageUri);
-                    }
+                        @Override
+                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                            bg_settings_layout.setBackground(new BitmapDrawable(getResources(), bitmap));
+                            storeImageToPref(compressedImageUri);
+                        }
 
-                    @Override
-                    public void onBitmapFailed(final Drawable errorDrawable) {
-                        Log.d("TAG", "FAILED");
-                        Toast.makeText(MessagingAreaBackground.this, "Couldn't set image as background!",
-                                Toast.LENGTH_SHORT).show();
-                    }
+                        @Override
+                        public void onBitmapFailed(final Drawable errorDrawable) {
+                            Log.d("TAG", "FAILED");
+                            Toast.makeText(MessagingAreaBackground.this, "Couldn't set image as background!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
 
-                    @Override
-                    public void onPrepareLoad(final Drawable placeHolderDrawable) {
-                        Log.d("TAG", "Prepare Load");
-                    }
-                });
+                        @Override
+                        public void onPrepareLoad(final Drawable placeHolderDrawable) {
+                            Log.d("TAG", "Prepare Load");
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }catch (Exception e){
                 e.printStackTrace();
             }
-
         }
 
         @Override

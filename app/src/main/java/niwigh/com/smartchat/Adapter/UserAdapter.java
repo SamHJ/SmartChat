@@ -55,63 +55,72 @@ public class UserAdapter extends RecyclerView.Adapter <UserAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, int position) {
-        final Activity activity = (Activity) viewHolder.itemView.getContext();
 
-        final User user = mUsers.get(position);
-        viewHolder.fullname.setText(user.getFullname());
-        try{
-            Picasso.with(viewHolder.profile_image.getContext()).load(user.getProfileimage()).into(viewHolder.profile_image);
+        try {
+            final Activity activity = (Activity) viewHolder.itemView.getContext();
 
-            Picasso.with(viewHolder.profile_image.getContext()).load(user.getProfileimage()).networkPolicy(NetworkPolicy.OFFLINE)
-                    .placeholder(R.drawable.easy_to_use).into(viewHolder.profile_image,
-                    new Callback() {
-                        @Override
-                        public void onSuccess() {
+            final User user = mUsers.get(position);
+            viewHolder.fullname.setText(user.getFullname());
+            try {
+                Picasso.with(viewHolder.profile_image.getContext()).load(user.getProfileimage()).into(viewHolder.profile_image);
 
-                        }
+                Picasso.with(viewHolder.profile_image.getContext()).load(user.getProfileimage()).networkPolicy(NetworkPolicy.OFFLINE)
+                        .placeholder(R.drawable.easy_to_use).into(viewHolder.profile_image,
+                        new Callback() {
+                            @Override
+                            public void onSuccess() {
 
-                        @Override
-                        public void onError() {
+                            }
 
-                            Picasso.with(viewHolder.profile_image.getContext()).load(user.getProfileimage())
-                                    .placeholder(R.drawable.easy_to_use).into(viewHolder.profile_image);
-                        }
-                    });
+                            @Override
+                            public void onError() {
+                                try {
+                                    Picasso.with(viewHolder.profile_image.getContext()).load(user.getProfileimage())
+                                            .placeholder(R.drawable.easy_to_use).into(viewHolder.profile_image);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (isChat) {
+                lastMessage(user.getId(), viewHolder.lastmessage, viewHolder.last_msg_time);
+            } else {
+                viewHolder.lastmessage.setVisibility(View.GONE);
+                viewHolder.last_msg_time.setVisibility(View.GONE);
+            }
+
+            if (isChat) {
+                if (user.getStatus().equals("Online")) {
+                    viewHolder.user_online_icon.setVisibility(View.VISIBLE);
+                    viewHolder.user_offline_icon.setVisibility(View.GONE);
+                } else {
+                    viewHolder.user_online_icon.setVisibility(View.GONE);
+                    viewHolder.user_offline_icon.setVisibility(View.VISIBLE);
+                }
+            } else {
+                viewHolder.user_online_icon.setVisibility(View.GONE);
+                viewHolder.user_offline_icon.setVisibility(View.GONE);
+            }
+
+            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(mContext, MessagingArea.class);
+                    intent.putExtra("visit_user_id", user.getId());
+                    intent.putExtra("userFullName", user.getFullname());
+                    intent.putExtra("userName", user.getUsername());
+                    mContext.startActivity(intent);
+                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                }
+            });
+
         }catch (Exception e){
             e.printStackTrace();
         }
-
-        if(isChat){
-            lastMessage(user.getId(), viewHolder.lastmessage, viewHolder.last_msg_time);
-        }else {
-            viewHolder.lastmessage.setVisibility(View.GONE);
-            viewHolder.last_msg_time.setVisibility(View.GONE);
-        }
-
-        if(isChat){
-            if(user.getStatus().equals("Online")){
-                viewHolder.user_online_icon.setVisibility(View.VISIBLE);
-                viewHolder.user_offline_icon.setVisibility(View.GONE);
-            }else {
-                viewHolder.user_online_icon.setVisibility(View.GONE);
-                viewHolder.user_offline_icon.setVisibility(View.VISIBLE);
-            }
-        }else {
-            viewHolder.user_online_icon.setVisibility(View.GONE);
-            viewHolder.user_offline_icon.setVisibility(View.GONE);
-        }
-
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(mContext, MessagingArea.class);
-                intent.putExtra("visit_user_id", user.getId());
-                intent.putExtra("userFullName", user.getFullname());
-                intent.putExtra("userName", user.getUsername());
-                mContext.startActivity(intent);
-                activity.overridePendingTransition(R.anim.right_in,R.anim.left_out);
-            }
-        });
 
     }
 
@@ -134,73 +143,81 @@ public class UserAdapter extends RecyclerView.Adapter <UserAdapter.ViewHolder>{
             user_offline_icon = itemView.findViewById(R.id.user_offline_icon);
             lastmessage = itemView.findViewById(R.id.search_all_users_profile_school);
             last_msg_time = itemView.findViewById(R.id.search_all_users_profile_username);
-
-
-
         }
     }
 
 
     //check for last message
     public void lastMessage(final String userId, final TextView last_msg, final TextView last_msg_time){
-        theLastMessage = "default";
-        theLastMessageTime = "default";
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        final String onlineuId = firebaseUser.getUid();
+        try {
+            theLastMessage = "default";
+            theLastMessageTime = "default";
+            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            final String onlineuId = firebaseUser.getUid();
 
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Messages");
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Messages");
 
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                        String keyone = snapshot.getKey();
-                        for(DataSnapshot snapshot1 : snapshot.child(keyone).getChildren()){
+            databaseReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            try {
+                                String keyone = snapshot.getKey();
+                                for (DataSnapshot snapshot1 : snapshot.child(keyone).getChildren()) {
 
-                            String key_two = snapshot1.getKey();
+                                    try {
+                                        String key_two = snapshot1.getKey();
 
-                            for(DataSnapshot snapshot2 : snapshot1.child(key_two).getChildren()){
-                                MessagesModel messagesModel = snapshot2.getValue(MessagesModel.class);
-                                String from = messagesModel.getFrom();
-                                String to = messagesModel.getTo();
-                                boolean isseen = messagesModel.isIsseen();
-                                String time = messagesModel.getTime();
-                                String message = messagesModel.getMessage();
-                                if(to.equals(onlineuId) && from.equals(userId) ||
-                                        to.equals(userId) && from.equals(onlineuId)){
+                                        for (DataSnapshot snapshot2 : snapshot1.child(key_two).getChildren()) {
+                                            try {
+                                                MessagesModel messagesModel = snapshot2.getValue(MessagesModel.class);
+                                                String from = messagesModel.getFrom();
+                                                String to = messagesModel.getTo();
+                                                boolean isseen = messagesModel.isIsseen();
+                                                String time = messagesModel.getTime();
+                                                String message = messagesModel.getMessage();
+                                                if (to.equals(onlineuId) && from.equals(userId) ||
+                                                        to.equals(userId) && from.equals(onlineuId)) {
 
-                                    Toast.makeText(mContext, key_two, Toast.LENGTH_SHORT).show();
-                                    theLastMessage = message;
-                                    theLastMessageTime = time;
+                                                    Toast.makeText(mContext, key_two, Toast.LENGTH_SHORT).show();
+                                                    theLastMessage = message;
+                                                    theLastMessageTime = time;
+                                                }
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
                                 }
+                            }catch (Exception e){
+                                e.printStackTrace();
                             }
-
                         }
-                    }
-                    switch (theLastMessage){
-                        case "default":
+                        if ("default".equals(theLastMessage)) {
                             last_msg.setText("No message");
                             last_msg_time.setText("No Time");
-                            break;
-                        default:
+                        } else {
                             last_msg.setText(theLastMessage);
                             last_msg_time.setText(theLastMessageTime);
-                            break;
+                        }
+                        theLastMessage = "default";
+                        theLastMessageTime = "default";
                     }
-                    theLastMessage = "default";
-                    theLastMessageTime = "default";
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
-
-
 
 }

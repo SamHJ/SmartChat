@@ -93,167 +93,188 @@ public class AddParticipantsToGroup extends AppCompatActivity {
     }
 
     private void DisplayAllUsers() {
+        try {
+            final String group_Name = getIntent().getStringExtra("group_Name");
+            final int[] count = {0};
 
-        final String group_Name = getIntent().getStringExtra("group_Name");
-        final int[] count = {0};
+            final Map<String, Object> usersMap = new HashMap<>();
+            FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
+                    new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
+                            (
+                                    FindFriendsModel.class,
+                                    R.layout.all_users_to_add_to_group,
+                                    FindFriendsviewHolder.class,
+                                    allUsersRef
 
-        final Map<String,Object> usersMap = new HashMap<>();
-        FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
-                new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
-                        (
-                                FindFriendsModel.class,
-                                R.layout.all_users_to_add_to_group,
-                                FindFriendsviewHolder.class,
-                                allUsersRef
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
 
-                        ) {
-                    @Override
-                    protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
+                            try {
 
+                                final String key = getRef(position).getKey();
+                                viewHolder.setFullname(model.getFullname());
+                                viewHolder.setUsername(model.getUsername());
+                                viewHolder.setUserLocation(model.getUserLocation());
+                                viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
 
-                        final String key = getRef(position).getKey();
-                        viewHolder.setFullname(model.getFullname());
-                        viewHolder.setUsername(model.getUsername());
-                        viewHolder.setUserLocation(model.getUserLocation());
-                        viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
+                                viewHolder.select_user_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                    @SuppressLint("RestrictedApi")
+                                    @Override
+                                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                                        try {
+                                            if (compoundButton.isChecked()) {
+                                                usersMap.put(key, key);
+                                                if (usersMap.isEmpty()) {
+                                                    add_friends_fab.setVisibility(View.GONE);
+                                                    count[0] = 0;
+                                                } else {
+                                                    add_friends_fab.setVisibility(View.VISIBLE);
+                                                    count[0] = count[0] + 1;
+                                                }
+                                            } else {
+                                                if (usersMap.containsKey(key)) {
+                                                    usersMap.remove(key);
+                                                    if (usersMap.isEmpty()) {
+                                                        add_friends_fab.setVisibility(View.GONE);
+                                                        count[0] = 0;
+                                                    } else {
+                                                        add_friends_fab.setVisibility(View.VISIBLE);
+                                                        count[0] = count[0] - 1;
+                                                    }
+                                                }
+                                            }
 
-                        viewHolder.select_user_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @SuppressLint("RestrictedApi")
-                            @Override
-                            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                                if(compoundButton.isChecked()){
-                                    usersMap.put(key,key);
-                                    if(usersMap.isEmpty()){
-                                        add_friends_fab.setVisibility(View.GONE);
-                                        count[0] = 0;
-                                    }else {
-                                        add_friends_fab.setVisibility(View.VISIBLE);
-                                        count[0] = count[0] +1;
-                                    }
-                                }else {
-                                    if(usersMap.containsKey(key)){
-                                        usersMap.remove(key);
-                                        if (usersMap.isEmpty()){
-                                            add_friends_fab.setVisibility(View.GONE);
-                                            count[0] = 0;
-                                        }else {
-                                            add_friends_fab.setVisibility(View.VISIBLE);
-                                            count[0] = count[0] -1;
+                                            getSupportActionBar().setSubtitle(group_Name + " (" + count[0] + ")");
+
+                                            add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    AddUserToGroup(usersMap);
+                                                }
+                                            });
+                                        }catch(Exception e){
+                                            e.printStackTrace();
                                         }
                                     }
-                                }
+                                });
 
-                                getSupportActionBar().setSubtitle(group_Name + " ("+ count[0] +")");
 
-                                add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                     @Override
-                                    public void onClick(View view) {
-                                        AddUserToGroup(usersMap);
+                                    public void onClick(View v) {
+                                        String visit_user_id = getRef(position).getKey();
+                                        Intent viewUserDetailsIntent = new Intent(AddParticipantsToGroup.this, PersonProfile.class);
+                                        viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
+                                        startActivity(viewUserDetailsIntent);
+                                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
                                     }
                                 });
+
+                            }catch(Exception e){
+                                e.printStackTrace();
                             }
-                        });
 
+                        }
+                    };
+            all_users_recyclerview.setAdapter(firebaseRecyclerAdapter);
 
-
-                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                String visit_user_id = getRef(position).getKey();
-                                Intent viewUserDetailsIntent = new Intent(AddParticipantsToGroup.this, PersonProfile.class);
-                                viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
-                                startActivity(viewUserDetailsIntent);
-                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                            }
-                        });
-
-                    }
-                };
-        all_users_recyclerview.setAdapter(firebaseRecyclerAdapter);
-
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void searchForFriends(String searchBoxInput) {
 
-        Query findusersSearchQuery = allUsersRef.orderByChild("fullname")
-                .startAt(searchBoxInput).endAt(searchBoxInput + "\uf8ff");
+        try {
+            Query findusersSearchQuery = allUsersRef.orderByChild("fullname")
+                    .startAt(searchBoxInput).endAt(searchBoxInput + "\uf8ff");
 
-        final String group_Name = getIntent().getStringExtra("group_Name");
-        final int[] count = {0};
+            final String group_Name = getIntent().getStringExtra("group_Name");
+            final int[] count = {0};
 
-        final Map<String,Object> usersMap = new HashMap<>();
-        FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
-                new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
-                        (
-                                FindFriendsModel.class,
-                                R.layout.all_users_to_add_to_group,
-                                FindFriendsviewHolder.class,
-                                findusersSearchQuery
+            final Map<String, Object> usersMap = new HashMap<>();
+            FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder> firebaseRecyclerAdapter =
+                    new FirebaseRecyclerAdapter<FindFriendsModel, FindFriendsviewHolder>
+                            (
+                                    FindFriendsModel.class,
+                                    R.layout.all_users_to_add_to_group,
+                                    FindFriendsviewHolder.class,
+                                    findusersSearchQuery
 
-                        ) {
-                    @Override
-                    protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final FindFriendsviewHolder viewHolder, FindFriendsModel model, final int position) {
 
+                            try {
 
-                        final String key = getRef(position).getKey();
-                        viewHolder.setFullname(model.getFullname());
-                        viewHolder.setUsername(model.getUsername());
-                        viewHolder.setUserLocation(model.getUserLocation());
-                        viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
+                                final String key = getRef(position).getKey();
+                                viewHolder.setFullname(model.getFullname());
+                                viewHolder.setUsername(model.getUsername());
+                                viewHolder.setUserLocation(model.getUserLocation());
+                                viewHolder.setProfileimage(getApplicationContext(), model.getProfileimage());
 
-                        viewHolder.select_user_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @SuppressLint("RestrictedApi")
-                            @Override
-                            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                                if(compoundButton.isChecked()){
-                                    usersMap.put(key,key);
-                                    if(usersMap.isEmpty()){
-                                        add_friends_fab.setVisibility(View.GONE);
-                                        count[0] = 0;
-                                    }else {
-                                        add_friends_fab.setVisibility(View.VISIBLE);
-                                        count[0] = count[0] +1;
-                                    }
-                                }else {
-                                    if(usersMap.containsKey(key)){
-                                        usersMap.remove(key);
-                                        if (usersMap.isEmpty()){
-                                            add_friends_fab.setVisibility(View.GONE);
-                                            count[0] = 0;
-                                        }else {
-                                            add_friends_fab.setVisibility(View.VISIBLE);
-                                            count[0] = count[0] -1;
+                                viewHolder.select_user_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                    @SuppressLint("RestrictedApi")
+                                    @Override
+                                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                                        try {
+                                            if (compoundButton.isChecked()) {
+                                                usersMap.put(key, key);
+                                                if (usersMap.isEmpty()) {
+                                                    add_friends_fab.setVisibility(View.GONE);
+                                                    count[0] = 0;
+                                                } else {
+                                                    add_friends_fab.setVisibility(View.VISIBLE);
+                                                    count[0] = count[0] + 1;
+                                                }
+                                            } else {
+                                                if (usersMap.containsKey(key)) {
+                                                    usersMap.remove(key);
+                                                    if (usersMap.isEmpty()) {
+                                                        add_friends_fab.setVisibility(View.GONE);
+                                                        count[0] = 0;
+                                                    } else {
+                                                        add_friends_fab.setVisibility(View.VISIBLE);
+                                                        count[0] = count[0] - 1;
+                                                    }
+                                                }
+                                            }
+
+                                            getSupportActionBar().setSubtitle(group_Name + " (" + count[0] + ")");
+
+                                            add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    AddUserToGroup(usersMap);
+                                                }
+                                            });
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
                                         }
                                     }
-                                }
+                                });
 
-                                getSupportActionBar().setSubtitle(group_Name + " ("+ count[0] +")");
 
-                                add_friends_fab.setOnClickListener(new View.OnClickListener() {
+                                viewHolder.mView.setOnClickListener(new View.OnClickListener() {
                                     @Override
-                                    public void onClick(View view) {
-                                        AddUserToGroup(usersMap);
+                                    public void onClick(View v) {
+                                        String visit_user_id = getRef(position).getKey();
+                                        Intent viewUserDetailsIntent = new Intent(AddParticipantsToGroup.this, PersonProfile.class);
+                                        viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
+                                        startActivity(viewUserDetailsIntent);
+                                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
                                     }
                                 });
+                            }catch(Exception e){
+                                e.printStackTrace();
                             }
-                        });
-
-
-
-                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                String visit_user_id = getRef(position).getKey();
-                                Intent viewUserDetailsIntent = new Intent(AddParticipantsToGroup.this, PersonProfile.class);
-                                viewUserDetailsIntent.putExtra("visit_user_id", visit_user_id);
-                                startActivity(viewUserDetailsIntent);
-                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                            }
-                        });
-
-                    }
-                };
-        all_users_recyclerview.setAdapter(firebaseRecyclerAdapter);
+                        }
+                    };
+            all_users_recyclerview.setAdapter(firebaseRecyclerAdapter);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public static class FindFriendsviewHolder extends RecyclerView.ViewHolder {
@@ -281,8 +302,11 @@ public class AddParticipantsToGroup extends AppCompatActivity {
 
                           @Override
                           public void onError() {
-
-                              Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(userprofileimage);
+                              try {
+                                  Picasso.with(ctx).load(profileimage).placeholder(R.drawable.easy_to_use).into(userprofileimage);
+                              }catch(Exception e){
+                                  e.printStackTrace();
+                              }
                           }
                       });
           }catch (Exception e){
@@ -307,70 +331,74 @@ public class AddParticipantsToGroup extends AppCompatActivity {
 
 
     public void AddUserToGroup(Map<String, Object> usersMap){
-        final ProgressDialog loadingBar = new ProgressDialog(this);
-        loadingBar.setTitle("Adding participants");
-        loadingBar.setMessage("A moment please");
-        loadingBar.setCanceledOnTouchOutside(false);
-        loadingBar.setCancelable(false);
-        loadingBar.show();
-        String group_category = getIntent().getStringExtra("group_category");
-        String group_key = getIntent().getStringExtra("group_key");
-        DatabaseReference groupsUserRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(group_category)
-                .child("groups").child(group_key).child("users");
-        groupsUserRef.updateChildren(usersMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                loadingBar.dismiss();
-                Toasty.success(AddParticipantsToGroup.this,
-                        "Users added successfully", Toasty.LENGTH_LONG, true).show();
-                finish();
-                overridePendingTransition(R.anim.left_in, R.anim.right_out);
+        try {
+            final ProgressDialog loadingBar = new ProgressDialog(this);
+            loadingBar.setTitle("Adding participants");
+            loadingBar.setMessage("A moment please");
+            loadingBar.setCanceledOnTouchOutside(false);
+            loadingBar.setCancelable(false);
+            loadingBar.show();
+            String group_category = getIntent().getStringExtra("group_category");
+            String group_key = getIntent().getStringExtra("group_key");
+            DatabaseReference groupsUserRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(group_category)
+                    .child("groups").child(group_key).child("users");
+            groupsUserRef.updateChildren(usersMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    loadingBar.dismiss();
+                    Toasty.success(AddParticipantsToGroup.this,
+                            "Users added successfully", Toasty.LENGTH_LONG, true).show();
+                    finish();
+                    overridePendingTransition(R.anim.left_in, R.anim.right_out);
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                String message = e.getMessage();
-                //{.....................
-                //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                ViewGroup viewGroup = findViewById(android.R.id.content);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    String message = e.getMessage();
+                    //{.....................
+                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                    ViewGroup viewGroup = findViewById(android.R.id.content);
 
-                //then we will inflate the custom alert dialog xml that we created
-                View dialogView = LayoutInflater.from(AddParticipantsToGroup.this).inflate(R.layout.error_dialog, viewGroup, false);
+                    //then we will inflate the custom alert dialog xml that we created
+                    View dialogView = LayoutInflater.from(AddParticipantsToGroup.this).inflate(R.layout.error_dialog, viewGroup, false);
 
 
-                //Now we need an AlertDialog.Builder object
-                AlertDialog.Builder builder = new AlertDialog.Builder(AddParticipantsToGroup.this);
+                    //Now we need an AlertDialog.Builder object
+                    AlertDialog.Builder builder = new AlertDialog.Builder(AddParticipantsToGroup.this);
 
-                //setting the view of the builder to our custom view that we already inflated
-                builder.setView(dialogView);
+                    //setting the view of the builder to our custom view that we already inflated
+                    builder.setView(dialogView);
 
-                //finally creating the alert dialog and displaying it
-                final AlertDialog alertDialog = builder.create();
+                    //finally creating the alert dialog and displaying it
+                    final AlertDialog alertDialog = builder.create();
 
-                Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
 
-                dialog_btn.setText("OK");
-                success_title.setText("Error");
-                success_text.setText(message);
+                    dialog_btn.setText("OK");
+                    success_title.setText("Error");
+                    success_text.setText(message);
 
-                // if the OK button is clicked, close the success dialog
-                dialog_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        alertDialog.dismiss();
-                    }
-                });
+                    // if the OK button is clicked, close the success dialog
+                    dialog_btn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            alertDialog.dismiss();
+                        }
+                    });
 
-                alertDialog.show();
-                //...................}
+                    alertDialog.show();
+                    //...................}
 
-                loadingBar.dismiss();
-            }
-        });
+                    loadingBar.dismiss();
+                }
+            });
 
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 

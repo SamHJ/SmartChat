@@ -120,166 +120,183 @@ public class Groups extends AppCompatActivity {
     }
 
     public void DisplayAllGroups(){
-        FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder>
-                        (
-                                GroupCatModel.class,
-                                R.layout.groups_display_layout,
-                                GroupsViewHolder.class,
-                                groupsRef
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupCatModel model, int position) {
+        try {
+            FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder>
+                            (
+                                    GroupCatModel.class,
+                                    R.layout.groups_display_layout,
+                                    GroupsViewHolder.class,
+                                    groupsRef
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupCatModel model, int position) {
 
 
-                        final String collectionKey = getRef(position).getKey();
-                        groupsRef.child(collectionKey).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            try {
 
-                                if(dataSnapshot.exists()) {
+                                final String collectionKey = getRef(position).getKey();
+                                groupsRef.child(collectionKey).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                    final String groupname, groupimage;
-                                    if (dataSnapshot.hasChild("image") && dataSnapshot.hasChild("name")) {
+                                        if (dataSnapshot.exists()) {
 
+                                            try {
 
-                                        groupname = dataSnapshot.child("name").getValue().toString();
-                                        groupimage =
-                                                dataSnapshot.child("image").getValue() != null ? dataSnapshot.child("image").getValue().toString() : null;
-
-
-                                        viewHolder.setGroupimage(Groups.this, groupimage);
-                                        viewHolder.setGroupname(groupname);
-                                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                //open all the groups in this group category
-                                                Intent message_this_user = new Intent(Groups.this, AssociatedGroups.class);
-                                                message_this_user.putExtra("group_cat", groupname);
-                                                startActivity(message_this_user);
-                                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                            }
-                                        });
+                                                final String groupname, groupimage;
+                                                if (dataSnapshot.hasChild("image") && dataSnapshot.hasChild("name")) {
 
 
-                                        usersRef.child(currentUserID)
-                                                .child("userState").addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.exists()){
-                                                    if(dataSnapshot.hasChild("usertype")){
+                                                    groupname = dataSnapshot.child("name").getValue().toString();
+                                                    groupimage =
+                                                            dataSnapshot.child("image").getValue() != null ? dataSnapshot.child("image").getValue().toString() : null;
 
-                                                        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                                                            @Override
-                                                            public boolean onLongClick(View v) {
-                                                                CharSequence[] options_doc = new CharSequence[]{
-                                                                        "Update this collection",
-                                                                        "Add group to this collection",
-                                                                        "Delete this this collection",
-                                                                        "Cancel"
-                                                                };
-                                                                AlertDialog.Builder builderoptions_doc = 
-                                                                        new AlertDialog.Builder(Groups.this);
-                                                                builderoptions_doc.setTitle("What do you want to do?");
 
-                                                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                    viewHolder.setGroupimage(Groups.this, groupimage);
+                                                    viewHolder.setGroupname(groupname);
+                                                    viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(View view) {
+                                                            //open all the groups in this group category
+                                                            Intent message_this_user = new Intent(Groups.this, AssociatedGroups.class);
+                                                            message_this_user.putExtra("group_cat", groupname);
+                                                            startActivity(message_this_user);
+                                                            overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                        }
+                                                    });
 
-                                                                        if(which == 0){
-                                                                           //update group collection
-                                                                            updateGroupCollection(collectionKey,groupname
-                                                                                    ,groupimage);
-                                                                            dialog.dismiss();
 
-                                                                        }
-                                                                        else  if(which == 1){
-                                                                           //add group to collection
-                                                                            addGroupToCollection(collectionKey);
-                                                                            dialog.dismiss();
+                                                    usersRef.child(currentUserID)
+                                                            .child("userState").addValueEventListener(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                            if (dataSnapshot.exists()) {
+                                                                if (dataSnapshot.hasChild("usertype")) {
 
-                                                                        }else if(which == 2){
-                                                                            //delete group collection
-                                                                            android.support.v7.app.AlertDialog.Builder alertDialogBuilder =
-                                                                                    new android.support.v7.app.AlertDialog.Builder(Groups.this);
-                                                                            alertDialogBuilder.setMessage(Html.
-                                                                                    fromHtml("Are you sure you want to delete this group collection? " +
-                                                                                            "<br>All the groups within this collection would be deleted and this process" +
-                                                                                            " cannot be reversed!"));
-                                                                            alertDialogBuilder.setCancelable(false);
-                                                                            alertDialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                                                    viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                                                                        @Override
+                                                                        public boolean onLongClick(View v) {
+                                                                            CharSequence[] options_doc = new CharSequence[]{
+                                                                                    "Update this collection",
+                                                                                    "Add group to this collection",
+                                                                                    "Delete this this collection",
+                                                                                    "Cancel"
+                                                                            };
+                                                                            AlertDialog.Builder builderoptions_doc =
+                                                                                    new AlertDialog.Builder(Groups.this);
+                                                                            builderoptions_doc.setTitle("What do you want to do?");
+
+                                                                            builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
                                                                                 @Override
                                                                                 public void onClick(DialogInterface dialog, int which) {
-                                                                                    deleteGroupCollection(collectionKey,groupimage);
-                                                                                }
-                                                                            }).setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                                                                                @Override
-                                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                                    dialog.dismiss();
-                                                                                }
-                                                                            });
-                                                                            final android.support.v7.app.AlertDialog alertDialog = alertDialogBuilder.create();
 
-                                                                            alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
-                                                                                @SuppressLint("ResourceAsColor")
-                                                                                @Override
-                                                                                public void onShow(DialogInterface arg0) {
-                                                                                    alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(R.color.colorPrimary);
-                                                                                    alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(R.color.colorPrimary);
+                                                                                    if (which == 0) {
+                                                                                        //update group collection
+                                                                                        updateGroupCollection(collectionKey, groupname
+                                                                                                , groupimage);
+                                                                                        dialog.dismiss();
+
+                                                                                    } else if (which == 1) {
+                                                                                        //add group to collection
+                                                                                        addGroupToCollection(collectionKey);
+                                                                                        dialog.dismiss();
+
+                                                                                    } else if (which == 2) {
+                                                                                        //delete group collection
+                                                                                        android.support.v7.app.AlertDialog.Builder alertDialogBuilder =
+                                                                                                new android.support.v7.app.AlertDialog.Builder(Groups.this);
+                                                                                        alertDialogBuilder.setMessage(Html.
+                                                                                                fromHtml("Are you sure you want to delete this group collection? " +
+                                                                                                        "<br>All the groups within this collection would be deleted and this process" +
+                                                                                                        " cannot be reversed!"));
+                                                                                        alertDialogBuilder.setCancelable(false);
+                                                                                        alertDialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                                                                            @Override
+                                                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                                                deleteGroupCollection(collectionKey, groupimage);
+                                                                                            }
+                                                                                        }).setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                                                                            @Override
+                                                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                                                dialog.dismiss();
+                                                                                            }
+                                                                                        });
+                                                                                        final android.support.v7.app.AlertDialog alertDialog = alertDialogBuilder.create();
+
+                                                                                        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                                                                                            @SuppressLint("ResourceAsColor")
+                                                                                            @Override
+                                                                                            public void onShow(DialogInterface arg0) {
+                                                                                                alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(R.color.colorPrimary);
+                                                                                                alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(R.color.colorPrimary);
+                                                                                            }
+                                                                                        });
+                                                                                        alertDialog.show();
+                                                                                    }
                                                                                 }
                                                                             });
-                                                                            alertDialog.show();
+                                                                            builderoptions_doc.show();
+                                                                            return false;
                                                                         }
-                                                                    }
-                                                                });
-                                                                builderoptions_doc.show();
-                                                                return false;
+                                                                    });
+                                                                }
                                                             }
-                                                        });
-                                                    }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+                                                    groupsRef.child(collectionKey)
+                                                            .child("groups").addValueEventListener(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                            try {
+                                                                if (dataSnapshot.exists()) {
+                                                                    int countGroups = (int) dataSnapshot.getChildrenCount();
+                                                                    viewHolder.setGroupNoOfGroups(Integer.toString(countGroups));
+                                                                } else {
+                                                                    viewHolder.setGroupNoOfGroups("0");
+                                                                }
+                                                            } catch (Exception e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                        }
+                                                    });
+
+
                                                 }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
+                                        }
+                                    }
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
-                                        groupsRef.child(collectionKey)
-                                                .child("groups").addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.exists()){
-                                                    int countGroups = (int)dataSnapshot.getChildrenCount();
-                                                    viewHolder.setGroupNoOfGroups(Integer.toString(countGroups));
-                                                }else {
-                                                    viewHolder.setGroupNoOfGroups("0");
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
                                     }
-                                }
+                                });
+
+                            }catch (Exception e){
+                                e.printStackTrace();
                             }
+                        }
+                    };
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                };
-
-        list_view.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
+            list_view.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void addGroupToCollection(String collectionKey){
@@ -300,25 +317,33 @@ public class Groups extends AppCompatActivity {
     }
 
     private void deleteGroupCollection(String collectionKey,String collection_image) {
-        final ProgressDialog dialog = new ProgressDialog(Groups.this);
-        dialog.setMessage("Deleting collection...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setCancelable(false);
-        dialog.show();
+        try {
+            final ProgressDialog dialog = new ProgressDialog(Groups.this);
+            dialog.setMessage("Deleting collection...");
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setCancelable(false);
+            dialog.show();
 
-        final StorageReference imageRef = firebaseStorage.getReferenceFromUrl(collection_image);
-        groupsRef.child(collectionKey).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            final StorageReference imageRef = firebaseStorage.getReferenceFromUrl(collection_image);
+            groupsRef.child(collectionKey).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
 
-                //delete collection image
-                imageRef.delete();
+                    try {
+                        //delete collection image
+                        imageRef.delete();
 
-                Toasty.success(Groups.this,"Group Collection deleted successfully!",
-                        Toasty.LENGTH_SHORT).show();
-                dialog.dismiss();
-            }
-        });
+                        Toasty.success(Groups.this, "Group Collection deleted successfully!",
+                                Toasty.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public static class GroupsViewHolder extends RecyclerView.ViewHolder {
@@ -343,8 +368,11 @@ public class Groups extends AppCompatActivity {
 
                            @Override
                            public void onError() {
-
-                               Picasso.with(ctx).load(groupImageUrl).placeholder(R.drawable.easy_to_use).into(groupimage);
+                               try {
+                                   Picasso.with(ctx).load(groupImageUrl).placeholder(R.drawable.easy_to_use).into(groupimage);
+                               }catch (Exception e){
+                                   e.printStackTrace();
+                               }
                            }
                        });
            }catch (Exception e){
@@ -394,164 +422,175 @@ public class Groups extends AppCompatActivity {
     }
 
     public void firebaseCollectionSearch(String searchText){
-        Query firebaseSearchQuery = groupsRef.orderByChild("name").startAt(searchText).endAt(searchText + "\uf0ff");
+        try {
+            Query firebaseSearchQuery = groupsRef.orderByChild("name").startAt(searchText).endAt(searchText + "\uf0ff");
 
-        FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder>
-                        (
-                                GroupCatModel.class,
-                                R.layout.groups_display_layout,
-                                GroupsViewHolder.class,
-                                firebaseSearchQuery
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupCatModel model, int position) {
-
-
-                        final String collectionKey = getRef(position).getKey();
-                        groupsRef.child(collectionKey).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                if(dataSnapshot.exists()) {
-
-                                    final String groupname, groupimage;
-                                    if (dataSnapshot.hasChild("image") && dataSnapshot.hasChild("name")) {
+            FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<GroupCatModel, GroupsViewHolder>
+                            (
+                                    GroupCatModel.class,
+                                    R.layout.groups_display_layout,
+                                    GroupsViewHolder.class,
+                                    firebaseSearchQuery
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupCatModel model, int position) {
 
 
-                                        groupname = dataSnapshot.child("name").getValue().toString();
-                                        groupimage =
-                                                dataSnapshot.child("image").getValue() != null ? dataSnapshot.child("image").getValue().toString() : null;
+                            final String collectionKey = getRef(position).getKey();
+                            groupsRef.child(collectionKey).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                        viewHolder.setGroupimage(Groups.this, groupimage);
-                                        viewHolder.setGroupname(groupname);
-                                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                //open all the groups in this group category
-                                                Intent message_this_user = new Intent(Groups.this, AssociatedGroups.class);
-                                                message_this_user.putExtra("group_cat", groupname);
-                                                startActivity(message_this_user);
-                                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                            }
-                                        });
+                                    if (dataSnapshot.exists()) {
+
+                                        try {
+                                            final String groupname, groupimage;
+                                            if (dataSnapshot.hasChild("image") && dataSnapshot.hasChild("name")) {
 
 
-                                        usersRef.child(currentUserID)
-                                                .child("userState").addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.exists()){
-                                                    if(dataSnapshot.hasChild("usertype")){
+                                                groupname = dataSnapshot.child("name").getValue().toString();
+                                                groupimage =
+                                                        dataSnapshot.child("image").getValue() != null ? dataSnapshot.child("image").getValue().toString() : null;
 
-                                                        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                                                            @Override
-                                                            public boolean onLongClick(View v) {
-                                                                CharSequence[] options_doc = new CharSequence[]{
-                                                                        "Update this collection",
-                                                                        "Add group to this collection",
-                                                                        "Delete this this collection",
-                                                                        "Cancel"
-                                                                };
-                                                                AlertDialog.Builder builderoptions_doc =
-                                                                        new AlertDialog.Builder(Groups.this);
-                                                                builderoptions_doc.setTitle("What do you want to do?");
+                                                viewHolder.setGroupimage(Groups.this, groupimage);
+                                                viewHolder.setGroupname(groupname);
+                                                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View view) {
+                                                        //open all the groups in this group category
+                                                        Intent message_this_user = new Intent(Groups.this, AssociatedGroups.class);
+                                                        message_this_user.putExtra("group_cat", groupname);
+                                                        startActivity(message_this_user);
+                                                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                    }
+                                                });
 
-                                                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+
+                                                usersRef.child(currentUserID)
+                                                        .child("userState").addValueEventListener(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        if (dataSnapshot.exists()) {
+                                                            if (dataSnapshot.hasChild("usertype")) {
+
+                                                                viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                                                                     @Override
-                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                    public boolean onLongClick(View v) {
+                                                                        CharSequence[] options_doc = new CharSequence[]{
+                                                                                "Update this collection",
+                                                                                "Add group to this collection",
+                                                                                "Delete this this collection",
+                                                                                "Cancel"
+                                                                        };
+                                                                        AlertDialog.Builder builderoptions_doc =
+                                                                                new AlertDialog.Builder(Groups.this);
+                                                                        builderoptions_doc.setTitle("What do you want to do?");
 
-                                                                        if(which == 0){
-                                                                            //update group collection
-                                                                            updateGroupCollection(collectionKey,groupname
-                                                                                    ,groupimage);
-                                                                        }
-                                                                        else  if(which == 1){
-                                                                            //add group to collection
-                                                                            addGroupToCollection(collectionKey);
-                                                                        }else if(which == 2){
-                                                                            //delete group collection
-                                                                            android.support.v7.app.AlertDialog.Builder alertDialogBuilder =
-                                                                                    new android.support.v7.app.AlertDialog.Builder(Groups.this);
-                                                                            alertDialogBuilder.setMessage(Html.
-                                                                                    fromHtml("Are you sure you want to delete this group collection? " +
-                                                                                            "<br>All the groups within this collection would be deleted and this process" +
-                                                                                            " cannot be reversed!"));
-                                                                            alertDialogBuilder.setCancelable(false);
-                                                                            alertDialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                                                                @Override
-                                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                                    deleteGroupCollection(collectionKey,groupimage);
-                                                                                }
-                                                                            }).setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                                                                                @Override
-                                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                                    dialog.dismiss();
-                                                                                }
-                                                                            });
-                                                                            final android.support.v7.app.AlertDialog alertDialog = alertDialogBuilder.create();
+                                                                        builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                                                            @Override
+                                                                            public void onClick(DialogInterface dialog, int which) {
 
-                                                                            alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
-                                                                                @SuppressLint("ResourceAsColor")
-                                                                                @Override
-                                                                                public void onShow(DialogInterface arg0) {
-                                                                                    alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(R.color.colorPrimary);
-                                                                                    alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(R.color.colorPrimary);
+                                                                                if (which == 0) {
+                                                                                    //update group collection
+                                                                                    updateGroupCollection(collectionKey, groupname
+                                                                                            , groupimage);
+                                                                                } else if (which == 1) {
+                                                                                    //add group to collection
+                                                                                    addGroupToCollection(collectionKey);
+                                                                                } else if (which == 2) {
+                                                                                    //delete group collection
+                                                                                    android.support.v7.app.AlertDialog.Builder alertDialogBuilder =
+                                                                                            new android.support.v7.app.AlertDialog.Builder(Groups.this);
+                                                                                    alertDialogBuilder.setMessage(Html.
+                                                                                            fromHtml("Are you sure you want to delete this group collection? " +
+                                                                                                    "<br>All the groups within this collection would be deleted and this process" +
+                                                                                                    " cannot be reversed!"));
+                                                                                    alertDialogBuilder.setCancelable(false);
+                                                                                    alertDialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                                                                        @Override
+                                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                                            deleteGroupCollection(collectionKey, groupimage);
+                                                                                        }
+                                                                                    }).setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                                                                        @Override
+                                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                                            dialog.dismiss();
+                                                                                        }
+                                                                                    });
+                                                                                    final android.support.v7.app.AlertDialog alertDialog = alertDialogBuilder.create();
+
+                                                                                    alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                                                                                        @SuppressLint("ResourceAsColor")
+                                                                                        @Override
+                                                                                        public void onShow(DialogInterface arg0) {
+                                                                                            alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_POSITIVE).setTextColor(R.color.colorPrimary);
+                                                                                            alertDialog.getButton(android.support.v7.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(R.color.colorPrimary);
+                                                                                        }
+                                                                                    });
+                                                                                    alertDialog.show();
                                                                                 }
-                                                                            });
-                                                                            alertDialog.show();
-                                                                        }
+                                                                            }
+                                                                        });
+                                                                        builderoptions_doc.show();
+                                                                        return false;
                                                                     }
                                                                 });
-                                                                builderoptions_doc.show();
-                                                                return false;
                                                             }
-                                                        });
+                                                        }
                                                     }
-                                                }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                    }
+                                                });
+
+                                                groupsRef.child(collectionKey)
+                                                        .child("groups").addValueEventListener(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        try {
+                                                            if (dataSnapshot.exists()) {
+                                                                int countGroups = (int) dataSnapshot.getChildrenCount();
+                                                                viewHolder.setGroupNoOfGroups(Integer.toString(countGroups));
+                                                            } else {
+                                                                viewHolder.setGroupNoOfGroups("0");
+                                                            }
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                    }
+                                                });
+
+
                                             }
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
-                                        groupsRef.child(collectionKey)
-                                                .child("groups").addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.exists()){
-                                                    int countGroups = (int)dataSnapshot.getChildrenCount();
-                                                    viewHolder.setGroupNoOfGroups(Integer.toString(countGroups));
-                                                }else {
-                                                    viewHolder.setGroupNoOfGroups("0");
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
-
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        });
-                    }
-                };
+                                }
+                            });
+                        }
+                    };
 
-        list_view.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
+            list_view.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
 
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
     
     @Override

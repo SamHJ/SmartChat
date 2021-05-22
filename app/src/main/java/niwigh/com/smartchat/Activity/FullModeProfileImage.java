@@ -76,53 +76,65 @@ public class FullModeProfileImage extends AppCompatActivity {
 
 
 
-        profileUserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    profile_image = dataSnapshot.child("profileimage").getValue().toString();
-                    user_fullname = dataSnapshot.child("fullname").getValue().toString();
-                    getSupportActionBar().setTitle(user_fullname);
+        try {
+            profileUserRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
 
-                   try{
-                       Picasso.with(FullModeProfileImage.this).load(profile_image).networkPolicy(NetworkPolicy.OFFLINE)
-                               .placeholder(R.drawable.easy_to_use).into(full_profile_image, new
-                               Callback() {
-                                   @Override
-                                   public void onSuccess() {
+                        try {
+                            profile_image = dataSnapshot.child("profileimage").getValue().toString();
+                            user_fullname = dataSnapshot.child("fullname").getValue().toString();
+                            getSupportActionBar().setTitle(user_fullname);
+                            Picasso.with(FullModeProfileImage.this).load(profile_image).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.easy_to_use).into(full_profile_image, new
+                                    Callback() {
+                                        @Override
+                                        public void onSuccess() {
 
-                                   }
+                                        }
 
-                                   @Override
-                                   public void onError() {
-
-                                       Picasso.with(FullModeProfileImage.this).load(profile_image).placeholder(R.drawable.easy_to_use).into(full_profile_image);
-                                   }
-                               });
-                   }catch (Exception e){
-                       e.printStackTrace();
-                   }
+                                        @Override
+                                        public void onError() {
+                                            try {
+                                                Picasso.with(FullModeProfileImage.this).load(profile_image).placeholder(R.drawable.easy_to_use).into(full_profile_image);
+                                            }catch(Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
 
         share_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Uri uri = Uri.parse(profile_image);
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                shareIntent.setType("image/*");
-                startActivity(Intent.createChooser(shareIntent, "Share " + user_fullname + "'s profile image via"));
+                try {
+                    Uri uri = Uri.parse(profile_image);
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                    shareIntent.setType("image/*");
+                    startActivity(Intent.createChooser(shareIntent, "Share " + user_fullname + "'s profile image via"));
 
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
             }
         });
 

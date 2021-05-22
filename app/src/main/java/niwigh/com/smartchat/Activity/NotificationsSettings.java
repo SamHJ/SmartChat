@@ -47,8 +47,6 @@ public class NotificationsSettings extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("Notifications");
 
-
-
         settingsLayout = findViewById(R.id.settings_layout);
 
         bookmark_switch = findViewById(R.id.bookmark_switch);

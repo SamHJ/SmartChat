@@ -96,235 +96,239 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
     public void onBindViewHolder(@NonNull final AdapterViewHolder holder, final int position) {
 
         if (getItemViewType(position) == CONTENT_TYPE) {
+            try {
 
-        dialog = new ProgressDialog(mContext);
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setCancelable(false);
-        dialog.setMessage("Processing...");
+                dialog = new ProgressDialog(mContext);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setCancelable(false);
+                dialog.setMessage("Processing...");
 
-        mAuth = FirebaseAuth.getInstance();
-        final Activity activity = (Activity) mContext;
-        allPostsRef = FirebaseDatabase.getInstance().getReference().child("AllPosts");
-        allPostsRef.keepSynced(true);
-        likesRef = FirebaseDatabase.getInstance().getReference().child("Likes");
-        likesRef.keepSynced(true);
+                mAuth = FirebaseAuth.getInstance();
+                final Activity activity = (Activity) mContext;
+                allPostsRef = FirebaseDatabase.getInstance().getReference().child("AllPosts");
+                allPostsRef.keepSynced(true);
+                likesRef = FirebaseDatabase.getInstance().getReference().child("Likes");
+                likesRef.keepSynced(true);
 
-        if (postsModelList.get(position).getType().equals("image")) {
+                if (postsModelList.get(position).getType().equals("image")) {
 
-            if(postsModelList.get(position).getPostimage() == null || postsModelList.get(position).getPostimage().equals("")){
-                holder.image_post_image.setVisibility(View.GONE);
+                    if (postsModelList.get(position).getPostimage() == null || postsModelList.get(position).getPostimage().equals("")) {
+                        holder.image_post_image.setVisibility(View.GONE);
+                    }
+
+                    //render image post
+                    holder.all_image_posts_cardview.setVisibility(View.VISIBLE);
+                    holder.all_video_posts_cardview.setVisibility(View.GONE);
+
+                    holder.setFullname(postsModelList.get(position).getFullname());
+                    holder.setDate(postsModelList.get(position).getDate(), postsModelList.get(position).getTime());
+                    holder.setDescription(postsModelList.get(position).getDescription());
+                    holder.setTime(postsModelList.get(position).getTime());
+                    holder.setTitle(postsModelList.get(position).getTitle());
+                    holder.setPostimage(activity, postsModelList.get(position).getPostimage());
+                    holder.setProfileimage(activity, postsModelList.get(position).getProfileimage());
+
+                    holder.setLikeButtonStatus(postsModelList.get(position).getPostKey());
+                    holder.setNoOfComments(postsModelList.get(position).getPostKey());
+
+                    holder.all_image_posts_cardview.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent postClickintent = new Intent(mContext, PostDetail.class);
+                            postClickintent.putExtra("PostKey", postsModelList.get(position).getPostKey());
+                            mContext.startActivity(postClickintent);
+                            activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                        }
+                    });
+
+
+                    final DatabaseReference postImageDownload = FirebaseDatabase.getInstance().getReference().child("Posts");
+                    holder.image_download_post_image.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            postImageDownload.child(postsModelList.get(position).getPostKey())
+                                    .addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists()) {
+                                                String postImage = dataSnapshot.child("postimage").getValue().toString();
+
+                                                String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                                                        .format(System.currentTimeMillis());
+
+                                                File root = Environment.getExternalStorageDirectory();
+                                                root.mkdirs();
+                                                String path = root.toString();
+
+                                                downloadPostImage(activity, timestamp
+                                                        , ".jpg", path + "/SmartChat" + "/Post Images",
+                                                        postImage);
+                                            }
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+
+                        }
+                    });
+
+                    holder.image_comment_on_post.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent postcomment = new Intent(activity, PostDetail.class);
+                            postcomment.putExtra("PostKey", postsModelList.get(position).getPostKey());
+                            mContext.startActivity(postcomment);
+                            activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                        }
+                    });
+
+                    holder.image_like_a_post.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            LikeChecker = true;
+
+                            likesRef.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    if (LikeChecker.equals(true)) {
+                                        if (dataSnapshot.child(postsModelList.get(position).getPostKey())
+                                                .hasChild(mAuth.getCurrentUser().getUid())) {
+                                            likesRef.child(postsModelList.get(position).getPostKey())
+                                                    .child(mAuth.getCurrentUser().getUid()).removeValue();
+                                            LikeChecker = false;
+                                        } else {
+
+                                            likesRef.child(postsModelList.get(position).getPostKey())
+                                                    .child(mAuth.getCurrentUser().getUid()).setValue(true);
+                                            LikeChecker = false;
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    });
+
+                } else {
+
+                    //render_video_post
+                    holder.all_image_posts_cardview.setVisibility(View.GONE);
+                    holder.all_video_posts_cardview.setVisibility(View.VISIBLE);
+
+                    holder.setVideoFullname(postsModelList.get(position).getFullname());
+                    holder.setVideoDate(postsModelList.get(position).getDate(), postsModelList.get(position).getTime());
+                    holder.setVideoDescription(postsModelList.get(position).getDescription());
+                    holder.setVideoTime(postsModelList.get(position).getTime());
+                    holder.setVideoTitle(postsModelList.get(position).getTitle());
+                    holder.setPostvideo(activity, postsModelList.get(position).getPostvideo());
+                    holder.setVideoProfileimage(activity, postsModelList.get(position).getProfileimage());
+
+                    holder.setVideoLikeButtonStatus(postsModelList.get(position).getPostKey());
+                    holder.setVideoNoOfComments(postsModelList.get(position).getPostKey());
+
+                    holder.all_video_posts_cardview.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent postClickintent = new Intent(activity, PostVideoDetails.class);
+                            postClickintent.putExtra("PostKey", postsModelList.get(position).getPostKey());
+                            mContext.startActivity(postClickintent);
+                            activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                        }
+                    });
+
+
+                    holder.video_download_post_image.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            allPostsRef.child(postsModelList.get(position).getPostKey())
+                                    .addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists()) {
+                                                String postImage = dataSnapshot.child("postvideo").getValue().toString();
+
+                                                String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+                                                        .format(System.currentTimeMillis());
+
+                                                File root = Environment.getExternalStorageDirectory();
+                                                root.mkdirs();
+                                                String path = root.toString();
+
+                                                downloadPostImage(activity, timestamp
+                                                        , ".mp4", path + "/SmartChat" + "/Post Videos",
+                                                        postImage);
+                                            }
+
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+
+                        }
+                    });
+
+                    holder.video_comment_on_post.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent postcomment = new Intent(activity, PostVideoDetails.class);
+                            postcomment.putExtra("PostKey", postsModelList.get(position).getPostKey());
+                            mContext.startActivity(postcomment);
+                            activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                        }
+                    });
+
+                    holder.video_like_a_post.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            LikeChecker = true;
+
+                            likesRef.addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    if (LikeChecker.equals(true)) {
+                                        if (dataSnapshot.child(postsModelList.get(position).getPostKey())
+                                                .hasChild(mAuth.getCurrentUser().getUid())) {
+                                            likesRef.child(postsModelList.get(position).getPostKey())
+                                                    .child(mAuth.getCurrentUser().getUid()).removeValue();
+                                            LikeChecker = false;
+                                        } else {
+
+                                            likesRef.child(postsModelList.get(position).getPostKey())
+                                                    .child(mAuth.getCurrentUser().getUid()).setValue(true);
+                                            LikeChecker = false;
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    });
+
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-
-            //render image post
-            holder.all_image_posts_cardview.setVisibility(View.VISIBLE);
-            holder.all_video_posts_cardview.setVisibility(View.GONE);
-
-            holder.setFullname(postsModelList.get(position).getFullname());
-            holder.setDate(postsModelList.get(position).getDate(), postsModelList.get(position).getTime());
-            holder.setDescription(postsModelList.get(position).getDescription());
-            holder.setTime(postsModelList.get(position).getTime());
-            holder.setTitle(postsModelList.get(position).getTitle());
-            holder.setPostimage(activity, postsModelList.get(position).getPostimage());
-            holder.setProfileimage(activity, postsModelList.get(position).getProfileimage());
-
-            holder.setLikeButtonStatus(postsModelList.get(position).getPostKey());
-            holder.setNoOfComments(postsModelList.get(position).getPostKey());
-
-            holder.all_image_posts_cardview.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent postClickintent = new Intent(mContext, PostDetail.class);
-                    postClickintent.putExtra("PostKey", postsModelList.get(position).getPostKey());
-                    mContext.startActivity(postClickintent);
-                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                }
-            });
-
-
-            final DatabaseReference postImageDownload = FirebaseDatabase.getInstance().getReference().child("Posts");
-            holder.image_download_post_image.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    postImageDownload.child(postsModelList.get(position).getPostKey())
-                            .addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists()) {
-                                        String postImage = dataSnapshot.child("postimage").getValue().toString();
-
-                                        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-                                                .format(System.currentTimeMillis());
-
-                                        File root = Environment.getExternalStorageDirectory();
-                                        root.mkdirs();
-                                        String path = root.toString();
-
-                                        downloadPostImage(activity, timestamp
-                                                , ".jpg", path + "/SmartChat" + "/Post Images",
-                                                postImage);
-                                    }
-
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
-
-                }
-            });
-
-            holder.image_comment_on_post.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent postcomment = new Intent(activity, PostDetail.class);
-                    postcomment.putExtra("PostKey", postsModelList.get(position).getPostKey());
-                    mContext.startActivity(postcomment);
-                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                }
-            });
-
-            holder.image_like_a_post.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    LikeChecker = true;
-
-                    likesRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                            if (LikeChecker.equals(true)) {
-                                if (dataSnapshot.child(postsModelList.get(position).getPostKey())
-                                        .hasChild(mAuth.getCurrentUser().getUid())) {
-                                    likesRef.child(postsModelList.get(position).getPostKey())
-                                            .child(mAuth.getCurrentUser().getUid()).removeValue();
-                                    LikeChecker = false;
-                                } else {
-
-                                    likesRef.child(postsModelList.get(position).getPostKey())
-                                            .child(mAuth.getCurrentUser().getUid()).setValue(true);
-                                    LikeChecker = false;
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-            });
-
-        } else {
-
-            //render_video_post
-            holder.all_image_posts_cardview.setVisibility(View.GONE);
-            holder.all_video_posts_cardview.setVisibility(View.VISIBLE);
-
-            holder.setVideoFullname(postsModelList.get(position).getFullname());
-            holder.setVideoDate(postsModelList.get(position).getDate(), postsModelList.get(position).getTime());
-            holder.setVideoDescription(postsModelList.get(position).getDescription());
-            holder.setVideoTime(postsModelList.get(position).getTime());
-            holder.setVideoTitle(postsModelList.get(position).getTitle());
-            holder.setPostvideo(activity, postsModelList.get(position).getPostvideo());
-            holder.setVideoProfileimage(activity, postsModelList.get(position).getProfileimage());
-
-            holder.setVideoLikeButtonStatus(postsModelList.get(position).getPostKey());
-            holder.setVideoNoOfComments(postsModelList.get(position).getPostKey());
-
-            holder.all_video_posts_cardview.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent postClickintent = new Intent(activity, PostVideoDetails.class);
-                    postClickintent.putExtra("PostKey", postsModelList.get(position).getPostKey());
-                    mContext.startActivity(postClickintent);
-                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                }
-            });
-
-
-            holder.video_download_post_image.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    allPostsRef.child(postsModelList.get(position).getPostKey())
-                            .addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists()) {
-                                        String postImage = dataSnapshot.child("postvideo").getValue().toString();
-
-                                        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-                                                .format(System.currentTimeMillis());
-
-                                        File root = Environment.getExternalStorageDirectory();
-                                        root.mkdirs();
-                                        String path = root.toString();
-
-                                        downloadPostImage(activity, timestamp
-                                                , ".mp4", path + "/SmartChat" + "/Post Videos",
-                                                postImage);
-                                    }
-
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
-
-                }
-            });
-
-            holder.video_comment_on_post.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent postcomment = new Intent(activity, PostVideoDetails.class);
-                    postcomment.putExtra("PostKey", postsModelList.get(position).getPostKey());
-                    mContext.startActivity(postcomment);
-                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                }
-            });
-
-            holder.video_like_a_post.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    LikeChecker = true;
-
-                    likesRef.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                            if (LikeChecker.equals(true)) {
-                                if (dataSnapshot.child(postsModelList.get(position).getPostKey())
-                                        .hasChild(mAuth.getCurrentUser().getUid())) {
-                                    likesRef.child(postsModelList.get(position).getPostKey())
-                                            .child(mAuth.getCurrentUser().getUid()).removeValue();
-                                    LikeChecker = false;
-                                } else {
-
-                                    likesRef.child(postsModelList.get(position).getPostKey())
-                                            .child(mAuth.getCurrentUser().getUid()).setValue(true);
-                                    LikeChecker = false;
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-            });
-
-        }
     }else{
 
         //show admob banner add
@@ -335,22 +339,26 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
 
 
     private void loadBannerAdd(final AdView adView) {
-        MobileAds.initialize(mContext);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                // Code to be executed when an ad finishes loading.
-                adView.setVisibility(View.VISIBLE);
-            }
+        try {
+            MobileAds.initialize(mContext);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            adView.loadAd(adRequest);
+            adView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    // Code to be executed when an ad finishes loading.
+                    adView.setVisibility(View.VISIBLE);
+                }
 
-            @Override
-            public void onAdFailedToLoad(int errorCode) {
-                // Code to be executed when an ad request fails.
-                adView.setVisibility(View.GONE);
-            }
-        });
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    // Code to be executed when an ad request fails.
+                    adView.setVisibility(View.GONE);
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -463,55 +471,68 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
 
         public void setNoOfComments(final String PostKey) {
 
-            DatabaseReference CommentsPostsRef;
-            CommentsPostsRef = allPostsRef.child(PostKey).child("Comments");
+            try {
 
-            CommentsPostsRef.addValueEventListener(new ValueEventListener() {
-                @SuppressLint("DefaultLocale")
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                DatabaseReference CommentsPostsRef;
+                CommentsPostsRef = allPostsRef.child(PostKey).child("Comments");
 
-                    dataSnapshot.getKey();
-                    commentsCount  = (int)dataSnapshot.getChildrenCount();
-                    image_no_of_comments_textView.setText(String.format("%d Comments", commentsCount));
+                CommentsPostsRef.addValueEventListener(new ValueEventListener() {
+                    @SuppressLint("DefaultLocale")
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                }
+                        dataSnapshot.getKey();
+                        commentsCount = (int) dataSnapshot.getChildrenCount();
+                        image_no_of_comments_textView.setText(String.format("%d Comments", commentsCount));
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
 
-                }
-            });
+                    }
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 
         }
         public void setLikeButtonStatus(final String PostKey){
 
-            likesRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            try {
 
-                    if(dataSnapshot.exists()){
-                        if(dataSnapshot.child(PostKey).hasChild(currentuser_id)){
+                likesRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            countLikes = (int) dataSnapshot.child(PostKey).getChildrenCount();
-                            image_like_a_post.setImageResource(R.drawable.ic_liked);
-                            image_number_of_likes_textView.setText(String.format("%s Likes", Integer.toString(countLikes)));
+                        if (dataSnapshot.exists()) {
+                            try {
+                                if (dataSnapshot.child(PostKey).hasChild(currentuser_id)) {
+
+                                    countLikes = (int) dataSnapshot.child(PostKey).getChildrenCount();
+                                    image_like_a_post.setImageResource(R.drawable.ic_liked);
+                                    image_number_of_likes_textView.setText(String.format("%s Likes", Integer.toString(countLikes)));
+                                } else {
+                                    countLikes = (int) dataSnapshot.child(PostKey).getChildrenCount();
+                                    image_like_a_post.setImageResource(R.drawable.ic_like);
+                                    image_number_of_likes_textView.setText(String.format("%s%s", Integer.toString(countLikes), " Likes"));
+                                }
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
                         }
-                        else {
-                            countLikes = (int) dataSnapshot.child(PostKey).getChildrenCount();
-                            image_like_a_post.setImageResource(R.drawable.ic_like);
-                            image_number_of_likes_textView.setText(String.format("%s%s", Integer.toString(countLikes), " Likes"));
-                        }
+
                     }
 
-                }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
+                    }
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         public void setFullname(String fullname){
             image_post_username.setText(fullname);
@@ -528,8 +549,11 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
 
                             @Override
                             public void onError() {
-
-                                Picasso.with(ctx).load(profileimage).into(image_user_post_profile_image);
+                                try {
+                                    Picasso.with(ctx).load(profileimage).into(image_user_post_profile_image);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
                             }
                         });
             }catch (Exception e){
@@ -551,9 +575,6 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-
-
-
         }
         public void setTitle(String title){
             image_post_title.setText(title);
@@ -562,7 +583,6 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
             image_post_description.setText(description);
         }
         public void setPostimage(final Context ctx, final String postimage){
-
             try{
                 Picasso.with(ctx).load(postimage).networkPolicy(NetworkPolicy.OFFLINE)
                         .into(image_post_image, new Callback() {
@@ -573,8 +593,11 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
 
                             @Override
                             public void onError() {
-
-                                Picasso.with(ctx).load(postimage).into(image_post_image);
+                                try {
+                                    Picasso.with(ctx).load(postimage).into(image_post_image);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
                             }
                         });
             }catch (Exception e){
@@ -608,59 +631,63 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
             video_post_title.setText(title);
         }
         public void setPostvideo(Activity activity, String postvideo) {
-            controls_layout.setVisibility(View.GONE);
 
-            videoView.setVideoURI(Uri.parse(postvideo));
-            videoView.requestFocus();
-            videoView.setBackgroundColor(mContext.getResources().getColor(R.color.default_video_post_bg));
+            try {
+                controls_layout.setVisibility(View.GONE);
 
-
-            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-
-                    mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                        @Override
-                        public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                            mediaController = new MediaController(mContext);
-                            videoView.setMediaController(mediaController);
-                            mediaController.setAnchorView(videoView);
-                        }
-                    });
+                videoView.setVideoURI(Uri.parse(postvideo));
+                videoView.requestFocus();
+                videoView.setBackgroundColor(mContext.getResources().getColor(R.color.default_video_post_bg));
 
 
-                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                        @Override
-                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                            if(what == mp.MEDIA_INFO_BUFFERING_END){
-                                loading_video_progress_bar.setVisibility(View.INVISIBLE);
-                                return true;
+                videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+
+                        mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+                            @Override
+                            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                                mediaController = new MediaController(mContext);
+                                videoView.setMediaController(mediaController);
+                                mediaController.setAnchorView(videoView);
                             }
-                            else if(what == mp.MEDIA_INFO_BUFFERING_START){
-                                loading_video_progress_bar.setVisibility(View.VISIBLE);
+                        });
+
+
+                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                            @Override
+                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
+                                    loading_video_progress_bar.setVisibility(View.INVISIBLE);
+                                    return true;
+                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
+                                    loading_video_progress_bar.setVisibility(View.VISIBLE);
+                                }
+                                return false;
                             }
-                            return false;
-                        }
-                    });
+                        });
 
-                    videoView.start();
-                    videoView.setBackgroundColor(0);
-                    loading_video_progress_bar.setVisibility(View.INVISIBLE);
-
-
-                    videoView.seekTo(videoView.getCurrentPosition());
-                    if(videoView.getCurrentPosition() != 0){
                         videoView.start();
+                        videoView.setBackgroundColor(0);
+                        loading_video_progress_bar.setVisibility(View.INVISIBLE);
 
-                    }else {
-                        videoView.pause();
+
+                        videoView.seekTo(videoView.getCurrentPosition());
+                        if (videoView.getCurrentPosition() != 0) {
+                            videoView.start();
+
+                        } else {
+                            videoView.pause();
+                        }
+
+
                     }
-
-
-                }
-            });
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         public void setVideoProfileimage(Activity activity, final String profileimage) {
            try{
@@ -673,8 +700,11 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
 
                            @Override
                            public void onError() {
-
-                               Picasso.with(mContext).load(profileimage).into(video_user_post_profile_image);
+                               try {
+                                   Picasso.with(mContext).load(profileimage).into(video_user_post_profile_image);
+                               }catch (Exception e){
+                                   e.printStackTrace();
+                               }
                            }
                        });
            }catch (Exception e){
@@ -682,64 +712,79 @@ public class AllPostsAdapter extends RecyclerView.Adapter<AllPostsAdapter.Adapte
            }
         }
         public void setVideoLikeButtonStatus(final String postKey) {
-            likesRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            try {
+                likesRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    if(dataSnapshot.exists()){
-                        if(dataSnapshot.child(postKey).hasChild(currentuser_id)){
-                            countLikes = (int) dataSnapshot.child(postKey).getChildrenCount();
-                            video_like_a_post.setImageResource(R.drawable.ic_liked);
-                            video_number_of_likes_textView.setText(String.format("%s%s", Integer.toString(countLikes), " Likes"));
-                        }
-                        else {
-                            countLikes = (int) dataSnapshot.child(postKey).getChildrenCount();
-                            video_like_a_post.setImageResource(R.drawable.ic_like);
-                            video_number_of_likes_textView.setText(String.format("%s%s", Integer.toString(countLikes), " Likes"));
+                        if (dataSnapshot.exists()) {
+                            try {
+                                if (dataSnapshot.child(postKey).hasChild(currentuser_id)) {
+                                    countLikes = (int) dataSnapshot.child(postKey).getChildrenCount();
+                                    video_like_a_post.setImageResource(R.drawable.ic_liked);
+                                    video_number_of_likes_textView.setText(String.format("%s%s", Integer.toString(countLikes), " Likes"));
+                                } else {
+                                    countLikes = (int) dataSnapshot.child(postKey).getChildrenCount();
+                                    video_like_a_post.setImageResource(R.drawable.ic_like);
+                                    video_number_of_likes_textView.setText(String.format("%s%s", Integer.toString(countLikes), " Likes"));
+                                }
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                }
-            });
+                    }
+                });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         public void setVideoNoOfComments(String postKey) {
 
-            DatabaseReference CommentsPostsRef;
-            CommentsPostsRef = allPostsRef.child(postKey).child("Comments");
+            try {
+                DatabaseReference CommentsPostsRef;
+                CommentsPostsRef = allPostsRef.child(postKey).child("Comments");
 
-            CommentsPostsRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                CommentsPostsRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    dataSnapshot.getKey();
-                    commentsCount  = (int)dataSnapshot.getChildrenCount();
-                    video_no_of_comments_textView.setText(commentsCount + " Comments");
+                        dataSnapshot.getKey();
+                        commentsCount = (int) dataSnapshot.getChildrenCount();
+                        video_no_of_comments_textView.setText(commentsCount + " Comments");
 
-                }
+                    }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                    }
+                });
 
-                }
-            });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 
         }
     }
 
     public void downloadPostImage(Context context, String FileName, String FileExtension, String
             DestinationDirectory, String uri){
-        DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri1 = Uri.parse(uri);
-        DownloadManager.Request request = new DownloadManager.Request(uri1);
-        request.setTitle("SmartChat (" + FileName + FileExtension +")");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(context, DestinationDirectory, FileName + FileExtension);
-        downloadManager.enqueue(request);
+        try {
+            DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+            Uri uri1 = Uri.parse(uri);
+            DownloadManager.Request request = new DownloadManager.Request(uri1);
+            request.setTitle("SmartChat (" + FileName + FileExtension + ")");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalFilesDir(context, DestinationDirectory, FileName + FileExtension);
+            downloadManager.enqueue(request);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 

@@ -100,78 +100,107 @@ public class AssociatedGroups extends AppCompatActivity {
 
     private void DisplayAllAssociatedGroups() {
 
-        FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder>
-                        (
-                                GroupModel.class,
-                                R.layout.all_groups_display_layout,
-                                GroupsViewHolder.class,
-                                groupsRef
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupModel model, int position) {
+        try {
+            FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder>
+                            (
+                                    GroupModel.class,
+                                    R.layout.all_groups_display_layout,
+                                    GroupsViewHolder.class,
+                                    groupsRef
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupModel model, int position) {
 
 
-                        final String groupKey = getRef(position).getKey();
-                        groupsRef.child(groupKey).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            final String groupKey = getRef(position).getKey();
+                            groupsRef.child(groupKey).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                if(dataSnapshot.exists()) {
+                                    if (dataSnapshot.exists()) {
 
-                                    final String groupname, groupimage;
-                                    final boolean couldjoin;
-                                    if (dataSnapshot.hasChild("groupname")) {
+                                        final String groupname, groupimage;
+                                        final boolean couldjoin;
+                                        if (dataSnapshot.hasChild("groupname")) {
 
-                                        groupname = dataSnapshot.child("groupname").getValue().toString();
-                                        groupimage = dataSnapshot.child("groupimage").getValue() != null ?
-                                                dataSnapshot.child("groupimage").getValue().toString() : null;
-                                        couldjoin = (boolean)dataSnapshot.child("couldjoin").getValue();
+                                            try {
+                                                groupname = dataSnapshot.child("groupname").getValue().toString();
+                                                groupimage = dataSnapshot.child("groupimage").getValue() != null ?
+                                                        dataSnapshot.child("groupimage").getValue().toString() : null;
+                                                couldjoin = (boolean) dataSnapshot.child("couldjoin").getValue();
 
-                                        viewHolder.setGroupimage(AssociatedGroups.this, groupimage);
-                                        viewHolder.setGroupname(groupname);
-                                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
+                                                viewHolder.setGroupimage(AssociatedGroups.this, groupimage);
+                                                viewHolder.setGroupname(groupname);
+                                                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View view) {
 
-                                                loadingBars.setTitle("Opening group");
-                                                loadingBars.setMessage("A moment please");
-                                                loadingBars.setCanceledOnTouchOutside(false);
-                                                loadingBars.setCancelable(false);
-                                                loadingBars.show();
-                                                //check if the user is in the group
-                                                DatabaseReference groupsRef =
-                                                        FirebaseDatabase.getInstance().getReference()
-                                                                .child("Groups").child(group_category)
-                                                        .child("groups").child(groupKey).child("users");
+                                                        loadingBars.setTitle("Opening group");
+                                                        loadingBars.setMessage("A moment please");
+                                                        loadingBars.setCanceledOnTouchOutside(false);
+                                                        loadingBars.setCancelable(false);
+                                                        loadingBars.show();
+                                                        //check if the user is in the group
+                                                        DatabaseReference groupsRef =
+                                                                FirebaseDatabase.getInstance().getReference()
+                                                                        .child("Groups").child(group_category)
+                                                                        .child("groups").child(groupKey).child("users");
 
-                                                mAuth = FirebaseAuth.getInstance();
-                                                currentUserID = mAuth.getCurrentUser().getUid();
+                                                        mAuth = FirebaseAuth.getInstance();
+                                                        currentUserID = mAuth.getCurrentUser().getUid();
 
-                                                groupsRef.addValueEventListener(new ValueEventListener() {
-                                                    @SuppressLint("SetTextI18n")
+                                                        groupsRef.addValueEventListener(new ValueEventListener() {
+                                                            @SuppressLint("SetTextI18n")
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                if (dataSnapshot.exists()) {
+                                                                    try {
+                                                                        if (dataSnapshot.hasChild(currentUserID)) {
+                                                                            //open messaging area for this group
+                                                                            loadingBars.dismiss();
+                                                                            Intent message_this_user = new Intent(
+                                                                                    AssociatedGroups.this, GroupMessagingArea.class);
+                                                                            message_this_user.putExtra("group_cat", group_category);
+                                                                            message_this_user.putExtra("group_key", groupKey);
+                                                                            message_this_user.putExtra("group_image", groupimage);
+                                                                            startActivity(message_this_user);
+                                                                            overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                                            finish();
+                                                                        } else {
+                                                                            checkToJoin(loadingBars, couldjoin, group_category,
+                                                                                    groupKey, groupimage);
+                                                                        }
+                                                                    }catch(Exception e){
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                    } else{
+                                                                        checkToJoin(loadingBars, couldjoin, group_category,
+                                                                                groupKey, groupimage);
+                                                                    }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+
+                                                    }
+                                                });
+
+                                                groupsRef.child(groupKey).child("users").addValueEventListener(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                        if(dataSnapshot.exists()){
-                                                            if(dataSnapshot.hasChild(currentUserID)){
-                                                                //open messaging area for this group
-                                                                loadingBars.dismiss();
-                                                                Intent message_this_user = new Intent(
-                                                                        AssociatedGroups.this, GroupMessagingArea.class);
-                                                                message_this_user.putExtra("group_cat", group_category);
-                                                                message_this_user.putExtra("group_key", groupKey);
-                                                                message_this_user.putExtra("group_image",groupimage);
-                                                                startActivity(message_this_user);
-                                                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                                                finish();
-                                                            }else {
-                                                               checkToJoin(loadingBars,couldjoin,group_category,
-                                                                       groupKey,groupimage);
+                                                        try {
+                                                            if (dataSnapshot.exists()) {
+                                                                int countParticipants = (int) dataSnapshot.getChildrenCount();
+                                                                viewHolder.setGroupNoOfParticipants(Integer.toString(countParticipants));
+                                                            } else {
+                                                                viewHolder.setGroupNoOfParticipants("0");
                                                             }
-                                                        }else{
-                                                            checkToJoin(loadingBars,couldjoin,group_category,
-                                                                    groupKey,groupimage);
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
                                                         }
                                                     }
 
@@ -180,42 +209,26 @@ public class AssociatedGroups extends AppCompatActivity {
 
                                                     }
                                                 });
-
+                                            }catch(Exception e){
+                                                e.printStackTrace();
                                             }
-                                        });
-
-                                        groupsRef.child(groupKey).child("users").addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.exists()){
-                                                    int countParticipants = (int)dataSnapshot.getChildrenCount();
-                                                    viewHolder.setGroupNoOfParticipants(Integer.toString(countParticipants));
-                                                }else {
-                                                    viewHolder.setGroupNoOfParticipants("0");
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
-
+                                        }
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        });
-                    }
-                };
+                                }
+                            });
+                        }
+                    };
 
-        list_view.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
+            list_view.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -285,40 +298,44 @@ public class AssociatedGroups extends AppCompatActivity {
 
     private void addUserToGroup(String currentUserID, final String groupCategory, final String groupKey
             , final String groupImage) {
-        final ProgressDialog dialog = new ProgressDialog(this);
-        dialog.setTitle("Joining group...");
-        dialog.setMessage("a moment please");
-        dialog.setCancelable(false);
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.show();
+        try {
+            final ProgressDialog dialog = new ProgressDialog(this);
+            dialog.setTitle("Joining group...");
+            dialog.setMessage("a moment please");
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
 
-        Map<String, Object> addtogroupmap = new HashMap<>();
-        addtogroupmap.put(currentUserID, currentUserID);
-        DatabaseReference addToGroupRef = FirebaseDatabase.getInstance().getReference().child("Groups");
-        addToGroupRef.child(groupCategory).child("groups").child(groupKey).child("users")
-                .updateChildren(addtogroupmap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Toasty.success(AssociatedGroups.this, "You are now a participant of this group",
-                            Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                    Intent message_this_user = new Intent(AssociatedGroups.this, GroupMessagingArea.class);
-                    message_this_user.putExtra("group_cat", groupCategory);
-                    message_this_user.putExtra("group_key", groupKey);
-                    message_this_user.putExtra("group_image",groupImage);
-                    startActivity(message_this_user);
-                    overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                    finish();
+            Map<String, Object> addtogroupmap = new HashMap<>();
+            addtogroupmap.put(currentUserID, currentUserID);
+            DatabaseReference addToGroupRef = FirebaseDatabase.getInstance().getReference().child("Groups");
+            addToGroupRef.child(groupCategory).child("groups").child(groupKey).child("users")
+                    .updateChildren(addtogroupmap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Toasty.success(AssociatedGroups.this, "You are now a participant of this group",
+                                Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        Intent message_this_user = new Intent(AssociatedGroups.this, GroupMessagingArea.class);
+                        message_this_user.putExtra("group_cat", groupCategory);
+                        message_this_user.putExtra("group_key", groupKey);
+                        message_this_user.putExtra("group_image", groupImage);
+                        startActivity(message_this_user);
+                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                        finish();
+                    }
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                dialog.dismiss();
-                Toasty.error(AssociatedGroups.this, "An error occurred!", Toast.LENGTH_SHORT).show();
-            }
-        });
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    dialog.dismiss();
+                    Toasty.error(AssociatedGroups.this, "An error occurred!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }catch(Exception e){
+        e.printStackTrace();
+    }
     }
 
     public static class GroupsViewHolder extends RecyclerView.ViewHolder {
@@ -343,8 +360,11 @@ public class AssociatedGroups extends AppCompatActivity {
 
                            @Override
                            public void onError() {
-
-                               Picasso.with(ctx).load(groupImageUrl).placeholder(R.drawable.easy_to_use).into(groupimage);
+                               try {
+                                   Picasso.with(ctx).load(groupImageUrl).placeholder(R.drawable.easy_to_use).into(groupimage);
+                               }catch(Exception e){
+                               e.printStackTrace();
+                           }
                            }
                        });
            }catch (Exception e){
@@ -392,80 +412,108 @@ public class AssociatedGroups extends AppCompatActivity {
 
     public void firebaseGroupSearch(String searchText){
 
-        Query firebaseSearchQuery = groupsRef.orderByChild("groupname").startAt(searchText).endAt(searchText + "\uf0ff");
+        try {
+            Query firebaseSearchQuery = groupsRef.orderByChild("groupname").startAt(searchText).endAt(searchText + "\uf0ff");
 
-        FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder> firebaseRecyclerAdapter = new
-                FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder>
-                        (
-                                GroupModel.class,
-                                R.layout.all_groups_display_layout,
-                                GroupsViewHolder.class,
-                                firebaseSearchQuery
-                        )
-                {
-                    @Override
-                    protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupModel model, int position) {
+            FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder> firebaseRecyclerAdapter = new
+                    FirebaseRecyclerAdapter<GroupModel, GroupsViewHolder>
+                            (
+                                    GroupModel.class,
+                                    R.layout.all_groups_display_layout,
+                                    GroupsViewHolder.class,
+                                    firebaseSearchQuery
+                            ) {
+                        @Override
+                        protected void populateViewHolder(final GroupsViewHolder viewHolder, GroupModel model, int position) {
 
 
-                        final String groupKey = getRef(position).getKey();
-                        groupsRef.child(groupKey).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            final String groupKey = getRef(position).getKey();
+                            groupsRef.child(groupKey).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                if(dataSnapshot.exists()) {
+                                    if (dataSnapshot.exists()) {
 
-                                    final String groupname, groupimage;
-                                    final boolean couldjoin;
-                                    if (dataSnapshot.hasChild("groupname")) {
+                                        final String groupname, groupimage;
+                                        final boolean couldjoin;
+                                        if (dataSnapshot.hasChild("groupname")) {
+                                            try {
+                                                groupname = dataSnapshot.child("groupname").getValue().toString();
+                                                groupimage = dataSnapshot.child("groupimage").getValue() != null ?
+                                                        dataSnapshot.child("groupimage").getValue().toString() : null;
+                                                couldjoin = (boolean) dataSnapshot.child("couldjoin").getValue();
 
-                                        groupname = dataSnapshot.child("groupname").getValue().toString();
-                                        groupimage = dataSnapshot.child("groupimage").getValue() != null ?
-                                                dataSnapshot.child("groupimage").getValue().toString() : null;
-                                        couldjoin = (boolean)dataSnapshot.child("couldjoin").getValue();
+                                                viewHolder.setGroupimage(AssociatedGroups.this, groupimage);
+                                                viewHolder.setGroupname(groupname);
+                                                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View view) {
 
-                                        viewHolder.setGroupimage(AssociatedGroups.this, groupimage);
-                                        viewHolder.setGroupname(groupname);
-                                        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
+                                                        loadingBars.setTitle("Opening group");
+                                                        loadingBars.setMessage("A moment please");
+                                                        loadingBars.setCanceledOnTouchOutside(false);
+                                                        loadingBars.setCancelable(false);
+                                                        loadingBars.show();
+                                                        //check if the user is in the group
+                                                        DatabaseReference groupsRef =
+                                                                FirebaseDatabase.getInstance().getReference()
+                                                                        .child("Groups").child(group_category)
+                                                                        .child("groups").child(groupKey).child("users");
 
-                                                loadingBars.setTitle("Opening group");
-                                                loadingBars.setMessage("A moment please");
-                                                loadingBars.setCanceledOnTouchOutside(false);
-                                                loadingBars.setCancelable(false);
-                                                loadingBars.show();
-                                                //check if the user is in the group
-                                                DatabaseReference groupsRef =
-                                                        FirebaseDatabase.getInstance().getReference()
-                                                                .child("Groups").child(group_category)
-                                                                .child("groups").child(groupKey).child("users");
+                                                        mAuth = FirebaseAuth.getInstance();
+                                                        currentUserID = mAuth.getCurrentUser().getUid();
 
-                                                mAuth = FirebaseAuth.getInstance();
-                                                currentUserID = mAuth.getCurrentUser().getUid();
+                                                        groupsRef.addValueEventListener(new ValueEventListener() {
+                                                            @SuppressLint("SetTextI18n")
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                if (dataSnapshot.exists()) {
+                                                                    try {
+                                                                        if (dataSnapshot.hasChild(currentUserID)) {
+                                                                            //open messaging area for this group
+                                                                            loadingBars.dismiss();
+                                                                            Intent message_this_user = new Intent(
+                                                                                    AssociatedGroups.this, GroupMessagingArea.class);
+                                                                            message_this_user.putExtra("group_cat", group_category);
+                                                                            message_this_user.putExtra("group_key", groupKey);
+                                                                            message_this_user.putExtra("group_image", groupimage);
+                                                                            startActivity(message_this_user);
+                                                                            overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                                            finish();
+                                                                        } else {
+                                                                            checkToJoin(loadingBars, couldjoin, group_category,
+                                                                                    groupKey, groupimage);
+                                                                        }
+                                                                    } catch (Exception e) {
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                } else {
+                                                                    checkToJoin(loadingBars, couldjoin, group_category,
+                                                                            groupKey, groupimage);
+                                                                }
+                                                            }
 
-                                                groupsRef.addValueEventListener(new ValueEventListener() {
-                                                    @SuppressLint("SetTextI18n")
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+
+                                                    }
+                                                });
+
+                                                groupsRef.child(groupKey).child("users").addValueEventListener(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                        if(dataSnapshot.exists()){
-                                                            if(dataSnapshot.hasChild(currentUserID)){
-                                                                //open messaging area for this group
-                                                                loadingBars.dismiss();
-                                                                Intent message_this_user = new Intent(
-                                                                        AssociatedGroups.this, GroupMessagingArea.class);
-                                                                message_this_user.putExtra("group_cat", group_category);
-                                                                message_this_user.putExtra("group_key", groupKey);
-                                                                message_this_user.putExtra("group_image",groupimage);
-                                                                startActivity(message_this_user);
-                                                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                                                finish();
-                                                            }else {
-                                                                checkToJoin(loadingBars,couldjoin,group_category,
-                                                                        groupKey,groupimage);
+                                                        try {
+                                                            if (dataSnapshot.exists()) {
+                                                                int countParticipants = (int) dataSnapshot.getChildrenCount();
+                                                                viewHolder.setGroupNoOfParticipants(Integer.toString(countParticipants));
+                                                            } else {
+                                                                viewHolder.setGroupNoOfParticipants("0");
                                                             }
-                                                        }else{
-                                                            checkToJoin(loadingBars,couldjoin,group_category,
-                                                                    groupKey,groupimage);
+                                                        } catch (Exception e) {
+                                                            e.printStackTrace();
                                                         }
                                                     }
 
@@ -474,43 +522,26 @@ public class AssociatedGroups extends AppCompatActivity {
 
                                                     }
                                                 });
-
+                                            }catch(Exception e){
+                                                e.printStackTrace();
                                             }
-                                        });
-
-                                        groupsRef.child(groupKey).child("users").addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.exists()){
-                                                    int countParticipants = (int)dataSnapshot.getChildrenCount();
-                                                    viewHolder.setGroupNoOfParticipants(Integer.toString(countParticipants));
-                                                }else {
-                                                    viewHolder.setGroupNoOfParticipants("0");
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
-
-
+                                        }
                                     }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                            }
-                        });
-                    }
-                };
+                                }
+                            });
+                        }
+                    };
 
-        list_view.setAdapter(firebaseRecyclerAdapter);
-        firebaseRecyclerAdapter.notifyDataSetChanged();
-
+            list_view.setAdapter(firebaseRecyclerAdapter);
+            firebaseRecyclerAdapter.notifyDataSetChanged();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

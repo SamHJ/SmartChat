@@ -137,27 +137,27 @@ public class FullMessageImageView extends AppCompatActivity {
     }
 
     public void DownloadImageToPhone(){
+        try {
+            String fileName = getIntent().getStringExtra("name");
+            String fileUrl = getIntent().getStringExtra("url");
 
-        String fileName = getIntent().getStringExtra("name");
-        String fileUrl = getIntent().getStringExtra("url");
+            File root = Environment.getExternalStorageDirectory();
+            root.mkdirs();
+            String path = root.toString();
+            String FileName = fileName;
+            String FileExtension = ".jpg";
+            String DestinationDirectory = path + "/SmartChat" + "/Messages" + "/Images";
 
-        File root = Environment.getExternalStorageDirectory();
-        root.mkdirs();
-        String path = root.toString();
-        String FileName = fileName;
-        String FileExtension = ".jpg";
-        String DestinationDirectory = path + "/SmartChat" + "/Messages" + "/Images";
-
-        DownloadManager downloadManager = (DownloadManager) FullMessageImageView.this.getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri1 = Uri.parse(fileUrl);
-        DownloadManager.Request request = new DownloadManager.Request(uri1);
-        request.setTitle("SmartChat (" + FileName + FileExtension +")");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(FullMessageImageView.this, DestinationDirectory, FileName + FileExtension);
-        downloadManager.enqueue(request);
-
-
-
+            DownloadManager downloadManager = (DownloadManager) FullMessageImageView.this.getSystemService(Context.DOWNLOAD_SERVICE);
+            Uri uri1 = Uri.parse(fileUrl);
+            DownloadManager.Request request = new DownloadManager.Request(uri1);
+            request.setTitle("SmartChat (" + FileName + FileExtension + ")");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalFilesDir(FullMessageImageView.this, DestinationDirectory, FileName + FileExtension);
+            downloadManager.enqueue(request);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 

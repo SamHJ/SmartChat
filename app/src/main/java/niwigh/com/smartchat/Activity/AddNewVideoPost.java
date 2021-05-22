@@ -91,9 +91,13 @@ public class AddNewVideoPost extends AppCompatActivity {
                 mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
                     @Override
                     public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                        mediaController = new MediaController(AddNewVideoPost.this);
-                        videoView.setMediaController(mediaController);
-                        mediaController.setAnchorView(videoView);
+                        try {
+                            mediaController = new MediaController(AddNewVideoPost.this);
+                            videoView.setMediaController(mediaController);
+                            mediaController.setAnchorView(videoView);
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -135,224 +139,234 @@ public class AddNewVideoPost extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == PICK_VIDEO_REQUEST && resultCode == RESULT_OK && data != null ){
-            videouri = data.getData();
-            videoView.setVideoURI(videouri);
+            try {
+                videouri = data.getData();
+                videoView.setVideoURI(videouri);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
     public void validatePostInfo() {
+        try {
+            post_Title = post_title.getText().toString();
+            post_Description = post_description.getText().toString();
 
-        post_Title = post_title.getText().toString();
-        post_Description = post_description.getText().toString();
-
-        if(videouri == null){
-            showErrorCustomDialog();
-        }
-        else if(post_Title.isEmpty() || post_Description.isEmpty()){
-            //all fields are required dialog
-            showAllFieldsAreRequired();
-        }
-        else {
-            storeVideoToFirebaseStorage();
+            if (videouri == null) {
+                showErrorCustomDialog();
+            } else if (post_Title.isEmpty() || post_Description.isEmpty()) {
+                //all fields are required dialog
+                showAllFieldsAreRequired();
+            } else {
+                storeVideoToFirebaseStorage();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
     @SuppressLint("SimpleDateFormat")
     private void storeVideoToFirebaseStorage() {
 
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
-        //for time
-        Calendar calFordTime = Calendar.getInstance();
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
-        saveCurrentTime = currentTime.format(calFordTime.getTime());
+        try {
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("yyyy-MM-dd");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
+            //for time
+            Calendar calFordTime = Calendar.getInstance();
+            SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
+            saveCurrentTime = currentTime.format(calFordTime.getTime());
 
-        postRandomName = saveCurrentDate + saveCurrentTime;
+            postRandomName = saveCurrentDate + saveCurrentTime;
 
-        final StorageReference filePath = postsVideoStorageRef.child("Post Videos").child(videouri.getLastPathSegment() + postRandomName + ".mp4");
+            final StorageReference filePath = postsVideoStorageRef.child("Post Videos").child(videouri.getLastPathSegment() + postRandomName + ".mp4");
 
 
+            filePath.putFile(videouri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
-        filePath.putFile(videouri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
 
-                if(task.isSuccessful()){
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                final String fileUrl = uri.toString();
 
-                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Uri downUrl = uri;
-                            final String fileUrl = downUrl.toString();
+                                allPostsRef.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            allPostsRef.addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
 
-                                    if(dataSnapshot.exists()){
+                                            countPosts = dataSnapshot.getChildrenCount();
+                                        } else {
 
-                                        countPosts = dataSnapshot.getChildrenCount();
+                                            countPosts = 0;
+                                        }
                                     }
-                                    else {
 
-                                        countPosts = 0;
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                                     }
-                                }
+                                });
+                                usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        if (dataSnapshot.exists()) {
+                                            try {
+                                                //get the user details
+                                                String userFullName = dataSnapshot.child("fullname").getValue().toString();
+                                                String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
 
-                                }
-                            });
-                            usersRef.child(currentUserID).addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                //save the posts details to database
+                                                Map<String, Object> postsMap = new HashMap<String, Object>();
+                                                postsMap.put("uid", currentUserID);
+                                                postsMap.put("date", saveCurrentDate);
+                                                postsMap.put("time", saveCurrentTime);
+                                                postsMap.put("title", post_Title);
+                                                postsMap.put("description", post_Description);
+                                                postsMap.put("postvideo", fileUrl);
+                                                postsMap.put("profileimage", userProfileImage);
+                                                postsMap.put("fullname", userFullName);
+                                                postsMap.put("type", "video");
+                                                postsMap.put("posttitletolowercase", post_Title.toLowerCase());
+                                                postsMap.put("timestamp", ServerValue.TIMESTAMP);
+                                                postsMap.put("postfilestoragename", videouri.getLastPathSegment() + postRandomName + ".mp4");
+                                                postsMap.put("counter", countPosts);
 
-                                    if(dataSnapshot.exists()){
-                                        //get the user details
-                                        String userFullName = dataSnapshot.child("fullname").getValue().toString();
-                                        String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+                                                allPostsRef.child(currentUserID + postRandomName).updateChildren(postsMap)
+                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @SuppressLint("SetTextI18n")
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                if (task.isSuccessful()) {
+                                                                    videoView.setVideoURI(videouri);
+                                                                    post_title.setText("");
+                                                                    post_description.setText("");
+                                                                    loadingBar.dismiss();
+                                                                    finish();
+                                                                } else {
+                                                                    //{.....................
+                                                                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                                                                    ViewGroup viewGroup = findViewById(android.R.id.content);
 
-                                        //save the posts details to database
-                                        Map<String,Object> postsMap = new HashMap<String, Object>();
-                                        postsMap.put("uid", currentUserID);
-                                        postsMap.put("date", saveCurrentDate);
-                                        postsMap.put("time", saveCurrentTime);
-                                        postsMap.put("title", post_Title);
-                                        postsMap.put("description", post_Description);
-                                        postsMap.put("postvideo", fileUrl);
-                                        postsMap.put("profileimage", userProfileImage);
-                                        postsMap.put("fullname", userFullName);
-                                        postsMap.put("type", "video");
-                                        postsMap.put("posttitletolowercase", post_Title.toLowerCase());
-                                        postsMap.put("timestamp", ServerValue.TIMESTAMP);
-                                        postsMap.put("postfilestoragename", videouri.getLastPathSegment() + postRandomName + ".mp4");
-                                        postsMap.put("counter", countPosts);
-
-                                        allPostsRef.child(currentUserID + postRandomName).updateChildren(postsMap)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @SuppressLint("SetTextI18n")
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        if(task.isSuccessful()){
-                                                            videoView.setVideoURI(videouri);
-                                                            post_title.setText("");
-                                                            post_description.setText("");
-                                                            loadingBar.dismiss();
-                                                            finish();
-                                                        }
-                                                        else {
-                                                            //{.....................
-                                                            //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                                                            ViewGroup viewGroup = findViewById(android.R.id.content);
-
-                                                            //then we will inflate the custom alert dialog xml that we created
-                                                            View dialogView = LayoutInflater.from(AddNewVideoPost.this).inflate(R.layout.error_dialog, viewGroup, false);
+                                                                    //then we will inflate the custom alert dialog xml that we created
+                                                                    View dialogView = LayoutInflater.from(AddNewVideoPost.this).inflate(R.layout.error_dialog, viewGroup, false);
 
 
-                                                            //Now we need an AlertDialog.Builder object
-                                                            AlertDialog.Builder builder = new AlertDialog.Builder(AddNewVideoPost.this);
+                                                                    //Now we need an AlertDialog.Builder object
+                                                                    AlertDialog.Builder builder = new AlertDialog.Builder(AddNewVideoPost.this);
 
-                                                            //setting the view of the builder to our custom view that we already inflated
-                                                            builder.setView(dialogView);
+                                                                    //setting the view of the builder to our custom view that we already inflated
+                                                                    builder.setView(dialogView);
 
-                                                            //finally creating the alert dialog and displaying it
-                                                            final AlertDialog alertDialog = builder.create();
+                                                                    //finally creating the alert dialog and displaying it
+                                                                    final AlertDialog alertDialog = builder.create();
 
-                                                            Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                                                            TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                                                            TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+                                                                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                                                                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                                                                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
 
-                                                            dialog_btn.setText("OK");
-                                                            success_title.setText("Error");
-                                                            success_text.setText("An unexpected error occured while uploading your post.");
+                                                                    dialog_btn.setText("OK");
+                                                                    success_title.setText("Error");
+                                                                    success_text.setText("An unexpected error occured while uploading your post.");
 
-                                                            // if the OK button is clicked, close the success dialog
-                                                            dialog_btn.setOnClickListener(new View.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(View v) {
-                                                                    alertDialog.dismiss();
+                                                                    // if the OK button is clicked, close the success dialog
+                                                                    dialog_btn.setOnClickListener(new View.OnClickListener() {
+                                                                        @Override
+                                                                        public void onClick(View v) {
+                                                                            alertDialog.dismiss();
+                                                                        }
+                                                                    });
+
+                                                                    alertDialog.show();
+                                                                    //...................}
+                                                                    loadingBar.dismiss();
                                                                 }
-                                                            });
+                                                            }
+                                                        });
 
-                                                            alertDialog.show();
-                                                            //...................}
-                                                            loadingBar.dismiss();
-                                                        }
-                                                    }
-                                                });
+                                            }catch(Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                        }
 
                                     }
 
-                                }
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    }
+                                });
 
-                                }
-                            });
+                            }
+                        });
 
-                        }
-                    });
+                    } else {
+                        String message = task.getException().getMessage();
+
+                        //{.....................
+                        //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                        ViewGroup viewGroup = findViewById(android.R.id.content);
+
+                        //then we will inflate the custom alert dialog xml that we created
+                        View dialogView = LayoutInflater.from(AddNewVideoPost.this).inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                        //Now we need an AlertDialog.Builder object
+                        AlertDialog.Builder builder = new AlertDialog.Builder(AddNewVideoPost.this);
+
+                        //setting the view of the builder to our custom view that we already inflated
+                        builder.setView(dialogView);
+
+                        //finally creating the alert dialog and displaying it
+                        final AlertDialog alertDialog = builder.create();
+
+                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                        dialog_btn.setText("OK");
+                        success_title.setText("Error");
+                        success_text.setText(message);
+
+                        // if the OK button is clicked, close the success dialog
+                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertDialog.dismiss();
+                            }
+                        });
+
+                        alertDialog.show();
+                        //...................}
+                        loadingBar.dismiss();
+                    }
 
                 }
-                else{
-                    String message = task.getException().getMessage();
-
-                    //{.....................
-                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                    ViewGroup viewGroup = findViewById(android.R.id.content);
-
-                    //then we will inflate the custom alert dialog xml that we created
-                    View dialogView = LayoutInflater.from(AddNewVideoPost.this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                    //Now we need an AlertDialog.Builder object
-                    AlertDialog.Builder builder = new AlertDialog.Builder(AddNewVideoPost.this);
-
-                    //setting the view of the builder to our custom view that we already inflated
-                    builder.setView(dialogView);
-
-                    //finally creating the alert dialog and displaying it
-                    final AlertDialog alertDialog = builder.create();
-
-                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                    dialog_btn.setText("OK");
-                    success_title.setText("Error");
-                    success_text.setText(message);
-
-                    // if the OK button is clicked, close the success dialog
-                    dialog_btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            alertDialog.dismiss();
-                        }
-                    });
-
-                    alertDialog.show();
-                    //...................}
-                    loadingBar.dismiss();
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    loadingBar.setTitle("Uploading Post");
+                    loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
+                    loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingBar.setProgress((int) progress);
+                    loadingBar.show();
+                    loadingBar.setCanceledOnTouchOutside(false);
                 }
-
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                loadingBar.setTitle("Uploading Post");
-                loadingBar.setMessage(taskSnapshot.getBytesTransferred()/(1024*1024) + " / " + taskSnapshot.getTotalByteCount()/(1024*1024) + "MB");
-                loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                loadingBar.setProgress((int)progress);
-                loadingBar.show();
-                loadingBar.setCanceledOnTouchOutside(false);
-            }
-        });;
+            });
+            ;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

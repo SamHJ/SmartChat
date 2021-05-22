@@ -182,9 +182,12 @@ public class PersonProfile extends AppCompatActivity {
 
                                 @Override
                                 public void onError() {
-
-                                    Picasso.with(PersonProfile.this).load(profile_image).placeholder(R.drawable.easy_to_use)
-                                            .into(userprofile_image);
+                                    try {
+                                        Picasso.with(PersonProfile.this).load(profile_image).placeholder(R.drawable.easy_to_use)
+                                                .into(userprofile_image);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
 
                                 }
                             });
@@ -279,41 +282,38 @@ public class PersonProfile extends AppCompatActivity {
     private void UnFriendAnExistingFriend()
     {
 
-        FriendsRef.child(senderUserID).child(receiverUserID)
-                .removeValue()
-                .addOnCompleteListener(new OnCompleteListener<Void>()
-                {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task)
-                    {
+        try {
+            FriendsRef.child(senderUserID).child(receiverUserID)
+                    .removeValue()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
 
-                        if(task.isSuccessful())
-                        {
-                            FriendsRef.child(receiverUserID).child(senderUserID)
-                                    .removeValue()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>()
-                                    {
-                                        @SuppressLint("SetTextI18n")
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task)
-                                        {
+                            if (task.isSuccessful()) {
+                                FriendsRef.child(receiverUserID).child(senderUserID)
+                                        .removeValue()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @SuppressLint("SetTextI18n")
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
 
-                                            if(task.isSuccessful())
-                                            {
-                                                DeleteMessagesIfNotFriends();
-                                                btn_send_friend_request.setEnabled(true);
-                                                CURRENT_STATE = "not_friends";
-                                                btn_send_friend_request.setText("Send Friend Request");
-                                                btn_send_friend_request.setBackgroundResource(R.color.colorPrimaryDark);
-                                                btn_decline_friendRequest.setVisibility(View.INVISIBLE);
-                                                btn_decline_friendRequest.setEnabled(false);
+                                                if (task.isSuccessful()) {
+                                                    DeleteMessagesIfNotFriends();
+                                                    btn_send_friend_request.setEnabled(true);
+                                                    CURRENT_STATE = "not_friends";
+                                                    btn_send_friend_request.setText("Send Friend Request");
+                                                    btn_send_friend_request.setBackgroundResource(R.color.colorPrimaryDark);
+                                                    btn_decline_friendRequest.setVisibility(View.INVISIBLE);
+                                                    btn_decline_friendRequest.setEnabled(false);
+                                                }
                                             }
-                                        }
-                                    });
+                                        });
+                            }
                         }
-                    }
-                });
-
+                    });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -321,220 +321,149 @@ public class PersonProfile extends AppCompatActivity {
                                   final String messageReceiverID, final String
                                           messageReceiverName, final String messageReceiverFullName)
     {
-        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
-        Query query = tokens.orderByKey().equalTo(messageReceiverID);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(receiverUserID, senderName+" sent you a friend request",
-                            "New Friend Request ",
-                            "friendrequest", senderName, senderName);
+        try {
+            DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
+            Query query = tokens.orderByKey().equalTo(messageReceiverID);
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        try {
+                            Token token = snapshot.getValue(Token.class);
+                            Data data = new Data(receiverUserID, senderName + " sent you a friend request",
+                                    "New Friend Request ",
+                                    "friendrequest", senderName, senderName);
 
-                    Sender sender = new Sender(data, token.getToken());
+                            Sender sender = new Sender(data, token.getToken());
 
-                    apiService.sendNotification(sender)
-                            .enqueue(new retrofit2.Callback<ResponseBody>() {
-                                @Override
-                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                    if(response.code() == 200){
-                                        if(!response.isSuccessful()){
-                                            Log.i("NOTIFICATION INFO: ","Failed!");
+                            apiService.sendNotification(sender)
+                                    .enqueue(new retrofit2.Callback<ResponseBody>() {
+                                        @Override
+                                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                            if (response.code() == 200) {
+                                                if (!response.isSuccessful()) {
+                                                    Log.i("NOTIFICATION INFO: ", "Failed!");
+                                                }
+                                            }
                                         }
-                                    }
-                                }
+                                        @Override
+                                        public void onFailure(Call<ResponseBody> call, Throwable t) {
 
-                                @Override
-                                public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                }
-                            });
+                                        }
+                                    });
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void updateToken(String token){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
-        Token token1 = new Token(token);
-        reference.child(senderUserID).setValue(token1);
+        try {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
+            Token token1 = new Token(token);
+            reference.child(senderUserID).setValue(token1);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void AcceptFriendRequest() {
-        //for date
-        Calendar calFordDate = Calendar.getInstance();
-        SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
-        saveCurrentDate = currentDate.format(calFordDate.getTime());
+        try {
+            //for date
+            Calendar calFordDate = Calendar.getInstance();
+            SimpleDateFormat currentDate = new SimpleDateFormat("dd-MMMM-yyyy");
+            saveCurrentDate = currentDate.format(calFordDate.getTime());
 
 
-        UserRef.child(receiverUserID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    String friednusername = dataSnapshot.child("username").getValue().toString();
-                    final Map<String,Object> friendsMap = new HashMap<String, Object>();
-                    friendsMap.put("friendsname", friednusername);
-                    friendsMap.put("date", saveCurrentDate);
+            UserRef.child(receiverUserID).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        try {
+                            String friednusername = dataSnapshot.child("username").getValue().toString();
+                            final Map<String, Object> friendsMap = new HashMap<String, Object>();
+                            friendsMap.put("friendsname", friednusername);
+                            friendsMap.put("date", saveCurrentDate);
 
-                    UserRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.exists()){
-
-                                String onlineuserfriednusername = dataSnapshot.child("username").getValue().toString();
-                                final Map<String,Object> onlineUserfriendsMap = new HashMap<String, Object>();
-                                onlineUserfriendsMap.put("friendsname", onlineuserfriednusername);
-                                onlineUserfriendsMap.put("date", saveCurrentDate);
-
-                                FriendsRef.child(senderUserID).child(receiverUserID).updateChildren(friendsMap)
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-
-                                                if(task.isSuccessful()){
-
-                                                    FriendsRef.child(receiverUserID).child(senderUserID).updateChildren(onlineUserfriendsMap)
-                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                @Override
-                                                                public void onComplete(@NonNull Task<Void> task) {
-
-                                                                    if(task.isSuccessful()){
-
-                                                                        friendRequestRef.child(senderUserID).child(receiverUserID)
-                                                                                .removeValue()
-                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                    @Override
-                                                                                    public void onComplete(@NonNull Task<Void> task) {
-
-                                                                                        if(task.isSuccessful()){
-                                                                                            friendRequestRef.child(receiverUserID).child(senderUserID)
-                                                                                                    .removeValue()
-                                                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                                        @SuppressLint("SetTextI18n")
-                                                                                                        @Override
-                                                                                                        public void onComplete(@NonNull Task<Void> task) {
-
-                                                                                                            if(task.isSuccessful()){
-                                                                                                                btn_send_friend_request.setEnabled(true);
-                                                                                                                CURRENT_STATE = "friends";
-                                                                                                                btn_send_friend_request.setText("Unfriend this person");
-                                                                                                                btn_send_friend_request.setBackgroundResource(R.color.errorColor);
-                                                                                                                btn_decline_friendRequest.setVisibility(View.INVISIBLE);
-                                                                                                                btn_decline_friendRequest.setEnabled(false);
-                                                                                                            }
-                                                                                                        }
-                                                                                                    });
-                                                                                        }
-                                                                                    }
-                                                                                });
-                                                                    }
-                                                                }
-                                                            });
-                                                }
-                                            }
-                                        });
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-    }
-
-    private void CancelFriendRequest() {
-
-        friendRequestRef.child(senderUserID).child(receiverUserID)
-                .removeValue()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                        if(task.isSuccessful()){
-                            friendRequestRef.child(receiverUserID).child(senderUserID)
-                                    .removeValue()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @SuppressLint("SetTextI18n")
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-
-                                            if(task.isSuccessful()){
-                                                btn_send_friend_request.setEnabled(true);
-                                                CURRENT_STATE = "not_friends";
-                                                btn_send_friend_request.setText("Send Friend Request");
-                                                btn_send_friend_request.setBackgroundResource(R.color.colorPrimaryDark);
-                                                btn_decline_friendRequest.setVisibility(View.INVISIBLE);
-                                                btn_decline_friendRequest.setEnabled(false);
-                                            }
-                                        }
-                                    });
-                        }
-                    }
-                });
-
-    }
-
-    private void MaintenanceOfButtons() {
-        friendRequestRef.child(senderUserID)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @SuppressLint("SetTextI18n")
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.hasChild(receiverUserID)){
-                            String request_type = dataSnapshot.child(receiverUserID).child("request_type").getValue().toString();
-                            if(request_type.equals("sent")){
-                                CURRENT_STATE = "request_sent";
-                                btn_send_friend_request.setText("Cancel Friend Request");
-                                btn_send_friend_request.setBackgroundResource(R.color.errorColor);
-
-                                btn_decline_friendRequest.setVisibility(View.INVISIBLE);
-                                btn_decline_friendRequest.setEnabled(false);
-                            }
-                            else if(request_type.equals("received")){
-                                CURRENT_STATE = "request_received";
-                                btn_send_friend_request.setText("Accept Friend Request");
-                                btn_send_friend_request.setBackgroundResource(R.color.colorPrimaryDark);
-                                btn_decline_friendRequest.setVisibility(View.VISIBLE);
-                                btn_decline_friendRequest.setEnabled(true);
-
-                                btn_decline_friendRequest.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        CancelFriendRequest();
-                                    }
-                                });
-                            }
-                        }
-                        else {
-                            FriendsRef.child(senderUserID).addListenerForSingleValueEvent(new ValueEventListener() {
+                            UserRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if(dataSnapshot.hasChild(receiverUserID)){
-                                        CURRENT_STATE = "friends";
-                                        btn_send_friend_request.setText("Unfriend this person");
-                                        btn_send_friend_request.setBackgroundResource(R.color.errorColor);
-                                        btn_decline_friendRequest.setVisibility(View.INVISIBLE);
-                                        btn_decline_friendRequest.setEnabled(false);
+                                    if (dataSnapshot.exists()) {
+
+                                        String onlineuserfriednusername = dataSnapshot.child("username").getValue().toString();
+                                        final Map<String, Object> onlineUserfriendsMap = new HashMap<String, Object>();
+                                        onlineUserfriendsMap.put("friendsname", onlineuserfriednusername);
+                                        onlineUserfriendsMap.put("date", saveCurrentDate);
+
+                                        FriendsRef.child(senderUserID).child(receiverUserID).updateChildren(friendsMap)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                                        if (task.isSuccessful()) {
+
+                                                            try {
+                                                                FriendsRef.child(receiverUserID).child(senderUserID).updateChildren(onlineUserfriendsMap)
+                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task<Void> task) {
+
+                                                                                if (task.isSuccessful()) {
+
+                                                                                    try {
+                                                                                        friendRequestRef.child(senderUserID).child(receiverUserID)
+                                                                                                .removeValue()
+                                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                                    @Override
+                                                                                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                                                                                        if (task.isSuccessful()) {
+                                                                                                            try {
+                                                                                                                friendRequestRef.child(receiverUserID).child(senderUserID)
+                                                                                                                        .removeValue()
+                                                                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                                                            @SuppressLint("SetTextI18n")
+                                                                                                                            @Override
+                                                                                                                            public void onComplete(@NonNull Task<Void> task) {
+
+                                                                                                                                if (task.isSuccessful()) {
+                                                                                                                                    btn_send_friend_request.setEnabled(true);
+                                                                                                                                    CURRENT_STATE = "friends";
+                                                                                                                                    btn_send_friend_request.setText("Unfriend this person");
+                                                                                                                                    btn_send_friend_request.setBackgroundResource(R.color.errorColor);
+                                                                                                                                    btn_decline_friendRequest.setVisibility(View.INVISIBLE);
+                                                                                                                                    btn_decline_friendRequest.setEnabled(false);
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        });
+                                                                                                            }catch (Exception e){
+                                                                                                                e.printStackTrace();
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                });
+                                                                                    }catch (Exception e){
+                                                                                        e.printStackTrace();
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        });
+                                                            }catch (Exception e){
+                                                                e.printStackTrace();
+                                                            }
+                                                        }
+                                                    }
+                                                });
                                     }
                                 }
 
@@ -543,116 +472,259 @@ public class PersonProfile extends AppCompatActivity {
 
                                 }
                             });
+
+
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
                     }
+                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    }
-                });
+                }
+            });
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void CancelFriendRequest() {
+
+        try {
+            friendRequestRef.child(senderUserID).child(receiverUserID)
+                    .removeValue()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                            if (task.isSuccessful()) {
+                                try {
+                                    friendRequestRef.child(receiverUserID).child(senderUserID)
+                                            .removeValue()
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @SuppressLint("SetTextI18n")
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        btn_send_friend_request.setEnabled(true);
+                                                        CURRENT_STATE = "not_friends";
+                                                        btn_send_friend_request.setText("Send Friend Request");
+                                                        btn_send_friend_request.setBackgroundResource(R.color.colorPrimaryDark);
+                                                        btn_decline_friendRequest.setVisibility(View.INVISIBLE);
+                                                        btn_decline_friendRequest.setEnabled(false);
+                                                    }
+                                                }
+                                            });
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void MaintenanceOfButtons() {
+        try {
+            friendRequestRef.child(senderUserID)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @SuppressLint("SetTextI18n")
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.hasChild(receiverUserID)) {
+                                try {
+                                    String request_type = dataSnapshot.child(receiverUserID).child("request_type").getValue().toString();
+                                    if (request_type.equals("sent")) {
+                                        CURRENT_STATE = "request_sent";
+                                        btn_send_friend_request.setText("Cancel Friend Request");
+                                        btn_send_friend_request.setBackgroundResource(R.color.errorColor);
+
+                                        btn_decline_friendRequest.setVisibility(View.INVISIBLE);
+                                        btn_decline_friendRequest.setEnabled(false);
+                                    } else if (request_type.equals("received")) {
+                                        CURRENT_STATE = "request_received";
+                                        btn_send_friend_request.setText("Accept Friend Request");
+                                        btn_send_friend_request.setBackgroundResource(R.color.colorPrimaryDark);
+                                        btn_decline_friendRequest.setVisibility(View.VISIBLE);
+                                        btn_decline_friendRequest.setEnabled(true);
+
+                                        btn_decline_friendRequest.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                CancelFriendRequest();
+                                            }
+                                        });
+                                    }
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                FriendsRef.child(senderUserID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.hasChild(receiverUserID)) {
+                                            CURRENT_STATE = "friends";
+                                            btn_send_friend_request.setText("Unfriend this person");
+                                            btn_send_friend_request.setBackgroundResource(R.color.errorColor);
+                                            btn_decline_friendRequest.setVisibility(View.INVISIBLE);
+                                            btn_decline_friendRequest.setEnabled(false);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void DeleteMessagesIfNotFriends() {
 
-        RootRef.child("Messages").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        try {
+            RootRef.child("Messages").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists()){
+                    if (dataSnapshot.exists()) {
 
-                    msgRef.child(senderUserID).child(receiverUserID).removeValue()
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if(task.isSuccessful()){
-                                        msgRef.child(receiverUserID).child(senderUserID)
-                                                .removeValue();
-                                    }
-                                }
-                            });
+                        try {
+                            msgRef.child(senderUserID).child(receiverUserID).removeValue()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                try {
+                                                    msgRef.child(receiverUserID).child(senderUserID)
+                                                            .removeValue();
+                                                }catch (Exception e){
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                    });
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void SendFriendRequestToAPerson() {
         notify = true;
-        friendRequestRef.child(senderUserID).child(receiverUserID)
-                .child("request_type").setValue("sent")
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
+        try {
+            friendRequestRef.child(senderUserID).child(receiverUserID)
+                    .child("request_type").setValue("sent")
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
 
-                        if(task.isSuccessful()){
-                            friendRequestRef.child(receiverUserID).child(senderUserID)
-                                    .child("request_type").setValue("received")
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                try {
+                                    friendRequestRef.child(receiverUserID).child(senderUserID)
+                                            .child("request_type").setValue("received")
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
 
-                                            if(task.isSuccessful()){
-                                                HashMap<String, String> notificationsData = new HashMap<String, String>();
-                                                notificationsData.put("from", senderUserID);
-                                                notificationsData.put("type", "request");
+                                                    if (task.isSuccessful()) {
+                                                        HashMap<String, String> notificationsData = new HashMap<String, String>();
+                                                        notificationsData.put("from", senderUserID);
+                                                        notificationsData.put("type", "request");
 
-                                                NotificationsRef.child(receiverUserID).push().setValue(notificationsData)
-                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @SuppressLint("SetTextI18n")
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
-
-                                                                if(task.isSuccessful()){
-                                                                    btn_send_friend_request.setEnabled(true);
-                                                                    CURRENT_STATE = "request_sent";
-                                                                    btn_send_friend_request.setText("Cancel Friend Request");
-                                                                    btn_send_friend_request.setBackgroundResource(R.color.errorColor);
-                                                                    btn_decline_friendRequest.setVisibility(View.INVISIBLE);
-                                                                    btn_decline_friendRequest.setEnabled(false);
-
-                                                                    DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child("Users")
-                                                                            .child(senderUserID);
-                                                                    usersRef.addValueEventListener(new ValueEventListener() {
+                                                        try {
+                                                            NotificationsRef.child(receiverUserID).push().setValue(notificationsData)
+                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @SuppressLint("SetTextI18n")
                                                                         @Override
-                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                                                            if(dataSnapshot.exists()){
-                                                                                if(dataSnapshot.hasChildren()){
-                                                                                    String messageReceiverFullName = dataSnapshot.child("fullname").getValue().toString();
-                                                                                    String senderName = dataSnapshot.child("username").getValue().toString();
+                                                                        public void onComplete(@NonNull Task<Void> task) {
 
-                                                                                    if(notify){
-                                                                                        sendNotification(senderName+" sent you a friend request",
-                                                                                                senderName, "friendrequest",receiverUserID,
-                                                                                                "",messageReceiverFullName);
-                                                                                    }
-                                                                                    notify = false;
+                                                                            if (task.isSuccessful()) {
+                                                                                try {
+                                                                                    btn_send_friend_request.setEnabled(true);
+                                                                                    CURRENT_STATE = "request_sent";
+                                                                                    btn_send_friend_request.setText("Cancel Friend Request");
+                                                                                    btn_send_friend_request.setBackgroundResource(R.color.errorColor);
+                                                                                    btn_decline_friendRequest.setVisibility(View.INVISIBLE);
+                                                                                    btn_decline_friendRequest.setEnabled(false);
+
+                                                                                    DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child("Users")
+                                                                                            .child(senderUserID);
+                                                                                    usersRef.addValueEventListener(new ValueEventListener() {
+                                                                                        @Override
+                                                                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                                            if (dataSnapshot.exists()) {
+                                                                                                if (dataSnapshot.hasChildren()) {
+                                                                                                    try {
+                                                                                                        String messageReceiverFullName = dataSnapshot.child("fullname").getValue().toString();
+                                                                                                        String senderName = dataSnapshot.child("username").getValue().toString();
+
+                                                                                                        if (notify) {
+                                                                                                            sendNotification(senderName + " sent you a friend request",
+                                                                                                                    senderName, "friendrequest", receiverUserID,
+                                                                                                                    "", messageReceiverFullName);
+                                                                                                        }
+                                                                                                        notify = false;
+                                                                                                    } catch (Exception e) {
+                                                                                                        e.printStackTrace();
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+
+                                                                                        @Override
+                                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                                                        }
+                                                                                    });
+                                                                                } catch (Exception e) {
+                                                                                    e.printStackTrace();
                                                                                 }
                                                                             }
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
                                                                         }
                                                                     });
-                                                                }
 
-                                                            }
-                                                        });
+                                                        }catch (Exception e){
+                                                            e.printStackTrace();
+                                                        }
 
-
-
-                                            }
-                                        }
-                                    });
+                                                    }
+                                                }
+                                            });
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
                         }
-                    }
-                });
+                    });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 

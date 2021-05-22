@@ -253,30 +253,17 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
             , String dateAPICompareStr
             , boolean isFirstItem) {
 
-        SimpleDateFormat f = new SimpleDateFormat("dd-MMMM-yyyy");
-        if (isFirstItem) {
-            //first item always got date/today to shows
-            //and overkill to compare with next item flow
-            Date dateFromAPI = null;
-            try {
-                dateFromAPI = f.parse(dateAPIStr);
-                if (DateUtils.isToday(dateFromAPI.getTime())) tv.setText("Today");
-                else if (DateUtils.isToday(dateFromAPI.getTime() + DateUtils.DAY_IN_MILLIS)) tv.setText("Yesterday");
-                else tv.setText(dateAPIStr);
-                tv.setIncludeFontPadding(false);
-                tv.setVisibility(View.VISIBLE);
-                ll.setVisibility(View.VISIBLE);
-            } catch (ParseException e) {
-                e.printStackTrace();
-                tv.setVisibility(View.GONE);
-                ll.setVisibility(View.GONE);
-            }
-        } else {
-            if (!dateAPIStr.equalsIgnoreCase(dateAPICompareStr)) {
+        try {
+            SimpleDateFormat f = new SimpleDateFormat("dd-MMMM-yyyy");
+            if (isFirstItem) {
+                //first item always got date/today to shows
+                //and overkill to compare with next item flow
+                Date dateFromAPI = null;
                 try {
-                    Date dateFromAPI = f.parse(dateAPIStr);
+                    dateFromAPI = f.parse(dateAPIStr);
                     if (DateUtils.isToday(dateFromAPI.getTime())) tv.setText("Today");
-                    else if (DateUtils.isToday(dateFromAPI.getTime() + DateUtils.DAY_IN_MILLIS)) tv.setText("Yesterday");
+                    else if (DateUtils.isToday(dateFromAPI.getTime() + DateUtils.DAY_IN_MILLIS))
+                        tv.setText("Yesterday");
                     else tv.setText(dateAPIStr);
                     tv.setIncludeFontPadding(false);
                     tv.setVisibility(View.VISIBLE);
@@ -287,1378 +274,1460 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
                     ll.setVisibility(View.GONE);
                 }
             } else {
-                tv.setVisibility(View.GONE);
-                ll.setVisibility(View.GONE);
+                if (!dateAPIStr.equalsIgnoreCase(dateAPICompareStr)) {
+                    try {
+                        Date dateFromAPI = f.parse(dateAPIStr);
+                        if (DateUtils.isToday(dateFromAPI.getTime())) tv.setText("Today");
+                        else if (DateUtils.isToday(dateFromAPI.getTime() + DateUtils.DAY_IN_MILLIS))
+                            tv.setText("Yesterday");
+                        else tv.setText(dateAPIStr);
+                        tv.setIncludeFontPadding(false);
+                        tv.setVisibility(View.VISIBLE);
+                        ll.setVisibility(View.VISIBLE);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        tv.setVisibility(View.GONE);
+                        ll.setVisibility(View.GONE);
+                    }
+                } else {
+                    tv.setVisibility(View.GONE);
+                    ll.setVisibility(View.GONE);
+                }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     @SuppressLint({"SimpleDateFormat", "SetTextI18n","RecyclerView"})
     @Override
     public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder,final int position) {
-        final MessagesModel messagesModel = userMessagesList.get(position);
-        messageViewHolder.bind(messagesModel, listener,messageViewHolder.itemView,position);
-        String messageSenderID = mAuth.getCurrentUser().getUid();
 
-        usersRef = FirebaseDatabase.getInstance().getReference().child("Users");
-        usersRef.keepSynced(true);
-
-        final Activity activity = (Activity) messageViewHolder.itemView.getContext();
-
-        String fromUserID = messagesModel.getFrom();
-        String fromMessageType = messagesModel.getType();
-        final MediaController[] mediaController = new MediaController[1];
-        final MediaController[] receiverMediaController = new MediaController[1];
-        final MediaPlayer sender_media_player;
-        final MediaPlayer receiver_media_player;
+        try {
 
 
-        if (position != 0) {
-            processDate(messageViewHolder.chatter_date_text,
-                    messageViewHolder.chatter_date_layout, messagesModel.getDate()
-                    , this.userMessagesList.get(position - 1).getDate()
-                    , false)
-            ;
-        } else {
-            processDate(messageViewHolder.chatter_date_text, messageViewHolder.chatter_date_layout,
-                    messagesModel.getDate()
-                    , null
-                    , true)
-            ;
-        }
+            final MessagesModel messagesModel = userMessagesList.get(position);
+            messageViewHolder.bind(messagesModel, listener, messageViewHolder.itemView, position);
+            String messageSenderID = mAuth.getCurrentUser().getUid();
+
+            usersRef = FirebaseDatabase.getInstance().getReference().child("Users");
+            usersRef.keepSynced(true);
+
+            final Activity activity = (Activity) messageViewHolder.itemView.getContext();
+
+            String fromUserID = messagesModel.getFrom();
+            String fromMessageType = messagesModel.getType();
+            final MediaController[] mediaController = new MediaController[1];
+            final MediaController[] receiverMediaController = new MediaController[1];
+            final MediaPlayer sender_media_player;
+            final MediaPlayer receiver_media_player;
 
 
-        usersDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
-        usersDatabaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    final String image = dataSnapshot.child("profileimage").getValue().toString();
-                    try{
-                        Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
-                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverProfileImage,
-                                new Callback() {
-                                    @Override
-                                    public void onSuccess() {
-
-                                    }
-
-                                    @Override
-                                    public void onError() {
-
-                                        Picasso.with(messageViewHolder.itemView.getContext()).load(image)
-                                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverProfileImage);
-                                    }
-                                });
-
-                        Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
-                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverImageProfileImage,
-                                new Callback() {
-                                    @Override
-                                    public void onSuccess() {
-
-                                    }
-
-                                    @Override
-                                    public void onError() {
-
-                                        Picasso.with(messageViewHolder.itemView.getContext()).load(image)
-                                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverImageProfileImage);
-                                    }
-                                });
-
-                        Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
-                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_profile_file_for_image,
-                                new Callback() {
-                                    @Override
-                                    public void onSuccess() {
-
-                                    }
-
-                                    @Override
-                                    public void onError() {
-
-                                        Picasso.with(messageViewHolder.itemView.getContext()).load(image)
-                                                .placeholder(R.drawable.easy_to_use)
-                                                .into(messageViewHolder.receiver_profile_file_for_image);
-                                    }
-                                });
+            if (position != 0) {
+                processDate(messageViewHolder.chatter_date_text,
+                        messageViewHolder.chatter_date_layout, messagesModel.getDate()
+                        , this.userMessagesList.get(position - 1).getDate()
+                        , false)
+                ;
+            } else {
+                processDate(messageViewHolder.chatter_date_text, messageViewHolder.chatter_date_layout,
+                        messagesModel.getDate()
+                        , null
+                        , true)
+                ;
+            }
 
 
-                        Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
-                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_profile_audio_for_image,
-                                new Callback() {
-                                    @Override
-                                    public void onSuccess() {
+            usersDatabaseRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
+            usersDatabaseRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        final String image = dataSnapshot.child("profileimage").getValue().toString();
+                        try {
+                            Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverProfileImage,
+                                    new Callback() {
+                                        @Override
+                                        public void onSuccess() {
 
-                                    }
+                                        }
 
-                                    @Override
-                                    public void onError() {
+                                        @Override
+                                        public void onError() {
 
-                                        Picasso.with(messageViewHolder.itemView.getContext()).load(image)
-                                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_profile_audio_for_image);
-                                    }
-                                });
+                                            Picasso.with(messageViewHolder.itemView.getContext()).load(image)
+                                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverProfileImage);
+                                        }
+                                    });
 
-                        Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
-                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.reply_receiver_profile_image,
-                                new Callback() {
-                                    @Override
-                                    public void onSuccess() {
+                            Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverImageProfileImage,
+                                    new Callback() {
+                                        @Override
+                                        public void onSuccess() {
 
-                                    }
+                                        }
 
-                                    @Override
-                                    public void onError() {
+                                        @Override
+                                        public void onError() {
 
-                                        Picasso.with(messageViewHolder.itemView.getContext()).load(image)
-                                                .placeholder(R.drawable.easy_to_use).into(messageViewHolder.reply_receiver_profile_image);
-                                    }
-                                });
-                    }catch (Exception e){
-                        e.printStackTrace();
+                                            Picasso.with(messageViewHolder.itemView.getContext()).load(image)
+                                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiverImageProfileImage);
+                                        }
+                                    });
+
+                            Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_profile_file_for_image,
+                                    new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+
+                                        }
+
+                                        @Override
+                                        public void onError() {
+
+                                            Picasso.with(messageViewHolder.itemView.getContext()).load(image)
+                                                    .placeholder(R.drawable.easy_to_use)
+                                                    .into(messageViewHolder.receiver_profile_file_for_image);
+                                        }
+                                    });
+
+
+                            Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_profile_audio_for_image,
+                                    new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+
+                                        }
+
+                                        @Override
+                                        public void onError() {
+
+                                            Picasso.with(messageViewHolder.itemView.getContext()).load(image)
+                                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_profile_audio_for_image);
+                                        }
+                                    });
+
+                            Picasso.with(messageViewHolder.itemView.getContext()).load(image).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.reply_receiver_profile_image,
+                                    new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+
+                                        }
+
+                                        @Override
+                                        public void onError() {
+
+                                            Picasso.with(messageViewHolder.itemView.getContext()).load(image)
+                                                    .placeholder(R.drawable.easy_to_use).into(messageViewHolder.reply_receiver_profile_image);
+                                        }
+                                    });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-        usersDatabaseRef.keepSynced(true);
+                }
+            });
+            usersDatabaseRef.keepSynced(true);
 
-        //for sender reply message text
-        messageViewHolder.reply_sender_message_layout.setVisibility(View.GONE);
-        messageViewHolder.chatter_user_name_text.setVisibility(View.GONE);
-        messageViewHolder.chatter_text_text.setVisibility(View.GONE);
-        messageViewHolder.msg_type_img_icon_text.setVisibility(View.GONE);
-        messageViewHolder.new_sender_message_text.setVisibility(View.GONE);
-        messageViewHolder.new_sender_message_time.setVisibility(View.GONE);
-        messageViewHolder.new_icon_sent.setVisibility(View.GONE);
+            //for sender reply message text
+            messageViewHolder.reply_sender_message_layout.setVisibility(View.GONE);
+            messageViewHolder.chatter_user_name_text.setVisibility(View.GONE);
+            messageViewHolder.chatter_text_text.setVisibility(View.GONE);
+            messageViewHolder.msg_type_img_icon_text.setVisibility(View.GONE);
+            messageViewHolder.new_sender_message_text.setVisibility(View.GONE);
+            messageViewHolder.new_sender_message_time.setVisibility(View.GONE);
+            messageViewHolder.new_icon_sent.setVisibility(View.GONE);
 
-        //for receiver reply message text
-        messageViewHolder.reply_receiver_message_layout_main.setVisibility(View.GONE);
-        messageViewHolder.reply_receiver_profile_image.setVisibility(View.GONE);
-        messageViewHolder.sender_vertical_line.setVisibility(View.GONE);
-        messageViewHolder.sender_chatter_user_name_text.setVisibility(View.GONE);
-        messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
-        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.GONE);
-        messageViewHolder.new_receiver_message_text.setVisibility(View.GONE);
-        messageViewHolder.new_receiver_message_time.setVisibility(View.GONE);
+            //for receiver reply message text
+            messageViewHolder.reply_receiver_message_layout_main.setVisibility(View.GONE);
+            messageViewHolder.reply_receiver_profile_image.setVisibility(View.GONE);
+            messageViewHolder.sender_vertical_line.setVisibility(View.GONE);
+            messageViewHolder.sender_chatter_user_name_text.setVisibility(View.GONE);
+            messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
+            messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.GONE);
+            messageViewHolder.new_receiver_message_text.setVisibility(View.GONE);
+            messageViewHolder.new_receiver_message_time.setVisibility(View.GONE);
 
-        //for audio sender
-        messageViewHolder.sender_audio_layout.setVisibility(View.GONE);
-        messageViewHolder.sender_progressBar.setVisibility(View.GONE);
-        messageViewHolder.sender_audio_title.setVisibility(View.GONE);
-        messageViewHolder.sender_play_btn.setVisibility(View.GONE);
-        messageViewHolder.sender_counter_timer.setVisibility(View.GONE);
-        messageViewHolder.sender_video_progress.setVisibility(View.GONE);
-        messageViewHolder.sender_duration_timer.setVisibility(View.GONE);
-        messageViewHolder.sender_message_audio_time.setVisibility(View.GONE);
-        messageViewHolder.sender_icon_sent_audio.setVisibility(View.GONE);
-
-
-        //for audio receiver
-        messageViewHolder.receiver_message_audio_layout.setVisibility(View.GONE);
-        messageViewHolder.receiver_profile_audio_for_image.setVisibility(View.GONE);
-        messageViewHolder.receiver_progressBar.setVisibility(View.GONE);
-        messageViewHolder.receiver_audio_title.setVisibility(View.GONE);
-        messageViewHolder.receiver_play_btn.setVisibility(View.GONE);
-        messageViewHolder.receiver_counter_timer.setVisibility(View.GONE);
-        messageViewHolder.receiver_video_progress.setVisibility(View.GONE);
-        messageViewHolder.receiver_duration_timer.setVisibility(View.GONE);
-        messageViewHolder.receiver_message_audio_time.setVisibility(View.GONE);
+            //for audio sender
+            messageViewHolder.sender_audio_layout.setVisibility(View.GONE);
+            messageViewHolder.sender_progressBar.setVisibility(View.GONE);
+            messageViewHolder.sender_audio_title.setVisibility(View.GONE);
+            messageViewHolder.sender_play_btn.setVisibility(View.GONE);
+            messageViewHolder.sender_counter_timer.setVisibility(View.GONE);
+            messageViewHolder.sender_video_progress.setVisibility(View.GONE);
+            messageViewHolder.sender_duration_timer.setVisibility(View.GONE);
+            messageViewHolder.sender_message_audio_time.setVisibility(View.GONE);
+            messageViewHolder.sender_icon_sent_audio.setVisibility(View.GONE);
 
 
-        //for text message
-        messageViewHolder.receiverMessageText.setVisibility(View.GONE);
-        messageViewHolder.receiverMessageTime.setVisibility(View.GONE);
-        messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
-        messageViewHolder.receiver_message_layout.setVisibility(View.GONE);
-        //for image message
-        messageViewHolder.receiverImageProfileImage.setVisibility(View.GONE);
-        messageViewHolder.receiver_image_imageView.setVisibility(View.GONE);
-        messageViewHolder.receiver_image_message_time.setVisibility(View.GONE);
-        messageViewHolder.receiver_image_message_layout.setVisibility(View.GONE);
-
-        //for text message
-        messageViewHolder.icon_sent.setVisibility(View.GONE);
-        messageViewHolder.sender_icon_sent_image.setVisibility(View.GONE);
-        messageViewHolder.senderMessageText.setVisibility(View.GONE);
-        messageViewHolder.senderMessageTime.setVisibility(View.GONE);
-        messageViewHolder.sender_message_layout.setVisibility(View.GONE);
-        //for image message
-        messageViewHolder.sender_image_imageView.setVisibility(View.GONE);
-        messageViewHolder.sender_message_image_time.setVisibility(View.GONE);
-        messageViewHolder.sender_message_image_layout.setVisibility(View.GONE);
+            //for audio receiver
+            messageViewHolder.receiver_message_audio_layout.setVisibility(View.GONE);
+            messageViewHolder.receiver_profile_audio_for_image.setVisibility(View.GONE);
+            messageViewHolder.receiver_progressBar.setVisibility(View.GONE);
+            messageViewHolder.receiver_audio_title.setVisibility(View.GONE);
+            messageViewHolder.receiver_play_btn.setVisibility(View.GONE);
+            messageViewHolder.receiver_counter_timer.setVisibility(View.GONE);
+            messageViewHolder.receiver_video_progress.setVisibility(View.GONE);
+            messageViewHolder.receiver_duration_timer.setVisibility(View.GONE);
+            messageViewHolder.receiver_message_audio_time.setVisibility(View.GONE);
 
 
-        //for sender file message
-        messageViewHolder.sender_icon_sent_file.setVisibility(View.GONE);
-        messageViewHolder.sender_file_download_btn.setVisibility(View.GONE);
-        messageViewHolder.sender_message_file_layout.setVisibility(View.GONE);
-        messageViewHolder.sender_file_imageView.setVisibility(View.GONE);
-        messageViewHolder.sender_message_file_time.setVisibility(View.GONE);
-        messageViewHolder.sender_file_name.setVisibility(View.GONE);
+            //for text message
+            messageViewHolder.receiverMessageText.setVisibility(View.GONE);
+            messageViewHolder.receiverMessageTime.setVisibility(View.GONE);
+            messageViewHolder.receiverProfileImage.setVisibility(View.GONE);
+            messageViewHolder.receiver_message_layout.setVisibility(View.GONE);
+            //for image message
+            messageViewHolder.receiverImageProfileImage.setVisibility(View.GONE);
+            messageViewHolder.receiver_image_imageView.setVisibility(View.GONE);
+            messageViewHolder.receiver_image_message_time.setVisibility(View.GONE);
+            messageViewHolder.receiver_image_message_layout.setVisibility(View.GONE);
+
+            //for text message
+            messageViewHolder.icon_sent.setVisibility(View.GONE);
+            messageViewHolder.sender_icon_sent_image.setVisibility(View.GONE);
+            messageViewHolder.senderMessageText.setVisibility(View.GONE);
+            messageViewHolder.senderMessageTime.setVisibility(View.GONE);
+            messageViewHolder.sender_message_layout.setVisibility(View.GONE);
+            //for image message
+            messageViewHolder.sender_image_imageView.setVisibility(View.GONE);
+            messageViewHolder.sender_message_image_time.setVisibility(View.GONE);
+            messageViewHolder.sender_message_image_layout.setVisibility(View.GONE);
+
+
+            //for sender file message
+            messageViewHolder.sender_icon_sent_file.setVisibility(View.GONE);
+            messageViewHolder.sender_file_download_btn.setVisibility(View.GONE);
+            messageViewHolder.sender_message_file_layout.setVisibility(View.GONE);
+            messageViewHolder.sender_file_imageView.setVisibility(View.GONE);
+            messageViewHolder.sender_message_file_time.setVisibility(View.GONE);
+            messageViewHolder.sender_file_name.setVisibility(View.GONE);
 
 //        ,
 
-        //for receiver file message
-        messageViewHolder.receiver_file_download_btn.setVisibility(View.GONE);
-        messageViewHolder.receiver_profile_file_for_image.setVisibility(View.GONE);
-        messageViewHolder.receiver_message_file_layout.setVisibility(View.GONE);
-        messageViewHolder.receiver_file_imageView.setVisibility(View.GONE);
-        messageViewHolder.receiver_message_file_time.setVisibility(View.GONE);
-        messageViewHolder.receiver_file_name.setVisibility(View.GONE);
-
-
-        //for receiver_message_video
-        messageViewHolder.receiver_message_video_layout.setVisibility(View.GONE);
-        messageViewHolder.receiver_profile_video_for_image.setVisibility(View.GONE);
-        messageViewHolder.receiver_message_video.setVisibility(View.GONE);
-        messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.GONE);
-        messageViewHolder.receiver_video_name.setVisibility(View.GONE);
-        messageViewHolder.receiver_message_video_time.setVisibility(View.GONE);
-
-        //for sender_message_video
-        messageViewHolder.sender_icon_sent_video.setVisibility(View.GONE);
-        messageViewHolder.sender_message_video_layout.setVisibility(View.GONE);
-        messageViewHolder.sender_message_video.setVisibility(View.GONE);
-        messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.GONE);
-        messageViewHolder.sender_video_name.setVisibility(View.GONE);
-        messageViewHolder.sender_message_video_time.setVisibility(View.GONE);
-
-        if(messagesModel.getReplymessagetype() == null){
-
-
-        if (fromMessageType.equals("text")) {
-
-            if (fromUserID.equals(messageSenderID)) {
-                messageViewHolder.senderMessageText.setVisibility(View.VISIBLE);
-                messageViewHolder.senderMessageTime.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.icon_sent.setVisibility(View.VISIBLE);
-
-                if (messagesModel.isIsseen()) {
-                    messageViewHolder.icon_sent.setImageResource(R.drawable.ic_sent);
-                } else {
-                    messageViewHolder.icon_sent.setImageResource(R.drawable.ic_delivered);
-                }
-
-                messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.sender_message_text_background);
-                messageViewHolder.senderMessageText.setTextColor(Color.WHITE);
-                messageViewHolder.senderMessageText.setGravity(Gravity.START);
-                messageViewHolder.senderMessageText.setText(Html.fromHtml(messagesModel.getMessage()));
-                messageViewHolder.senderMessageTime.setText(messagesModel.getTime());
-            } else {
-                messageViewHolder.receiverMessageText.setVisibility(View.VISIBLE);
-                messageViewHolder.receiverMessageTime.setVisibility(View.VISIBLE);
-                messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_layout.setVisibility(View.VISIBLE);
-
-                messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_message_text_background);
-                messageViewHolder.receiverMessageText.setGravity(Gravity.START);
-                messageViewHolder.receiverMessageText.setText(Html.fromHtml(messagesModel.getMessage()));
-                messageViewHolder.receiverMessageTime.setText(messagesModel.getTime());
-            }
-        } else if (fromMessageType.equals("image")) {
-
-            if (fromUserID.equals(messageSenderID)) {
-
-                messageViewHolder.sender_image_imageView.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_image_time.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_image_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_icon_sent_image.setVisibility(View.VISIBLE);
-
-                if (messagesModel.isIsseen()) {
-                    messageViewHolder.sender_icon_sent_image.setImageResource(R.drawable.ic_sent);
-                } else {
-                    messageViewHolder.sender_icon_sent_image.setImageResource(R.drawable.ic_delivered);
-                }
-
-                try{
-                    Picasso.with(messageViewHolder.sender_image_imageView.getContext()).load(messagesModel.getMessage()).networkPolicy(NetworkPolicy.OFFLINE)
-                            .placeholder(R.drawable.easy_to_use).into(messageViewHolder.sender_image_imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-
-                        }
-
-                        @Override
-                        public void onError() {
-
-                            Picasso.with(messageViewHolder.sender_image_imageView.getContext()).load(messagesModel.getMessage()).placeholder(R.drawable.easy_to_use)
-                                    .into(messageViewHolder.sender_image_imageView);
-
-                        }
-                    });
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                messageViewHolder.sender_message_image_time.setText(messagesModel.getTime());
-            } else {
-
-                messageViewHolder.receiverImageProfileImage.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_image_imageView.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_image_message_time.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_image_message_layout.setVisibility(View.VISIBLE);
-
-                try{
-                    Picasso.with(messageViewHolder.receiver_image_imageView.getContext()).load(messagesModel.getMessage()).networkPolicy(NetworkPolicy.OFFLINE)
-                            .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_image_imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-
-                        }
-
-                        @Override
-                        public void onError() {
-
-                            Picasso.with(messageViewHolder.receiver_image_imageView.getContext()).load(messagesModel.getMessage()).placeholder(R.drawable.easy_to_use)
-                                    .into(messageViewHolder.receiver_image_imageView);
-
-                        }
-                    });
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-                messageViewHolder.receiver_image_message_time.setText(messagesModel.getTime());
-            }
-        } else if (fromMessageType.equals("document")) {
-            if (fromUserID.equals(messageSenderID)) {
-
-                messageViewHolder.sender_file_download_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        File root = Environment.getExternalStorageDirectory();
-                        root.mkdirs();
-                        String path = root.toString();
-
-
-                        DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-                        Uri uri1 = Uri.parse(userMessagesList.get(position).getMessage());
-                        DownloadManager.Request request = new DownloadManager.Request(uri1);
-                        request.setTitle("SmartChat (" + messagesModel.getName() + ")");
-                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                        request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), path + "/SmartChat" + "/Messages" + "/Documents", messagesModel.getName());
-                        downloadManager.enqueue(request);
-                    }
-                });
-                messageViewHolder.sender_file_download_btn.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_file_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_file_imageView.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_file_time.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_file_name.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_file_time.setText(messagesModel.getTime());
-                messageViewHolder.sender_file_name.setText(messagesModel.getName());
-                messageViewHolder.sender_icon_sent_file.setVisibility(View.VISIBLE);
-
-                if (messagesModel.isIsseen()) {
-                    messageViewHolder.sender_icon_sent_file.setImageResource(R.drawable.ic_sent);
-                } else {
-                    messageViewHolder.sender_icon_sent_file.setImageResource(R.drawable.ic_delivered);
-                }
-
-                try{
-                    Picasso.with(messageViewHolder.sender_file_imageView.getContext()).load(R.drawable.document).networkPolicy(NetworkPolicy.OFFLINE)
-                            .placeholder(R.drawable.document).into(messageViewHolder.sender_file_imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-
-                        }
-
-                        @Override
-                        public void onError() {
-
-                            Picasso.with(messageViewHolder.sender_file_imageView.getContext()).load(R.drawable.document).placeholder(R.drawable.document)
-                                    .into(messageViewHolder.sender_file_imageView);
-
-                        }
-                    });
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            } else {
-
-
-                messageViewHolder.receiver_file_download_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        File root = Environment.getExternalStorageDirectory();
-                        root.mkdirs();
-                        String path = root.toString();
-
-
-                        DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-                        Uri uri1 = Uri.parse(userMessagesList.get(position).getMessage());
-                        DownloadManager.Request request = new DownloadManager.Request(uri1);
-                        request.setTitle("SmartChat (" + messagesModel.getName() + ")");
-                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                        request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), path + "/SmartChat" + "/Messages" + "/Documents", messagesModel.getName());
-                        downloadManager.enqueue(request);
-                    }
-                });
-                messageViewHolder.receiver_file_download_btn.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_profile_file_for_image.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_file_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_file_imageView.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_file_time.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_file_name.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_file_time.setText(messagesModel.getTime());
-                messageViewHolder.receiver_file_name.setText(messagesModel.getName());
-
-                try{
-                    Picasso.with(messageViewHolder.receiver_file_imageView.getContext()).load(R.drawable.document).networkPolicy(NetworkPolicy.OFFLINE)
-                            .placeholder(R.drawable.document).into(messageViewHolder.receiver_file_imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-
-                        }
-
-                        @Override
-                        public void onError() {
-
-                            Picasso.with(messageViewHolder.receiver_file_imageView.getContext()).load(R.drawable.document).placeholder(R.drawable.document)
-                                    .into(messageViewHolder.receiver_file_imageView);
-
-                        }
-                    });
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        } else if (fromMessageType.equals("video")) {
-            if (fromUserID.equals(messageSenderID)) {
-
-
-                messageViewHolder.sender_icon_sent_video.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_video_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_video.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_video_name.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_video_time.setVisibility(View.VISIBLE);
-
-                if (messagesModel.isIsseen()) {
-                    messageViewHolder.sender_icon_sent_video.setImageResource(R.drawable.ic_sent);
-                } else {
-                    messageViewHolder.sender_icon_sent_video.setImageResource(R.drawable.ic_delivered);
-                }
-
-
-                messageViewHolder.sender_message_video_time.setText(messagesModel.getTime());
-                messageViewHolder.sender_video_name.setText(messagesModel.getName());
-                messageViewHolder.sender_message_video.setVideoURI(Uri.parse(messagesModel.getMessage()));
-                messageViewHolder.sender_message_video.requestFocus();
-                messageViewHolder.sender_message_video.setBackgroundColor(messageViewHolder.sender_message_video.getContext().getResources().getColor(R.color.default_video_post_bg));
-
-                messageViewHolder.sender_message_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-
-                        mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                            @Override
-                            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                                mediaController[0] = new MediaController(messageViewHolder.sender_message_video.getContext());
-                                messageViewHolder.sender_message_video.setMediaController(mediaController[0]);
-                                mediaController[0].setAnchorView(messageViewHolder.sender_message_video);
-                            }
-                        });
-
-
-                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                            @Override
-                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
-                                    messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.INVISIBLE);
-                                    return true;
-                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
-                                    messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.VISIBLE);
-                                }
-                                return false;
-                            }
-                        });
-
-                        messageViewHolder.sender_message_video.start();
-                        messageViewHolder.sender_message_video.setBackgroundColor(0);
-                        messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.INVISIBLE);
-
-
-                        messageViewHolder.sender_message_video.seekTo(messageViewHolder.sender_message_video.getCurrentPosition());
-                        if (messageViewHolder.sender_message_video.getCurrentPosition() != 0) {
-                            messageViewHolder.sender_message_video.start();
-
-                        } else {
-                            messageViewHolder.sender_message_video.pause();
-                        }
-
-                    }
-                });
-            } else {
-
-                messageViewHolder.receiver_message_video_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_profile_video_for_image.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_video.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_video_name.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_video_time.setVisibility(View.VISIBLE);
-
-
-                messageViewHolder.receiver_message_video_time.setText(messagesModel.getTime());
-                messageViewHolder.receiver_video_name.setText(messagesModel.getName());
-                messageViewHolder.receiver_message_video.setVideoURI(Uri.parse(messagesModel.getMessage()));
-                messageViewHolder.receiver_message_video.requestFocus();
-                messageViewHolder.receiver_message_video.setBackgroundColor(messageViewHolder.receiver_message_video.getContext().getResources().getColor(R.color.default_video_post_bg));
-
-                messageViewHolder.receiver_message_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-
-                        mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                            @Override
-                            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                                receiverMediaController[0] = new MediaController(messageViewHolder.receiver_message_video.getContext());
-                                messageViewHolder.receiver_message_video.setMediaController(receiverMediaController[0]);
-                                receiverMediaController[0].setAnchorView(messageViewHolder.receiver_message_video);
-                            }
-                        });
-
-
-                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                            @Override
-                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
-                                    messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.INVISIBLE);
-                                    return true;
-                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
-                                    messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.VISIBLE);
-                                }
-                                return false;
-                            }
-                        });
-
-                        messageViewHolder.receiver_message_video.start();
-                        messageViewHolder.receiver_message_video.setBackgroundColor(0);
-                        messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.INVISIBLE);
-
-
-                        messageViewHolder.receiver_message_video.seekTo(messageViewHolder.receiver_message_video.getCurrentPosition());
-                        if (messageViewHolder.receiver_message_video.getCurrentPosition() != 0) {
-                            messageViewHolder.receiver_message_video.start();
-
-                        } else {
-                            messageViewHolder.receiver_message_video.pause();
-                        }
-
-                    }
-                });
-            }
-
-        } else if (fromMessageType.equals("audio")) {
-            if (fromUserID.equals(messageSenderID)) {
-
-                final int[] current = {0};
-                final int[] duration = {0};
-                //for audio sender
-                messageViewHolder.sender_audio_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_audio_title.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_play_btn.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_counter_timer.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_video_progress.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_duration_timer.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_message_audio_time.setVisibility(View.VISIBLE);
-                messageViewHolder.sender_icon_sent_audio.setVisibility(View.VISIBLE);
-
-                if (messagesModel.isIsseen()) {
-                    messageViewHolder.sender_icon_sent_audio.setImageResource(R.drawable.ic_sent);
-                } else {
-                    messageViewHolder.sender_icon_sent_audio.setImageResource(R.drawable.ic_delivered);
-                }
-
-                messageViewHolder.sender_audio_title.setText(messagesModel.getName());
-                messageViewHolder.sender_message_audio_time.setText(messagesModel.getTime());
-
-
-                sender_media_player = new MediaPlayer();
-                class AudioAsyncTask extends AsyncTask<String, Integer, String> {
-                    @Override
-                    protected void onPreExecute() {
-                        super.onPreExecute();
-                        messageViewHolder.sender_progressBar.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    protected String doInBackground(String... strings) {
-                        try {
-                            String url = new String(strings[0]);
-                            sender_media_player.reset();
-                            try {
-                                sender_media_player.setDataSource(url);
-                                sender_media_player.prepare();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
-
-                        } catch (IllegalArgumentException | IllegalStateException e) {
-                            e.printStackTrace();
-                        }
-
-                        do {
-
-                            if (sender_media_player.isPlaying()) {
-                                current[0] = sender_media_player.getCurrentPosition() / 1000;
-                                publishProgress(current[0]);
-                            }
-
-
-                        } while (messageViewHolder.sender_video_progress.getProgress() <= 100);
-
-                        return null;
-                    }
-
-                    @Override
-                    protected void onProgressUpdate(Integer... values) {
-                        super.onProgressUpdate(values);
-
-                        try {
-                            int currentPercent = values[0] * 100 / duration[0];
-                            messageViewHolder.sender_video_progress.setProgress(currentPercent);
-                            String currentString = String.format("%02d:%02d", values[0] / 60, values[0] % 60);
-                            messageViewHolder.sender_counter_timer.setText(currentString);
-
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.v("Error", e.getMessage());
-
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(String s) {
-                        super.onPostExecute(s);
-                        messageViewHolder.sender_progressBar.setVisibility(View.INVISIBLE);
-                        messageViewHolder.sender_video_progress.setProgress(0);
-                        messageViewHolder.sender_video_progress.setMax(100);
-
-                    }
-                }
-
-
-                new AudioAsyncTask().execute(userMessagesList.get(position).getMessage());
-
-                sender_media_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-
-
-                        current[0] = mp.getCurrentPosition() / 1000;
-                        String currentString = String.format("%02d:%02d", current[0] / 60, current[0] % 60);
-                        messageViewHolder.sender_counter_timer.setText(currentString);
-
-
-                        try {
-
-
-                            int currentPercent = current[0] * 100 / duration[0];
-                            messageViewHolder.sender_video_progress.setProgress(currentPercent);
-
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.v("Error", e.getMessage());
-
-                        }
-
-                        duration[0] = mp.getDuration() / 1000;
-                        String durationString = String.format("%02d:%02d", duration[0] / 60, duration[0] % 60);
-                        messageViewHolder.sender_duration_timer.setText(durationString);
-
-                        if (current[0] == duration[0]) {
-                            mp.release();
-                            messageViewHolder.sender_play_btn.setImageResource(R.drawable.ic_play);
-                        }
-
-
-                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                            @Override
-                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
-                                    messageViewHolder.sender_progressBar.setVisibility(View.INVISIBLE);
-                                    return true;
-                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
-                                    messageViewHolder.sender_progressBar.setVisibility(View.VISIBLE);
-                                }
-                                return false;
-
-                            }
-
-                        });
-
-                        messageViewHolder.sender_play_btn.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                if (!sender_media_player.isPlaying()) {
-                                    sender_media_player.start();
-                                    messageViewHolder.sender_progressBar.setVisibility(View.INVISIBLE);
-                                    messageViewHolder.sender_play_btn.setImageResource(R.drawable.ic_pause);
-
-                                } else {
-                                    sender_media_player.pause();
-                                    messageViewHolder.sender_play_btn.setImageResource(R.drawable.ic_play);
-                                }
-
-                            }
-                        });
-
-                    }
-                });
-
-
-            } else {
-
-                final int[] current = {0};
-                final int[] duration = {0};
-
-                //for audio receiver
-                messageViewHolder.receiver_message_audio_layout.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_profile_audio_for_image.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_audio_title.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_play_btn.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_counter_timer.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_video_progress.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_duration_timer.setVisibility(View.VISIBLE);
-                messageViewHolder.receiver_message_audio_time.setVisibility(View.VISIBLE);
-
-                messageViewHolder.receiver_audio_title.setText(messagesModel.getName());
-                messageViewHolder.receiver_message_audio_time.setText(messagesModel.getTime());
-
-                receiver_media_player = new MediaPlayer();
-                class AudioAsyncTask extends AsyncTask<String, Integer, String> {
-                    @Override
-                    protected void onPreExecute() {
-                        super.onPreExecute();
-                        messageViewHolder.receiver_progressBar.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    protected String doInBackground(String... strings) {
-                        try {
-                            String url = new String(strings[0]);
-                            receiver_media_player.reset();
-                            try {
-                                receiver_media_player.setDataSource(url);
-                                receiver_media_player.prepare();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-
-
-                        } catch (IllegalArgumentException | IllegalStateException e) {
-                            e.printStackTrace();
-                        }
-
-                        do {
-
-                            if (receiver_media_player.isPlaying()) {
-                                current[0] = receiver_media_player.getCurrentPosition() / 1000;
-                                publishProgress(current[0]);
-                            }
-
-
-                        } while (messageViewHolder.receiver_video_progress.getProgress() <= 100);
-
-                        return null;
-                    }
-
-                    @Override
-                    protected void onProgressUpdate(Integer... values) {
-                        super.onProgressUpdate(values);
-
-                        try {
-                            int currentPercent = values[0] * 100 / duration[0];
-                            messageViewHolder.receiver_video_progress.setProgress(currentPercent);
-                            String currentString = String.format("%02d:%02d", values[0] / 60, values[0] % 60);
-                            messageViewHolder.receiver_counter_timer.setText(currentString);
-
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.v("Error", e.getMessage());
-
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(String s) {
-                        super.onPostExecute(s);
-                        messageViewHolder.receiver_progressBar.setVisibility(View.INVISIBLE);
-                        messageViewHolder.receiver_video_progress.setProgress(0);
-                        messageViewHolder.receiver_video_progress.setMax(100);
-
-                    }
-                }
-
-                new AudioAsyncTask().execute(userMessagesList.get(position).getMessage());
-
-                receiver_media_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-
-
-                        current[0] = mp.getCurrentPosition() / 1000;
-                        String currentString = String.format("%02d:%02d", current[0] / 60, current[0] % 60);
-                        messageViewHolder.receiver_counter_timer.setText(currentString);
-
-
-                        try {
-
-                            int currentPercent = current[0] * 100 / duration[0];
-                            messageViewHolder.receiver_video_progress.setProgress(currentPercent);
-
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Log.v("Error", e.getMessage());
-
-                        }
-
-                        duration[0] = mp.getDuration() / 1000;
-                        String durationString = String.format("%02d:%02d", duration[0] / 60, duration[0] % 60);
-                        messageViewHolder.receiver_duration_timer.setText(durationString);
-
-                        if (current[0] == duration[0]) {
-                            mp.release();
-                            messageViewHolder.receiver_play_btn.setImageResource(R.drawable.ic_play);
-                        }
-
-
-                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                            @Override
-                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
-                                    messageViewHolder.receiver_progressBar.setVisibility(View.INVISIBLE);
-                                    return true;
-                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
-                                    messageViewHolder.receiver_progressBar.setVisibility(View.VISIBLE);
-                                }
-                                return false;
-
-                            }
-
-                        });
-
-                        messageViewHolder.receiver_play_btn.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                if (!receiver_media_player.isPlaying()) {
-                                    receiver_media_player.start();
-                                    messageViewHolder.receiver_progressBar.setVisibility(View.INVISIBLE);
-                                    messageViewHolder.receiver_play_btn.setImageResource(R.drawable.ic_pause);
-
-                                } else {
-                                    receiver_media_player.pause();
-                                    messageViewHolder.receiver_play_btn.setImageResource(R.drawable.ic_play);
-                                }
-
-                            }
-                        });
-
-                    }
-                });
-            }
-        }
-
-
-        } else{
-
-            if (fromMessageType.equals("text")) {
-
-                if (fromUserID.equals(messageSenderID)) {
-                    messageViewHolder.reply_sender_message_layout.setVisibility(View.VISIBLE);
-                    messageViewHolder.chatter_user_name_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.chatter_text_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.new_sender_message_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.new_sender_message_time.setVisibility(View.VISIBLE);
-                    messageViewHolder.new_icon_sent.setVisibility(View.VISIBLE);
-
-
-                    if (messagesModel.isIsseen()) {
-                        messageViewHolder.new_icon_sent.setImageResource(R.drawable.ic_sent);
-                    } else {
-                        messageViewHolder.new_icon_sent.setImageResource(R.drawable.ic_delivered);
-                    }
-                    String replyMessageType = messagesModel.getReplymessagetype();
-
-                    if(messagesModel.getReplyfromid().equals(messageSenderID)){
-                        messageViewHolder.chatter_user_name_text.setText("You");
-                        messageViewHolder.chatter_user_name_text.setTextColor(
-                                messageViewHolder.itemView.getContext().getResources()
-                                .getColor(R.color.colorPrimaryDark));
-                    }else{
-                        usersRef.child(messagesModel.getReplyfromid())
-                                .addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        if(dataSnapshot.exists()){
-                                            String userName = dataSnapshot.child("fullname").getValue().toString();
-                                            messageViewHolder.chatter_user_name_text.setText(userName);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                    }
-                                });
-
-                        messageViewHolder.chatter_user_name_text.setTextColor(
-                                messageViewHolder.itemView.getContext().getResources()
-                                .getColor(R.color.orange));
-                    }
-
-                    if(replyMessageType.equals("text")){
-                        messageViewHolder.chatter_text_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.chatter_text_text.setText(messagesModel.getReplymessage());
-                        messageViewHolder.msg_type_img_icon_text.setVisibility(View.GONE);
-                    } if (replyMessageType.equals("document")) {
-                        messageViewHolder.chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_document);
-
-                    } else if (replyMessageType.equals("image")) {
-                        messageViewHolder.chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_image);
-                    } else if (replyMessageType.equals("video")) {
-                        messageViewHolder.chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_videocam);
-                    } else if (replyMessageType.equals("audio")) {
-                        messageViewHolder.chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_music);
-                    }
-
-
-                    messageViewHolder.new_sender_message_text.setBackgroundResource(R.drawable.sender_message_text_background);
-                    messageViewHolder.new_sender_message_text.setTextColor(Color.WHITE);
-                    messageViewHolder.new_sender_message_text.setGravity(Gravity.START);
-                    messageViewHolder.new_sender_message_text.setText(Html.fromHtml(messagesModel.getMessage()));
-                    messageViewHolder.new_sender_message_time.setText(messagesModel.getTime());
-
-
-                } else {
-                    messageViewHolder.reply_receiver_message_layout_main.setVisibility(View.VISIBLE);
-                    messageViewHolder.reply_receiver_profile_image.setVisibility(View.VISIBLE);
-                    messageViewHolder.sender_vertical_line.setVisibility(View.VISIBLE);
-                    messageViewHolder.sender_chatter_user_name_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.sender_chatter_text_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.new_receiver_message_text.setVisibility(View.VISIBLE);
-                    messageViewHolder.new_receiver_message_time.setVisibility(View.VISIBLE);
-
-                    String replyMessageType = messagesModel.getReplymessagetype();
-
-                    if(messagesModel.getReplyfromid().equals(messageSenderID)){
-                        messageViewHolder.sender_chatter_user_name_text.setText("You");
-
-                        messageViewHolder.sender_chatter_user_name_text.setTextColor(
-                                messageViewHolder.itemView.getContext().getResources()
-                                        .getColor(R.color.orange));
-                        messageViewHolder.sender_vertical_line.
-                                setBackgroundColor(messageViewHolder.itemView.getContext().getResources()
-                                        .getColor(R.color.orange));
-                    }else{
-
-                        usersRef.child(messagesModel.getReplyfromid())
-                                .addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        if(dataSnapshot.exists()){
-                                            String userName = dataSnapshot.child("fullname").getValue().toString();
-                                            messageViewHolder.sender_chatter_user_name_text.setText(userName);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                    }
-                                });
-
-
-                        messageViewHolder.sender_chatter_user_name_text.setTextColor(
-                                messageViewHolder.itemView.getContext().getResources()
-                                        .getColor(R.color.colorPrimaryDark));
-                        messageViewHolder.sender_vertical_line.
-                                setBackgroundColor(messageViewHolder.itemView.getContext().getResources()
-                                .getColor(R.color.colorPrimaryDark));
-                    }
-
-                    if(replyMessageType.equals("text")){
-                        messageViewHolder.sender_chatter_text_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.sender_chatter_text_text.setText(messagesModel.getReplymessage());
-                        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.GONE);
-                    } if (replyMessageType.equals("document")) {
-                        messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_document);
-
-                    } else if (replyMessageType.equals("image")) {
-                        messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_image);
-                    } else if (replyMessageType.equals("video")) {
-                        messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_videocam);
-                    } else if (replyMessageType.equals("audio")) {
-                        messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
-                        messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_music);
-                    }
-
-                    messageViewHolder.new_receiver_message_text.setBackgroundResource(R.drawable.receiver_message_text_background);
-                    messageViewHolder.new_receiver_message_text.setGravity(Gravity.START);
-                    messageViewHolder.new_receiver_message_text.setText(Html.fromHtml(messagesModel.getMessage()));
-                    messageViewHolder.new_receiver_message_time.setText(messagesModel.getTime());
-                }
-            }
-
-        }
-
-
-        if(fromUserID.equals(messageSenderID)){
-            messageViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-
+            //for receiver file message
+            messageViewHolder.receiver_file_download_btn.setVisibility(View.GONE);
+            messageViewHolder.receiver_profile_file_for_image.setVisibility(View.GONE);
+            messageViewHolder.receiver_message_file_layout.setVisibility(View.GONE);
+            messageViewHolder.receiver_file_imageView.setVisibility(View.GONE);
+            messageViewHolder.receiver_message_file_time.setVisibility(View.GONE);
+            messageViewHolder.receiver_file_name.setVisibility(View.GONE);
+
+
+            //for receiver_message_video
+            messageViewHolder.receiver_message_video_layout.setVisibility(View.GONE);
+            messageViewHolder.receiver_profile_video_for_image.setVisibility(View.GONE);
+            messageViewHolder.receiver_message_video.setVisibility(View.GONE);
+            messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.GONE);
+            messageViewHolder.receiver_video_name.setVisibility(View.GONE);
+            messageViewHolder.receiver_message_video_time.setVisibility(View.GONE);
+
+            //for sender_message_video
+            messageViewHolder.sender_icon_sent_video.setVisibility(View.GONE);
+            messageViewHolder.sender_message_video_layout.setVisibility(View.GONE);
+            messageViewHolder.sender_message_video.setVisibility(View.GONE);
+            messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.GONE);
+            messageViewHolder.sender_video_name.setVisibility(View.GONE);
+            messageViewHolder.sender_message_video_time.setVisibility(View.GONE);
+
+            if (messagesModel.getReplymessagetype() == null) {
+
+
+                if (fromMessageType.equals("text")) {
                     try {
 
-                        MessagesModel mgsDoc = userMessagesList.get(position);
+                        if (fromUserID.equals(messageSenderID)) {
+                            messageViewHolder.senderMessageText.setVisibility(View.VISIBLE);
+                            messageViewHolder.senderMessageTime.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.icon_sent.setVisibility(View.VISIBLE);
 
-                        if (mgsDoc != null) {
+                            if (messagesModel.isIsseen()) {
+                                messageViewHolder.icon_sent.setImageResource(R.drawable.ic_sent);
+                            } else {
+                                messageViewHolder.icon_sent.setImageResource(R.drawable.ic_delivered);
+                            }
 
-                            if (mgsDoc.getType().equals("document")) {
+                            messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.sender_message_text_background);
+                            messageViewHolder.senderMessageText.setTextColor(Color.WHITE);
+                            messageViewHolder.senderMessageText.setGravity(Gravity.START);
+                            messageViewHolder.senderMessageText.setText(Html.fromHtml(messagesModel.getMessage()));
+                            messageViewHolder.senderMessageTime.setText(messagesModel.getTime());
+                        } else {
+                            messageViewHolder.receiverMessageText.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiverMessageTime.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_message_layout.setVisibility(View.VISIBLE);
 
-                                CharSequence options_doc[] = new CharSequence[]{
-                                        "Delete for me",
-                                        "Delete for everyone",
-                                        "Cancel"
-                                };
-                                AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                                builderoptions_doc.setTitle("Delete this message?");
+                            messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_message_text_background);
+                            messageViewHolder.receiverMessageText.setGravity(Gravity.START);
+                            messageViewHolder.receiverMessageText.setText(Html.fromHtml(messagesModel.getMessage()));
+                            messageViewHolder.receiverMessageTime.setText(messagesModel.getTime());
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                } else if (fromMessageType.equals("image")) {
 
-                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                    if (fromUserID.equals(messageSenderID)) {
+                        try {
+                            messageViewHolder.sender_image_imageView.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_image_time.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_image_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_icon_sent_image.setVisibility(View.VISIBLE);
+
+                            if (messagesModel.isIsseen()) {
+                                messageViewHolder.sender_icon_sent_image.setImageResource(R.drawable.ic_sent);
+                            } else {
+                                messageViewHolder.sender_icon_sent_image.setImageResource(R.drawable.ic_delivered);
+                            }
+
+                            try {
+                                Picasso.with(messageViewHolder.sender_image_imageView.getContext()).load(messagesModel.getMessage()).networkPolicy(NetworkPolicy.OFFLINE)
+                                        .placeholder(R.drawable.easy_to_use).into(messageViewHolder.sender_image_imageView, new Callback() {
                                     @Override
-                                    public void onClick(DialogInterface dialog, int which) {
+                                    public void onSuccess() {
 
-                                        if (which == 0) {
+                                    }
 
-                                            DeleteSentMessages(position, messageViewHolder);
-                                        } else if (which == 1) {
-
-                                            DeleteForEveryoneMessages(position, messageViewHolder);
-                                            DeleteFileFromStorage(position, messageViewHolder);
+                                    @Override
+                                    public void onError() {
+                                        try {
+                                            Picasso.with(messageViewHolder.sender_image_imageView.getContext()).load(messagesModel.getMessage()).placeholder(R.drawable.easy_to_use)
+                                                    .into(messageViewHolder.sender_image_imageView);
+                                        }catch (Exception e){
+                                            e.printStackTrace();
                                         }
                                     }
                                 });
-                                builderoptions_doc.show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                            else if (mgsDoc.getType().equals("video")) {
 
-                                CharSequence options_doc[] = new CharSequence[]{
-                                        "Delete for me",
-                                        "Delete for everyone",
-                                        "View in full screen",
-                                        "Cancel"
-                                };
-                                AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                                builderoptions_doc.setTitle("Delete this message?");
+                            messageViewHolder.sender_message_image_time.setText(messagesModel.getTime());
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            messageViewHolder.receiverImageProfileImage.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_image_imageView.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_image_message_time.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_image_message_layout.setVisibility(View.VISIBLE);
 
-                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                            try {
+                                Picasso.with(messageViewHolder.receiver_image_imageView.getContext()).load(messagesModel.getMessage()).networkPolicy(NetworkPolicy.OFFLINE)
+                                        .placeholder(R.drawable.easy_to_use).into(messageViewHolder.receiver_image_imageView, new Callback() {
                                     @Override
-                                    public void onClick(DialogInterface dialog, int which) {
+                                    public void onSuccess() {
 
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        try {
+                                            Picasso.with(messageViewHolder.receiver_image_imageView.getContext()).load(messagesModel.getMessage()).placeholder(R.drawable.easy_to_use)
+                                                    .into(messageViewHolder.receiver_image_imageView);
+                                        }catch (Exception e){
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            messageViewHolder.receiver_image_message_time.setText(messagesModel.getTime());
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (fromMessageType.equals("document")) {
+                    if (fromUserID.equals(messageSenderID)) {
+
+                        messageViewHolder.sender_file_download_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                try {
+                                    File root = Environment.getExternalStorageDirectory();
+                                    root.mkdirs();
+                                    String path = root.toString();
+
+
+                                    DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                    Uri uri1 = Uri.parse(userMessagesList.get(position).getMessage());
+                                    DownloadManager.Request request = new DownloadManager.Request(uri1);
+                                    request.setTitle("SmartChat (" + messagesModel.getName() + ")");
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), path + "/SmartChat" + "/Messages" + "/Documents", messagesModel.getName());
+                                    downloadManager.enqueue(request);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        messageViewHolder.sender_file_download_btn.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_message_file_layout.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_file_imageView.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_message_file_time.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_file_name.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_message_file_time.setText(messagesModel.getTime());
+                        messageViewHolder.sender_file_name.setText(messagesModel.getName());
+                        messageViewHolder.sender_icon_sent_file.setVisibility(View.VISIBLE);
+
+                        if (messagesModel.isIsseen()) {
+                            messageViewHolder.sender_icon_sent_file.setImageResource(R.drawable.ic_sent);
+                        } else {
+                            messageViewHolder.sender_icon_sent_file.setImageResource(R.drawable.ic_delivered);
+                        }
+
+                        try {
+                            Picasso.with(messageViewHolder.sender_file_imageView.getContext()).load(R.drawable.document).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.document).into(messageViewHolder.sender_file_imageView, new Callback() {
+                                @Override
+                                public void onSuccess() {
+
+                                }
+
+                                @Override
+                                public void onError() {
+                                    try {
+                                        Picasso.with(messageViewHolder.sender_file_imageView.getContext()).load(R.drawable.document).placeholder(R.drawable.document)
+                                                .into(messageViewHolder.sender_file_imageView);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+
+
+                        messageViewHolder.receiver_file_download_btn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                try {
+                                    File root = Environment.getExternalStorageDirectory();
+                                    root.mkdirs();
+                                    String path = root.toString();
+
+
+                                    DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                    Uri uri1 = Uri.parse(userMessagesList.get(position).getMessage());
+                                    DownloadManager.Request request = new DownloadManager.Request(uri1);
+                                    request.setTitle("SmartChat (" + messagesModel.getName() + ")");
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), path + "/SmartChat" + "/Messages" + "/Documents", messagesModel.getName());
+                                    downloadManager.enqueue(request);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        messageViewHolder.receiver_file_download_btn.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiver_profile_file_for_image.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiver_message_file_layout.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiver_file_imageView.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiver_message_file_time.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiver_file_name.setVisibility(View.VISIBLE);
+                        messageViewHolder.receiver_message_file_time.setText(messagesModel.getTime());
+                        messageViewHolder.receiver_file_name.setText(messagesModel.getName());
+
+                        try {
+                            Picasso.with(messageViewHolder.receiver_file_imageView.getContext()).load(R.drawable.document).networkPolicy(NetworkPolicy.OFFLINE)
+                                    .placeholder(R.drawable.document).into(messageViewHolder.receiver_file_imageView, new Callback() {
+                                @Override
+                                public void onSuccess() {
+
+                                }
+
+                                @Override
+                                public void onError() {
+                                    try {
+                                        Picasso.with(messageViewHolder.receiver_file_imageView.getContext()).load(R.drawable.document).placeholder(R.drawable.document)
+                                                .into(messageViewHolder.receiver_file_imageView);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (fromMessageType.equals("video")) {
+                    if (fromUserID.equals(messageSenderID)) {
+                        try {
+                            messageViewHolder.sender_icon_sent_video.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_video_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_video.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_video_name.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_video_time.setVisibility(View.VISIBLE);
+
+                            if (messagesModel.isIsseen()) {
+                                messageViewHolder.sender_icon_sent_video.setImageResource(R.drawable.ic_sent);
+                            } else {
+                                messageViewHolder.sender_icon_sent_video.setImageResource(R.drawable.ic_delivered);
+                            }
+
+
+                            messageViewHolder.sender_message_video_time.setText(messagesModel.getTime());
+                            messageViewHolder.sender_video_name.setText(messagesModel.getName());
+                            messageViewHolder.sender_message_video.setVideoURI(Uri.parse(messagesModel.getMessage()));
+                            messageViewHolder.sender_message_video.requestFocus();
+                            messageViewHolder.sender_message_video.setBackgroundColor(messageViewHolder.sender_message_video.getContext().getResources().getColor(R.color.default_video_post_bg));
+
+                            messageViewHolder.sender_message_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+                                    try {
+                                        mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+                                            @Override
+                                            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                                                mediaController[0] = new MediaController(messageViewHolder.sender_message_video.getContext());
+                                                messageViewHolder.sender_message_video.setMediaController(mediaController[0]);
+                                                mediaController[0].setAnchorView(messageViewHolder.sender_message_video);
+                                            }
+                                        });
+
+
+                                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                                            @Override
+                                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
+                                                    messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.INVISIBLE);
+                                                    return true;
+                                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
+                                                    messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.VISIBLE);
+                                                }
+                                                return false;
+                                            }
+                                        });
+
+                                        messageViewHolder.sender_message_video.start();
+                                        messageViewHolder.sender_message_video.setBackgroundColor(0);
+                                        messageViewHolder.sender_loading_video_progress_bar.setVisibility(View.INVISIBLE);
+
+
+                                        messageViewHolder.sender_message_video.seekTo(messageViewHolder.sender_message_video.getCurrentPosition());
+                                        if (messageViewHolder.sender_message_video.getCurrentPosition() != 0) {
+                                            messageViewHolder.sender_message_video.start();
+
+                                        } else {
+                                            messageViewHolder.sender_message_video.pause();
+                                        }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            });
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    } else {
+
+                        try {
+
+                            messageViewHolder.receiver_message_video_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_profile_video_for_image.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_message_video.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_video_name.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_message_video_time.setVisibility(View.VISIBLE);
+
+
+                            messageViewHolder.receiver_message_video_time.setText(messagesModel.getTime());
+                            messageViewHolder.receiver_video_name.setText(messagesModel.getName());
+                            messageViewHolder.receiver_message_video.setVideoURI(Uri.parse(messagesModel.getMessage()));
+                            messageViewHolder.receiver_message_video.requestFocus();
+                            messageViewHolder.receiver_message_video.setBackgroundColor(messageViewHolder.receiver_message_video.getContext().getResources().getColor(R.color.default_video_post_bg));
+
+                            messageViewHolder.receiver_message_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+
+                                    mp.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+                                        @Override
+                                        public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                                            receiverMediaController[0] = new MediaController(messageViewHolder.receiver_message_video.getContext());
+                                            messageViewHolder.receiver_message_video.setMediaController(receiverMediaController[0]);
+                                            receiverMediaController[0].setAnchorView(messageViewHolder.receiver_message_video);
+                                        }
+                                    });
+
+
+                                    mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                                        @Override
+                                        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                                            if (what == mp.MEDIA_INFO_BUFFERING_END) {
+                                                messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.INVISIBLE);
+                                                return true;
+                                            } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
+                                                messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.VISIBLE);
+                                            }
+                                            return false;
+                                        }
+                                    });
+
+                                    messageViewHolder.receiver_message_video.start();
+                                    messageViewHolder.receiver_message_video.setBackgroundColor(0);
+                                    messageViewHolder.receiver_loading_video_progress_bar.setVisibility(View.INVISIBLE);
+
+
+                                    messageViewHolder.receiver_message_video.seekTo(messageViewHolder.receiver_message_video.getCurrentPosition());
+                                    if (messageViewHolder.receiver_message_video.getCurrentPosition() != 0) {
+                                        messageViewHolder.receiver_message_video.start();
+
+                                    } else {
+                                        messageViewHolder.receiver_message_video.pause();
+                                    }
+
+                                }
+                            });
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                } else if (fromMessageType.equals("audio")) {
+                    if (fromUserID.equals(messageSenderID)) {
+                        try {
+                            final int[] current = {0};
+                            final int[] duration = {0};
+                            //for audio sender
+                            messageViewHolder.sender_audio_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_audio_title.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_play_btn.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_counter_timer.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_video_progress.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_duration_timer.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_message_audio_time.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_icon_sent_audio.setVisibility(View.VISIBLE);
+
+                            if (messagesModel.isIsseen()) {
+                                messageViewHolder.sender_icon_sent_audio.setImageResource(R.drawable.ic_sent);
+                            } else {
+                                messageViewHolder.sender_icon_sent_audio.setImageResource(R.drawable.ic_delivered);
+                            }
+
+                            messageViewHolder.sender_audio_title.setText(messagesModel.getName());
+                            messageViewHolder.sender_message_audio_time.setText(messagesModel.getTime());
+
+
+                            sender_media_player = new MediaPlayer();
+                            class AudioAsyncTask extends AsyncTask<String, Integer, String> {
+                                @Override
+                                protected void onPreExecute() {
+                                    super.onPreExecute();
+                                    messageViewHolder.sender_progressBar.setVisibility(View.VISIBLE);
+                                }
+
+                                @Override
+                                protected String doInBackground(String... strings) {
+                                    try {
+                                        String url = new String(strings[0]);
+                                        sender_media_player.reset();
+                                        try {
+                                            sender_media_player.setDataSource(url);
+                                            sender_media_player.prepare();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+
+                                    } catch (IllegalArgumentException | IllegalStateException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    do {
+
+                                        if (sender_media_player.isPlaying()) {
+                                            current[0] = sender_media_player.getCurrentPosition() / 1000;
+                                            publishProgress(current[0]);
+                                        }
+
+
+                                    } while (messageViewHolder.sender_video_progress.getProgress() <= 100);
+
+                                    return null;
+                                }
+
+                                @Override
+                                protected void onProgressUpdate(Integer... values) {
+                                    super.onProgressUpdate(values);
+
+                                    try {
+                                        int currentPercent = values[0] * 100 / duration[0];
+                                        messageViewHolder.sender_video_progress.setProgress(currentPercent);
+                                        String currentString = String.format("%02d:%02d", values[0] / 60, values[0] % 60);
+                                        messageViewHolder.sender_counter_timer.setText(currentString);
+
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        Log.v("Error", e.getMessage());
+
+                                    }
+                                }
+
+                                @Override
+                                protected void onPostExecute(String s) {
+                                    super.onPostExecute(s);
+                                    messageViewHolder.sender_progressBar.setVisibility(View.INVISIBLE);
+                                    messageViewHolder.sender_video_progress.setProgress(0);
+                                    messageViewHolder.sender_video_progress.setMax(100);
+
+                                }
+                            }
+
+
+                            new AudioAsyncTask().execute(userMessagesList.get(position).getMessage());
+
+                            sender_media_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+
+                                    try {
+
+                                        current[0] = mp.getCurrentPosition() / 1000;
+                                        String currentString = String.format("%02d:%02d", current[0] / 60, current[0] % 60);
+                                        messageViewHolder.sender_counter_timer.setText(currentString);
+
+
+                                        try {
+
+                                            int currentPercent = current[0] * 100 / duration[0];
+                                            messageViewHolder.sender_video_progress.setProgress(currentPercent);
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Log.v("Error", e.getMessage());
+
+                                        }
+
+                                        duration[0] = mp.getDuration() / 1000;
+                                        String durationString = String.format("%02d:%02d", duration[0] / 60, duration[0] % 60);
+                                        messageViewHolder.sender_duration_timer.setText(durationString);
+
+                                        if (current[0] == duration[0]) {
+                                            mp.release();
+                                            messageViewHolder.sender_play_btn.setImageResource(R.drawable.ic_play);
+                                        }
+
+
+                                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                                            @Override
+                                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
+                                                    messageViewHolder.sender_progressBar.setVisibility(View.INVISIBLE);
+                                                    return true;
+                                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
+                                                    messageViewHolder.sender_progressBar.setVisibility(View.VISIBLE);
+                                                }
+                                                return false;
+
+                                            }
+
+                                        });
+
+                                        messageViewHolder.sender_play_btn.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                if (!sender_media_player.isPlaying()) {
+                                                    sender_media_player.start();
+                                                    messageViewHolder.sender_progressBar.setVisibility(View.INVISIBLE);
+                                                    messageViewHolder.sender_play_btn.setImageResource(R.drawable.ic_pause);
+
+                                                } else {
+                                                    sender_media_player.pause();
+                                                    messageViewHolder.sender_play_btn.setImageResource(R.drawable.ic_play);
+                                                }
+
+                                            }
+                                        });
+
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            });
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    } else {
+
+                        try {
+                            final int[] current = {0};
+                            final int[] duration = {0};
+
+                            //for audio receiver
+                            messageViewHolder.receiver_message_audio_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_profile_audio_for_image.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_audio_title.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_play_btn.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_counter_timer.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_video_progress.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_duration_timer.setVisibility(View.VISIBLE);
+                            messageViewHolder.receiver_message_audio_time.setVisibility(View.VISIBLE);
+
+                            messageViewHolder.receiver_audio_title.setText(messagesModel.getName());
+                            messageViewHolder.receiver_message_audio_time.setText(messagesModel.getTime());
+
+                            receiver_media_player = new MediaPlayer();
+                            class AudioAsyncTask extends AsyncTask<String, Integer, String> {
+                                @Override
+                                protected void onPreExecute() {
+                                    super.onPreExecute();
+                                    messageViewHolder.receiver_progressBar.setVisibility(View.VISIBLE);
+                                }
+
+                                @Override
+                                protected String doInBackground(String... strings) {
+                                    try {
+                                        String url = new String(strings[0]);
+                                        receiver_media_player.reset();
+                                        try {
+                                            receiver_media_player.setDataSource(url);
+                                            receiver_media_player.prepare();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+
+                                    } catch (IllegalArgumentException | IllegalStateException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    do {
+
+                                        if (receiver_media_player.isPlaying()) {
+                                            current[0] = receiver_media_player.getCurrentPosition() / 1000;
+                                            publishProgress(current[0]);
+                                        }
+
+
+                                    } while (messageViewHolder.receiver_video_progress.getProgress() <= 100);
+
+                                    return null;
+                                }
+
+                                @Override
+                                protected void onProgressUpdate(Integer... values) {
+                                    super.onProgressUpdate(values);
+
+                                    try {
+                                        int currentPercent = values[0] * 100 / duration[0];
+                                        messageViewHolder.receiver_video_progress.setProgress(currentPercent);
+                                        String currentString = String.format("%02d:%02d", values[0] / 60, values[0] % 60);
+                                        messageViewHolder.receiver_counter_timer.setText(currentString);
+
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        Log.v("Error", e.getMessage());
+
+                                    }
+                                }
+
+                                @Override
+                                protected void onPostExecute(String s) {
+                                    super.onPostExecute(s);
+                                    messageViewHolder.receiver_progressBar.setVisibility(View.INVISIBLE);
+                                    messageViewHolder.receiver_video_progress.setProgress(0);
+                                    messageViewHolder.receiver_video_progress.setMax(100);
+
+                                }
+                            }
+
+                            new AudioAsyncTask().execute(userMessagesList.get(position).getMessage());
+
+                            receiver_media_player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+                                    try {
+                                        current[0] = mp.getCurrentPosition() / 1000;
+                                        String currentString = String.format("%02d:%02d", current[0] / 60, current[0] % 60);
+                                        messageViewHolder.receiver_counter_timer.setText(currentString);
+
+
+                                        try {
+
+                                            int currentPercent = current[0] * 100 / duration[0];
+                                            messageViewHolder.receiver_video_progress.setProgress(currentPercent);
+
+
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Log.v("Error", e.getMessage());
+
+                                        }
+
+                                        duration[0] = mp.getDuration() / 1000;
+                                        String durationString = String.format("%02d:%02d", duration[0] / 60, duration[0] % 60);
+                                        messageViewHolder.receiver_duration_timer.setText(durationString);
+
+                                        if (current[0] == duration[0]) {
+                                            mp.release();
+                                            messageViewHolder.receiver_play_btn.setImageResource(R.drawable.ic_play);
+                                        }
+
+
+                                        mp.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                                            @Override
+                                            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                                                if (what == mp.MEDIA_INFO_BUFFERING_END) {
+                                                    messageViewHolder.receiver_progressBar.setVisibility(View.INVISIBLE);
+                                                    return true;
+                                                } else if (what == mp.MEDIA_INFO_BUFFERING_START) {
+                                                    messageViewHolder.receiver_progressBar.setVisibility(View.VISIBLE);
+                                                }
+                                                return false;
+
+                                            }
+
+                                        });
+
+                                        messageViewHolder.receiver_play_btn.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                if (!receiver_media_player.isPlaying()) {
+                                                    receiver_media_player.start();
+                                                    messageViewHolder.receiver_progressBar.setVisibility(View.INVISIBLE);
+                                                    messageViewHolder.receiver_play_btn.setImageResource(R.drawable.ic_pause);
+
+                                                } else {
+                                                    receiver_media_player.pause();
+                                                    messageViewHolder.receiver_play_btn.setImageResource(R.drawable.ic_play);
+                                                }
+
+                                            }
+                                        });
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+
+            } else {
+
+                if (fromMessageType.equals("text")) {
+
+                    if (fromUserID.equals(messageSenderID)) {
+                        try {
+                            messageViewHolder.reply_sender_message_layout.setVisibility(View.VISIBLE);
+                            messageViewHolder.chatter_user_name_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.chatter_text_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.new_sender_message_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.new_sender_message_time.setVisibility(View.VISIBLE);
+                            messageViewHolder.new_icon_sent.setVisibility(View.VISIBLE);
+
+
+                            if (messagesModel.isIsseen()) {
+                                messageViewHolder.new_icon_sent.setImageResource(R.drawable.ic_sent);
+                            } else {
+                                messageViewHolder.new_icon_sent.setImageResource(R.drawable.ic_delivered);
+                            }
+                            String replyMessageType = messagesModel.getReplymessagetype();
+
+                            if (messagesModel.getReplyfromid().equals(messageSenderID)) {
+                                messageViewHolder.chatter_user_name_text.setText("You");
+                                messageViewHolder.chatter_user_name_text.setTextColor(
+                                        messageViewHolder.itemView.getContext().getResources()
+                                                .getColor(R.color.colorPrimaryDark));
+                            } else {
+                                usersRef.child(messagesModel.getReplyfromid())
+                                        .addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                if (dataSnapshot.exists()) {
+                                                    try {
+                                                        String userName = dataSnapshot.child("fullname").getValue().toString();
+                                                        messageViewHolder.chatter_user_name_text.setText(userName);
+                                                    }catch (Exception e){
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                            }
+                                        });
+
+                                messageViewHolder.chatter_user_name_text.setTextColor(
+                                        messageViewHolder.itemView.getContext().getResources()
+                                                .getColor(R.color.orange));
+                            }
+
+                            if (replyMessageType.equals("text")) {
+                                messageViewHolder.chatter_text_text.setVisibility(View.VISIBLE);
+                                messageViewHolder.chatter_text_text.setText(messagesModel.getReplymessage());
+                                messageViewHolder.msg_type_img_icon_text.setVisibility(View.GONE);
+                            }
+                            switch (replyMessageType) {
+                                case "document":
+                                    messageViewHolder.chatter_text_text.setVisibility(View.GONE);
+                                    messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                                    messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_document);
+
+                                    break;
+                                case "image":
+                                    messageViewHolder.chatter_text_text.setVisibility(View.GONE);
+                                    messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                                    messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_image);
+                                    break;
+                                case "video":
+                                    messageViewHolder.chatter_text_text.setVisibility(View.GONE);
+                                    messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                                    messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_videocam);
+                                    break;
+                                case "audio":
+                                    messageViewHolder.chatter_text_text.setVisibility(View.GONE);
+                                    messageViewHolder.msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                                    messageViewHolder.msg_type_img_icon_text.setImageResource(R.drawable.ic_music);
+                                    break;
+                            }
+
+
+                            messageViewHolder.new_sender_message_text.setBackgroundResource(R.drawable.sender_message_text_background);
+                            messageViewHolder.new_sender_message_text.setTextColor(Color.WHITE);
+                            messageViewHolder.new_sender_message_text.setGravity(Gravity.START);
+                            messageViewHolder.new_sender_message_text.setText(Html.fromHtml(messagesModel.getMessage()));
+                            messageViewHolder.new_sender_message_time.setText(messagesModel.getTime());
+
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        messageViewHolder.reply_receiver_message_layout_main.setVisibility(View.VISIBLE);
+                        messageViewHolder.reply_receiver_profile_image.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_vertical_line.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_chatter_user_name_text.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_chatter_text_text.setVisibility(View.VISIBLE);
+                        messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                        messageViewHolder.new_receiver_message_text.setVisibility(View.VISIBLE);
+                        messageViewHolder.new_receiver_message_time.setVisibility(View.VISIBLE);
+
+                        String replyMessageType = messagesModel.getReplymessagetype();
+
+                        if (messagesModel.getReplyfromid().equals(messageSenderID)) {
+                            messageViewHolder.sender_chatter_user_name_text.setText("You");
+
+                            messageViewHolder.sender_chatter_user_name_text.setTextColor(
+                                    messageViewHolder.itemView.getContext().getResources()
+                                            .getColor(R.color.orange));
+                            messageViewHolder.sender_vertical_line.
+                                    setBackgroundColor(messageViewHolder.itemView.getContext().getResources()
+                                            .getColor(R.color.orange));
+                        } else {
+
+                            usersRef.child(messagesModel.getReplyfromid())
+                                    .addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.exists()) {
+                                                String userName = dataSnapshot.child("fullname").getValue().toString();
+                                                messageViewHolder.sender_chatter_user_name_text.setText(userName);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+
+
+                            messageViewHolder.sender_chatter_user_name_text.setTextColor(
+                                    messageViewHolder.itemView.getContext().getResources()
+                                            .getColor(R.color.colorPrimaryDark));
+                            messageViewHolder.sender_vertical_line.
+                                    setBackgroundColor(messageViewHolder.itemView.getContext().getResources()
+                                            .getColor(R.color.colorPrimaryDark));
+                        }
+
+                        if (replyMessageType.equals("text")) {
+                            messageViewHolder.sender_chatter_text_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_chatter_text_text.setText(messagesModel.getReplymessage());
+                            messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.GONE);
+                        }
+                        if (replyMessageType.equals("document")) {
+                            messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_document);
+
+                        } else if (replyMessageType.equals("image")) {
+                            messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_image);
+                        } else if (replyMessageType.equals("video")) {
+                            messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_videocam);
+                        } else if (replyMessageType.equals("audio")) {
+                            messageViewHolder.sender_chatter_text_text.setVisibility(View.GONE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setVisibility(View.VISIBLE);
+                            messageViewHolder.sender_msg_type_img_icon_text.setImageResource(R.drawable.ic_music);
+                        }
+
+                        messageViewHolder.new_receiver_message_text.setBackgroundResource(R.drawable.receiver_message_text_background);
+                        messageViewHolder.new_receiver_message_text.setGravity(Gravity.START);
+                        messageViewHolder.new_receiver_message_text.setText(Html.fromHtml(messagesModel.getMessage()));
+                        messageViewHolder.new_receiver_message_time.setText(messagesModel.getTime());
+                    }
+                }
+
+            }
+
+
+            if (fromUserID.equals(messageSenderID)) {
+                messageViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+
+                        try {
+
+                            MessagesModel mgsDoc = userMessagesList.get(position);
+
+                            if (mgsDoc != null) {
+
+                                if (mgsDoc.getType().equals("document")) {
+
+                                    CharSequence options_doc[] = new CharSequence[]{
+                                            "Delete for me",
+                                            "Delete for everyone",
+                                            "Cancel"
+                                    };
+                                    AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                    builderoptions_doc.setTitle("Delete this message?");
+
+                                    builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                            if (which == 0) {
+
+                                                DeleteSentMessages(position, messageViewHolder);
+                                            } else if (which == 1) {
+
+                                                DeleteForEveryoneMessages(position, messageViewHolder);
+                                                DeleteFileFromStorage(position, messageViewHolder);
+                                            }
+                                        }
+                                    });
+                                    builderoptions_doc.show();
+                                } else if (mgsDoc.getType().equals("video")) {
+
+                                    CharSequence options_doc[] = new CharSequence[]{
+                                            "Delete for me",
+                                            "Delete for everyone",
+                                            "View in full screen",
+                                            "Cancel"
+                                    };
+                                    AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                    builderoptions_doc.setTitle("Delete this message?");
+
+                                    builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            try {
+                                                if (which == 0) {
+
+                                                    DeleteSentMessages(position, messageViewHolder);
+                                                } else if (which == 1) {
+
+                                                    DeleteForEveryoneMessages(position, messageViewHolder);
+                                                    DeleteVideoFromStorage(position, messageViewHolder);
+                                                } else if (which == 2) {
+                                                    //view in full screen intent
+                                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageVideoView.class);
+                                                    intent.putExtra("url", userMessagesList.get(position).getMessage());
+                                                    intent.putExtra("name", userMessagesList.get(position).getName());
+                                                    messageViewHolder.itemView.getContext().startActivity(intent);
+                                                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                }
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                    builderoptions_doc.show();
+                                } else if (mgsDoc.getType().equals("audio")) {
+
+                                    CharSequence options_doc[] = new CharSequence[]{
+                                            "Delete for me",
+                                            "Delete for everyone",
+                                            "Download Audio",
+                                            "Cancel"
+                                    };
+                                    AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                    builderoptions_doc.setTitle("Delete this message?");
+
+                                    builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                            if (which == 0) {
+
+                                                DeleteSentMessages(position, messageViewHolder);
+                                            } else if (which == 1) {
+
+                                                DeleteForEveryoneMessages(position, messageViewHolder);
+                                                DeleteAudioFromStorage(position, messageViewHolder);
+                                            } else if (which == 2) {
+                                                DownloadAudio(position, messageViewHolder);
+                                            }
+                                        }
+                                    });
+                                    builderoptions_doc.show();
+                                } else if (mgsDoc.getType().equals("image")) {
+
+                                    CharSequence options_image[] = new CharSequence[]{
+                                            "Delete for me",
+                                            "Delete for everyone",
+                                            "View picture",
+                                            "Cancel"
+                                    };
+                                    AlertDialog.Builder builderoptions_image = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                    builderoptions_image.setTitle("Delete message?");
+
+                                    builderoptions_image.setItems(options_image, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            try {
+                                                if (which == 0) {
+
+                                                    DeleteSentMessages(position, messageViewHolder);
+                                                } else if (which == 1) {
+
+                                                    DeleteForEveryoneMessages(position, messageViewHolder);
+                                                    DeletePictureFromStorage(position, messageViewHolder);
+                                                } else if (which == 2) {
+                                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageImageView.class);
+                                                    intent.putExtra("url", userMessagesList.get(position).getMessage());
+                                                    intent.putExtra("name", userMessagesList.get(position).getName());
+                                                    messageViewHolder.itemView.getContext().startActivity(intent);
+                                                    activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                }
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                    builderoptions_image.show();
+                                } else if (mgsDoc.getType().equals("text")) {
+
+                                    CharSequence options_text[] = new CharSequence[]{
+                                            "Delete for me",
+                                            "Delete for everyone",
+                                            "Copy message to clipboard",
+                                            "Cancel"
+                                    };
+                                    AlertDialog.Builder builderoptions_text = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                                    builderoptions_text.setTitle("Delete message?");
+
+                                    builderoptions_text.setItems(options_text, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                            if (which == 0) {
+
+                                                DeleteSentMessages(position, messageViewHolder);
+                                            } else if (which == 1) {
+
+                                                DeleteForEveryoneMessages(position, messageViewHolder);
+                                            } else if (which == 2) {
+                                                CopyToClipBoard(position, messageViewHolder);
+                                                Toasty.success(messageViewHolder.itemView.getContext(), "Message copied", Toasty.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                    builderoptions_text.show();
+                                }
+
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        return false;
+                    }
+                });
+
+            } else if (!fromUserID.equals(messageSenderID)) {
+                //allow user to delete sender messages, but only his own version
+
+                messageViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+
+                        if (userMessagesList.get(position).getType().equals("document")) {
+
+                            CharSequence options_r_doc[] = new CharSequence[]{
+                                    "Delete for me",
+                                    "Cancel"
+                            };
+                            AlertDialog.Builder builderoptions_r_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                            builderoptions_r_doc.setTitle("Delete this message?");
+
+                            builderoptions_r_doc.setItems(options_r_doc, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    if (which == 0) {
+
+                                        DeleteReceivedMessages(position, messageViewHolder);
+                                    }
+                                }
+                            });
+                            builderoptions_r_doc.show();
+                        } else if (userMessagesList.get(position).getType().equals("video")) {
+
+                            CharSequence options_doc[] = new CharSequence[]{
+                                    "Delete for me",
+                                    "View in full screen",
+                                    "Cancel"
+                            };
+                            AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                            builderoptions_doc.setTitle("Delete this message?");
+
+                            builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
                                         if (which == 0) {
 
                                             DeleteSentMessages(position, messageViewHolder);
                                         } else if (which == 1) {
-
-                                            DeleteForEveryoneMessages(position, messageViewHolder);
-                                            DeleteVideoFromStorage(position, messageViewHolder);
-                                        } else if (which == 2) {
-                                            //view in full screen intent
+                                            //view in full mode intent
                                             Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageVideoView.class);
                                             intent.putExtra("url", userMessagesList.get(position).getMessage());
                                             intent.putExtra("name", userMessagesList.get(position).getName());
                                             messageViewHolder.itemView.getContext().startActivity(intent);
                                             activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
                                         }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
-                                });
-                                builderoptions_doc.show();
-                            }
-                            else if (mgsDoc.getType().equals("audio")) {
+                                }
+                            });
+                            builderoptions_doc.show();
+                        } else if (userMessagesList.get(position).getType().equals("audio")) {
 
-                                CharSequence options_doc[] = new CharSequence[]{
-                                        "Delete for me",
-                                        "Delete for everyone",
-                                        "Download Audio",
-                                        "Cancel"
-                                };
-                                AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                                builderoptions_doc.setTitle("Delete this message?");
+                            CharSequence options_doc[] = new CharSequence[]{
+                                    "Delete for me",
+                                    "Download Audio",
+                                    "Cancel"
+                            };
+                            AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                            builderoptions_doc.setTitle("Delete this message?");
 
-                                builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
+                            builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
+                                    if (which == 0) {
+
+                                        DeleteSentMessages(position, messageViewHolder);
+                                    } else if (which == 1) {
+                                        DownloadAudio(position, messageViewHolder);
+                                    }
+                                }
+                            });
+                            builderoptions_doc.show();
+                        } else if (userMessagesList.get(position).getType().equals("image")) {
+
+                            CharSequence options_r_image[] = new CharSequence[]{
+                                    "Delete for me",
+                                    "View picture",
+                                    "Cancel"
+                            };
+                            AlertDialog.Builder builderoptions_r_image = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                            builderoptions_r_image.setTitle("Delete message?");
+
+                            builderoptions_r_image.setItems(options_r_image, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    try {
                                         if (which == 0) {
 
-                                            DeleteSentMessages(position, messageViewHolder);
+                                            DeleteReceivedMessages(position, messageViewHolder);
                                         } else if (which == 1) {
 
-                                            DeleteForEveryoneMessages(position, messageViewHolder);
-                                            DeleteAudioFromStorage(position, messageViewHolder);
-                                        } else if (which == 2) {
-                                            DownloadAudio(position, messageViewHolder);
-                                        }
-                                    }
-                                });
-                                builderoptions_doc.show();
-                            }
-                            else if (mgsDoc.getType().equals("image")) {
-
-                                CharSequence options_image[] = new CharSequence[]{
-                                        "Delete for me",
-                                        "Delete for everyone",
-                                        "View picture",
-                                        "Cancel"
-                                };
-                                AlertDialog.Builder builderoptions_image = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                                builderoptions_image.setTitle("Delete message?");
-
-                                builderoptions_image.setItems(options_image, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-
-                                        if (which == 0) {
-
-                                            DeleteSentMessages(position, messageViewHolder);
-                                        } else if (which == 1) {
-
-                                            DeleteForEveryoneMessages(position, messageViewHolder);
-                                            DeletePictureFromStorage(position, messageViewHolder);
-                                        } else if (which == 2) {
                                             Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageImageView.class);
                                             intent.putExtra("url", userMessagesList.get(position).getMessage());
                                             intent.putExtra("name", userMessagesList.get(position).getName());
                                             messageViewHolder.itemView.getContext().startActivity(intent);
                                             activity.overridePendingTransition(R.anim.right_in, R.anim.left_out);
                                         }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
-                                });
-                                builderoptions_image.show();
-                            }
-                            else if (mgsDoc.getType().equals("text")) {
+                                }
+                            });
+                            builderoptions_r_image.show();
+                        } else if (userMessagesList.get(position).getType().equals("text")) {
 
-                                CharSequence options_text[] = new CharSequence[]{
-                                        "Delete for me",
-                                        "Delete for everyone",
-                                        "Copy message to clipboard",
-                                        "Cancel"
-                                };
-                                AlertDialog.Builder builderoptions_text = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                                builderoptions_text.setTitle("Delete message?");
+                            CharSequence options_r_text[] = new CharSequence[]{
+                                    "Delete for me",
+                                    "Copy message to clipboard",
+                                    "Cancel"
+                            };
+                            AlertDialog.Builder builderoptions_r_text = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                            builderoptions_r_text.setTitle("Delete message?");
 
-                                builderoptions_text.setItems(options_text, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
+                            builderoptions_r_text.setItems(options_r_text, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
-                                        if (which == 0) {
+                                    if (which == 0) {
 
-                                            DeleteSentMessages(position, messageViewHolder);
-                                        } else if (which == 1) {
-
-                                            DeleteForEveryoneMessages(position, messageViewHolder);
-                                        } else if (which == 2) {
-                                            CopyToClipBoard(position, messageViewHolder);
-                                            Toasty.success(messageViewHolder.itemView.getContext(), "Message copied", Toasty.LENGTH_SHORT).show();
-                                        }
+                                        DeleteReceivedMessages(position, messageViewHolder);
+                                    } else if (which == 1) {
+                                        CopyToClipBoard(position, messageViewHolder);
+                                        Toasty.success(messageViewHolder.itemView.getContext(), "Message copied", Toasty.LENGTH_SHORT).show();
                                     }
-                                });
-                                builderoptions_text.show();
-                            }
-
+                                }
+                            });
+                            builderoptions_r_text.show();
                         }
-                    }catch(Exception e){
-                        e.printStackTrace();
+
+                        return false;
                     }
+                });
+            }
 
-                    return false;
-                }
-            });
-
-        }
-
-        else if(!fromUserID.equals(messageSenderID)){
-            //allow user to delete sender messages, but only his own version
-
-            messageViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-
-                    if(userMessagesList.get(position).getType().equals("document")){
-
-                        CharSequence options_r_doc[] = new CharSequence[]{
-                                "Delete for me",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_r_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_r_doc.setTitle("Delete this message?");
-
-                        builderoptions_r_doc.setItems(options_r_doc, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if(which == 0){
-
-                                    DeleteReceivedMessages(position, messageViewHolder);
-                                }
-                            }
-                        });
-                        builderoptions_r_doc.show();
-                    }
-
-                    else if(userMessagesList.get(position).getType().equals("video")){
-
-                        CharSequence options_doc[] = new CharSequence[]{
-                                "Delete for me",
-                                "View in full screen",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_doc.setTitle("Delete this message?");
-
-                        builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if(which == 0){
-
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
-                                    //view in full mode intent
-                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageVideoView.class);
-                                    intent.putExtra("url", userMessagesList.get(position).getMessage());
-                                    intent.putExtra("name", userMessagesList.get(position).getName());
-                                    messageViewHolder.itemView.getContext().startActivity(intent);
-                                    activity.overridePendingTransition(R.anim.right_in,R.anim.left_out);
-                                }
-                            }
-                        });
-                        builderoptions_doc.show();
-                    }
-
-                    else if(userMessagesList.get(position).getType().equals("audio")){
-
-                        CharSequence options_doc[] = new CharSequence[]{
-                                "Delete for me",
-                                "Download Audio",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_doc = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_doc.setTitle("Delete this message?");
-
-                        builderoptions_doc.setItems(options_doc, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if(which == 0){
-
-                                    DeleteSentMessages(position, messageViewHolder);
-                                }
-                                else if(which == 1){
-                                    DownloadAudio(position, messageViewHolder);
-                                }
-                            }
-                        });
-                        builderoptions_doc.show();
-                    }
-
-                    else  if(userMessagesList.get(position).getType().equals("image")){
-
-                        CharSequence options_r_image[] = new CharSequence[]{
-                                "Delete for me",
-                                "View picture",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_r_image = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_r_image.setTitle("Delete message?");
-
-                        builderoptions_r_image.setItems(options_r_image, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if(which == 0){
-
-                                    DeleteReceivedMessages(position, messageViewHolder);
-                                }
-                                else  if(which == 1){
-
-                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FullMessageImageView.class);
-                                    intent.putExtra("url", userMessagesList.get(position).getMessage());
-                                    intent.putExtra("name", userMessagesList.get(position).getName());
-                                    messageViewHolder.itemView.getContext().startActivity(intent);
-                                    activity.overridePendingTransition(R.anim.right_in,R.anim.left_out);
-                                }
-                            }
-                        });
-                        builderoptions_r_image.show();
-                    }
-
-                    else if(userMessagesList.get(position).getType().equals("text")){
-
-                        CharSequence options_r_text[] = new CharSequence[]{
-                                "Delete for me",
-                                "Copy message to clipboard",
-                                "Cancel"
-                        };
-                        AlertDialog.Builder builderoptions_r_text = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builderoptions_r_text.setTitle("Delete message?");
-
-                        builderoptions_r_text.setItems(options_r_text, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if(which == 0){
-
-                                    DeleteReceivedMessages(position, messageViewHolder);
-                                }
-                                else if(which == 1){
-                                    CopyToClipBoard(position, messageViewHolder);
-                                    Toasty.success(messageViewHolder.itemView.getContext(),"Message copied", Toasty.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                        builderoptions_r_text.show();
-                    }
-
-                    return false;
-                }
-            });
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
     }
@@ -1668,33 +1737,39 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
     }
 
     private void DownloadAudio(int position, MessageViewHolder messageViewHolder) {
-        File root = Environment.getExternalStorageDirectory();
-        root.mkdirs();
-        String path = root.toString();
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            root.mkdirs();
+            String path = root.toString();
 
 
-
-        DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri1 = Uri.parse(userMessagesList.get(position).getMessage());
-        DownloadManager.Request request = new DownloadManager.Request(uri1);
-        request.setTitle("SmartChat (" + userMessagesList.get(position).getName() + ")");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), path + "/SmartChat" + "/Messages" +  "/Audio", userMessagesList.get(position).getName());
-        downloadManager.enqueue(request);
+            DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+            Uri uri1 = Uri.parse(userMessagesList.get(position).getMessage());
+            DownloadManager.Request request = new DownloadManager.Request(uri1);
+            request.setTitle("SmartChat (" + userMessagesList.get(position).getName() + ")");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), path + "/SmartChat" + "/Messages" + "/Audio", userMessagesList.get(position).getName());
+            downloadManager.enqueue(request);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
     private void DeleteAudioFromStorage(int position, MessageViewHolder messageViewHolder) {
-
-        String id = userMessagesList.get(position).getMessageID();
-        String extension = userMessagesList.get(position).getExtension();
-        String fileInStorage = id + "." + extension;
-        StorageReference fileRef = FirebaseStorage.getInstance().getReference();
-        fileRef.child("Messages Audio")
-                .child(fileInStorage)
-                .delete();
-        userMessagesList.remove(position);
-        notifyItemRemoved(position);
+        try {
+            String id = userMessagesList.get(position).getMessageID();
+            String extension = userMessagesList.get(position).getExtension();
+            String fileInStorage = id + "." + extension;
+            StorageReference fileRef = FirebaseStorage.getInstance().getReference();
+            fileRef.child("Messages Audio")
+                    .child(fileInStorage)
+                    .delete();
+            userMessagesList.remove(position);
+            notifyItemRemoved(position);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -1713,136 +1788,168 @@ public class MessagesAdapter  extends RecyclerView.Adapter<MessagesAdapter.Messa
     }
 
     private void DeleteSentMessages(final int position, final MessageViewHolder holder){
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.child("Messages")
-                .child(userMessagesList.get(position).getFrom())
-                .child(userMessagesList.get(position).getTo())
-                .child(userMessagesList.get(position).getMessageID())
-                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Toasty.success(holder.itemView.getContext(),"Message deleted", Toasty.LENGTH_SHORT, true).show();
+        try {
+            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+            rootRef.child("Messages")
+                    .child(userMessagesList.get(position).getFrom())
+                    .child(userMessagesList.get(position).getTo())
+                    .child(userMessagesList.get(position).getMessageID())
+                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Toasty.success(holder.itemView.getContext(), "Message deleted", Toasty.LENGTH_SHORT, true).show();
+                    } else {
+                        Toasty.error(holder.itemView.getContext(), "Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
+                    }
+                    userMessagesList.remove(position);
+                    notifyItemRemoved(position);
                 }
-                else {
-                    Toasty.error(holder.itemView.getContext(),"Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
-                }
-                userMessagesList.remove(position);
-                notifyItemRemoved(position);
-            }
-        });
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void DeletePictureFromStorage(final int position, final MessageViewHolder holder){
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        storageReference.child("Messages Images")
-                .child(userMessagesList.get(position).getMessageID()+".jpg")
-                .delete();
-        userMessagesList.remove(position);
-        notifyItemRemoved(position);
+        try {
+            StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+            storageReference.child("Messages Images")
+                    .child(userMessagesList.get(position).getMessageID() + ".jpg")
+                    .delete();
+            userMessagesList.remove(position);
+            notifyItemRemoved(position);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
     private void CopyToClipBoard(final int position, final MessageViewHolder holder){
+        try {
 
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB){
-            android.text.ClipboardManager  clipboardManager = (android.text.ClipboardManager) holder.itemView.getContext()
-                    .getSystemService(Context.CLIPBOARD_SERVICE);
-            String msg = userMessagesList.get(position).getMessage().replace("<br><br>","  ");
-            clipboardManager.setText(msg);
-        }
-        else {
-            String msg = userMessagesList.get(position).getMessage().replace("<br><br>","  ");
-            android.content.ClipboardManager clipboardManager = (android.content.ClipboardManager)
-                    holder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-            android.content.ClipData clipData = android.content.ClipData.newPlainText("Text Copied", msg);
-            clipboardManager.setPrimaryClip(clipData);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                android.text.ClipboardManager clipboardManager = (android.text.ClipboardManager) holder.itemView.getContext()
+                        .getSystemService(Context.CLIPBOARD_SERVICE);
+                String msg = userMessagesList.get(position).getMessage().replace("<br><br>", "  ");
+                clipboardManager.setText(msg);
+            } else {
+                String msg = userMessagesList.get(position).getMessage().replace("<br><br>", "  ");
+                android.content.ClipboardManager clipboardManager = (android.content.ClipboardManager)
+                        holder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                android.content.ClipData clipData = android.content.ClipData.newPlainText("Text Copied", msg);
+                clipboardManager.setPrimaryClip(clipData);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     private void DeleteFileFromStorage(final int position, final MessageViewHolder holder){
-        String id = userMessagesList.get(position).getMessageID();
-        String extension = userMessagesList.get(position).getExtension();
-        String fileInStorage = id + "." + extension;
-        StorageReference fileRef = FirebaseStorage.getInstance().getReference();
-        fileRef.child("Messages Files")
-                .child(fileInStorage)
-                .delete();
-        userMessagesList.remove(position);
-        notifyItemRemoved(position);
+        try {
+            String id = userMessagesList.get(position).getMessageID();
+            String extension = userMessagesList.get(position).getExtension();
+            String fileInStorage = id + "." + extension;
+            StorageReference fileRef = FirebaseStorage.getInstance().getReference();
+            fileRef.child("Messages Files")
+                    .child(fileInStorage)
+                    .delete();
+            userMessagesList.remove(position);
+            notifyItemRemoved(position);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void DeleteVideoFromStorage(final int position, final MessageViewHolder holder){
-
-        String id = userMessagesList.get(position).getMessageID();
-        String fileInStorage = id + ".mp4";
-        StorageReference fileRef = FirebaseStorage.getInstance().getReference();
-        fileRef.child("Messages Videos")
-                .child(fileInStorage)
-                .delete();
-        userMessagesList.remove(position);
-        notifyItemRemoved(position);
+        try {
+            String id = userMessagesList.get(position).getMessageID();
+            String fileInStorage = id + ".mp4";
+            StorageReference fileRef = FirebaseStorage.getInstance().getReference();
+            fileRef.child("Messages Videos")
+                    .child(fileInStorage)
+                    .delete();
+            userMessagesList.remove(position);
+            notifyItemRemoved(position);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void DeleteReceivedMessages(final int position, final MessageViewHolder holder){
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.child("Messages")
-                .child(userMessagesList.get(position).getTo())
-                .child(userMessagesList.get(position).getFrom())
-                .child(userMessagesList.get(position).getMessageID())
-                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    Toasty.success(holder.itemView.getContext(),"Message deleted", Toasty.LENGTH_SHORT, true).show();
-                }
-                else {
-                    Toasty.error(holder.itemView.getContext(),"Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
-                }
-                userMessagesList.remove(position);
-                notifyItemRemoved(position);
-            }
-        });
-    }
-
-    private void DeleteForEveryoneMessages(final int position, final MessageViewHolder holder){
-        final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.child("Messages")
-                .child(userMessagesList.get(position).getFrom())
-                .child(userMessagesList.get(position).getTo())
-                .child(userMessagesList.get(position).getMessageID())
-                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-
+        try {
+            DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+            rootRef.child("Messages")
+                    .child(userMessagesList.get(position).getTo())
+                    .child(userMessagesList.get(position).getFrom())
+                    .child(userMessagesList.get(position).getMessageID())
+                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
                     try {
-
-                        rootRef.child("Messages")
-                                .child(userMessagesList.get(position).getTo())
-                                .child(userMessagesList.get(position).getFrom())
-                                .child(userMessagesList.get(position).getMessageID())
-                                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Toasty.success(holder.itemView.getContext(), "Message deleted", Toasty.LENGTH_SHORT, true).show();
-                                } else {
-                                    Toasty.error(holder.itemView.getContext(), "Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
-                                }
-                                userMessagesList.remove(position);
-                                notifyItemRemoved(position);
-                                }
-                        });
-
+                        if (task.isSuccessful()) {
+                            Toasty.success(holder.itemView.getContext(), "Message deleted", Toasty.LENGTH_SHORT, true).show();
+                        } else {
+                            Toasty.error(holder.itemView.getContext(), "Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
+                        }
+                        userMessagesList.remove(position);
+                        notifyItemRemoved(position);
                     }catch (Exception e){
                         e.printStackTrace();
                     }
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
+    private void DeleteForEveryoneMessages(final int position, final MessageViewHolder holder){
+        try {
+            final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+            rootRef.child("Messages")
+                    .child(userMessagesList.get(position).getFrom())
+                    .child(userMessagesList.get(position).getTo())
+                    .child(userMessagesList.get(position).getMessageID())
+                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+
+                        try {
+
+                            rootRef.child("Messages")
+                                    .child(userMessagesList.get(position).getTo())
+                                    .child(userMessagesList.get(position).getFrom())
+                                    .child(userMessagesList.get(position).getMessageID())
+                                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    try {
+
+                                        if (task.isSuccessful()) {
+                                            Toasty.success(holder.itemView.getContext(), "Message deleted", Toasty.LENGTH_SHORT, true).show();
+                                        } else {
+                                            Toasty.error(holder.itemView.getContext(), "Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
+                                        }
+                                        userMessagesList.remove(position);
+                                        notifyItemRemoved(position);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } else {
+                        Toasty.error(holder.itemView.getContext(), "Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
+                    }
                 }
-                else {
-                    Toasty.error(holder.itemView.getContext(),"Message couldn't be deleted", Toasty.LENGTH_SHORT, true).show();
-                }
-            }
-        });
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

@@ -45,69 +45,79 @@ public class RecoverPassword extends AppCompatActivity {
         btn_password_recovery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String resetPasswordEmail = forgot_email_input_edit_text.getText().toString();
+                try {
+                    String resetPasswordEmail = forgot_email_input_edit_text.getText().toString();
 
-                if(resetPasswordEmail.isEmpty()){
-                    showErroCustomDialog();
-                }
-                else {
+                    if (resetPasswordEmail.isEmpty()) {
+                        showErroCustomDialog();
+                    } else {
 
-                    loadingBar.setTitle("Validating email");
-                    loadingBar.setMessage("Please wait while your email address is been validated!");
-                    loadingBar.show();
-                    loadingBar.setCanceledOnTouchOutside(false);
+                        loadingBar.setTitle("Validating email");
+                        loadingBar.setMessage("Please wait while your email address is been validated!");
+                        loadingBar.show();
+                        loadingBar.setCanceledOnTouchOutside(false);
 
-                    mAuth.sendPasswordResetEmail(resetPasswordEmail).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
+                        mAuth.sendPasswordResetEmail(resetPasswordEmail).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
 
-                            if(task.isSuccessful()){
-                                recover_success_toast();
-                                startActivity(new Intent(RecoverPassword.this, Login.class));
-                                overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                finish();
-                                loadingBar.dismiss();
-                            }
-                            else {
-                                String message = task.getException().getMessage();
-                                // {...........before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                                ViewGroup viewGroup = findViewById(android.R.id.content);
-
-                                //then we will inflate the custom alert dialog xml that we created
-                                View dialogView = LayoutInflater.from(RecoverPassword.this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                                //Now we need an AlertDialog.Builder object
-                                AlertDialog.Builder builder = new AlertDialog.Builder(RecoverPassword.this);
-
-                                //setting the view of the builder to our custom view that we already inflated
-                                builder.setView(dialogView);
-
-                                //finally creating the alert dialog and displaying it
-                                final AlertDialog alertDialog = builder.create();
-
-                                Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                                TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                                TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                                dialog_btn.setText("OK");
-                                success_title.setText("Error");
-                                success_text.setText(message);
-                                // if the OK button is clicked, close the success dialog
-                                dialog_btn.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        alertDialog.dismiss();
+                                if (task.isSuccessful()) {
+                                    try {
+                                        recover_success_toast();
+                                        startActivity(new Intent(RecoverPassword.this, Login.class));
+                                        overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                        finish();
+                                        loadingBar.dismiss();
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
-                                });
+                                } else {
+                                    try {
+                                        String message = task.getException().getMessage();
+                                        // {...........before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                                        ViewGroup viewGroup = findViewById(android.R.id.content);
 
-                                alertDialog.show();
-                                loadingBar.dismiss();
+                                        //then we will inflate the custom alert dialog xml that we created
+                                        View dialogView = LayoutInflater.from(RecoverPassword.this).inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                                        //Now we need an AlertDialog.Builder object
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(RecoverPassword.this);
+
+                                        //setting the view of the builder to our custom view that we already inflated
+                                        builder.setView(dialogView);
+
+                                        //finally creating the alert dialog and displaying it
+                                        final AlertDialog alertDialog = builder.create();
+
+                                        Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                                        TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                                        TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                                        dialog_btn.setText("OK");
+                                        success_title.setText("Error");
+                                        success_text.setText(message);
+                                        // if the OK button is clicked, close the success dialog
+                                        dialog_btn.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                alertDialog.dismiss();
+                                            }
+                                        });
+
+                                        alertDialog.show();
+                                        loadingBar.dismiss();
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         });
 

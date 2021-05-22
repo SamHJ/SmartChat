@@ -121,29 +121,31 @@ public class PostsFragment extends Fragment {
         actionBarDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, R.string.drawer_open, R.string.drawer_close);
 
 
-        allPostsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getChildrenCount() != 0){
-
+        try {
+            allPostsRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.getChildrenCount() != 0) {
                         //posts available so we get all posts
                         displayAllPosts();
 
-                }else{
-                    //no posts available
-                    postsLoader.setVisibility(View.GONE);
-                    all_users_posts_recyclerview.setVisibility(View.GONE);
-                    no_posts_layout.setVisibility(View.VISIBLE);
+                    } else {
+                        //no posts available
+                        postsLoader.setVisibility(View.GONE);
+                        all_users_posts_recyclerview.setVisibility(View.GONE);
+                        no_posts_layout.setVisibility(View.VISIBLE);
 
+                    }
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+                }
+            });
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
 
 
         AddNewPostFab = postFragmentView.findViewById(R.id.add_post_fab);
@@ -167,168 +169,188 @@ public class PostsFragment extends Fragment {
     }
 
     public void displayAllPosts() {
+        try {
+            allPostsRef.orderByChild("date").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        if (dataSnapshot.hasChildren()) {
 
-        allPostsRef.orderByChild("date").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    if (dataSnapshot.hasChildren()) {
+                            try {
+                                postsModelList.clear();
 
-                        postsModelList.clear();
+                                int i = 0;
 
-                        int i = 0;
+                                for (final DataSnapshot snapshots : dataSnapshot.getChildren()) {
 
-                        for (final DataSnapshot snapshots : dataSnapshot.getChildren()){
+                                    try {
 
-                           if(i > 1 && i % 4 == 0){
-                               //add null values every 4th position. Used to display admob banner ad
-                               postsModelList.add(null);
+                                        if (i > 1 && i % 4 == 0) {
+                                            //add null values every 4th position. Used to display admob banner ad
+                                            postsModelList.add(null);
 
-                           }else{
-                               String postKey = snapshots.getKey();
-                               String uid = snapshots.child("uid").getValue().toString();
-                               String date = snapshots.child("date").getValue().toString();
-                               String time = snapshots.child("time").getValue().toString();
-                               String title = snapshots.child("title").getValue().toString();
-                               String description = snapshots.child("description").getValue().toString();
-                               String profileimage = snapshots.child("profileimage").getValue().toString();
-                               String fullname = snapshots.child("fullname").getValue().toString();
-                               String type = snapshots.child("type").getValue().toString();
-                               String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
-                                       snapshots.child("posttitletolowercase").getValue().toString() : "";
-                               String timestamp = snapshots.child("timestamp").getValue().toString();
-                               String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
-                               String counter = snapshots.child("counter").getValue().toString();
-                               String postimage = snapshots.child("postimage").getValue() != null ?
-                                       snapshots.child("postimage").getValue().toString() : "";
-                               String postvideo = snapshots.child("postvideo").getValue() != null ?
-                                       snapshots.child("postvideo").getValue().toString() : "";
+                                        } else {
+                                            try {
+                                                String postKey = snapshots.getKey();
+                                                String uid = snapshots.child("uid").getValue().toString();
+                                                String date = snapshots.child("date").getValue().toString();
+                                                String time = snapshots.child("time").getValue().toString();
+                                                String title = snapshots.child("title").getValue().toString();
+                                                String description = snapshots.child("description").getValue().toString();
+                                                String profileimage = snapshots.child("profileimage").getValue().toString();
+                                                String fullname = snapshots.child("fullname").getValue().toString();
+                                                String type = snapshots.child("type").getValue().toString();
+                                                String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
+                                                        snapshots.child("posttitletolowercase").getValue().toString() : "";
+                                                String timestamp = snapshots.child("timestamp").getValue().toString();
+                                                String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
+                                                String counter = snapshots.child("counter").getValue().toString();
+                                                String postimage = snapshots.child("postimage").getValue() != null ?
+                                                        snapshots.child("postimage").getValue().toString() : "";
+                                                String postvideo = snapshots.child("postvideo").getValue() != null ?
+                                                        snapshots.child("postvideo").getValue().toString() : "";
 
-                               postsModelList.add(new PostsModel(uid,date,time,title,description,postimage,
-                                       profileimage,fullname,type,posttitletolowercase,timestamp,
-                                       postfilestoragename,counter,postvideo,postKey));
-                           }
-                            i++;
+                                                postsModelList.add(new PostsModel(uid, date, time, title, description, postimage,
+                                                        profileimage, fullname, type, posttitletolowercase, timestamp,
+                                                        postfilestoragename, counter, postvideo, postKey));
+                                            }catch(Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                        i++;
 
+                                    }catch(Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+
+                                postsLoader.setVisibility(View.GONE);
+                                all_users_posts_recyclerview.setVisibility(View.VISIBLE);
+                                no_posts_layout.setVisibility(View.GONE);
+                                adapter = new AllPostsAdapter(getContext(), postsModelList);
+                                adapter.setHasStableIds(true);
+                                all_users_posts_recyclerview.setAdapter(adapter);
+                                adapter.notifyDataSetChanged();
+
+                            }catch(Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        } else {
+                            postsLoader.setVisibility(View.GONE);
+                            all_users_posts_recyclerview.setVisibility(View.GONE);
+                            no_posts_layout.setVisibility(View.VISIBLE);
                         }
-
-                        postsLoader.setVisibility(View.GONE);
-                        all_users_posts_recyclerview.setVisibility(View.VISIBLE);
-                        no_posts_layout.setVisibility(View.GONE);
-                        adapter = new AllPostsAdapter(getContext(),postsModelList);
-                        adapter.setHasStableIds(true);
-                        all_users_posts_recyclerview.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
-
-                    }else{
+                    } else {
                         postsLoader.setVisibility(View.GONE);
                         all_users_posts_recyclerview.setVisibility(View.GONE);
                         no_posts_layout.setVisibility(View.VISIBLE);
                     }
-                }else{
-                    postsLoader.setVisibility(View.GONE);
-                    all_users_posts_recyclerview.setVisibility(View.GONE);
-                    no_posts_layout.setVisibility(View.VISIBLE);
+
                 }
 
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                }
+            });
 
-            }
-        });
-
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
-
     private void  DeletePostsOlderThanFourtyEightHours(){
-        //display post for 48 hours only
-        long cutoff = new Date().getTime() - TimeUnit.MILLISECONDS.convert(365, TimeUnit.DAYS);
+        try {
+            //display post for 48 hours only
+            long cutoff = new Date().getTime() - TimeUnit.MILLISECONDS.convert(2, TimeUnit.DAYS);
 
-        Query oldImagePosts = allPostsRef.orderByChild("timestamp").endAt(cutoff);
-        oldImagePosts.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            Query oldImagePosts = allPostsRef.orderByChild("timestamp").endAt(cutoff);
+            oldImagePosts.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                for(DataSnapshot itemSnapshot: dataSnapshot.getChildren()){
-
-                    //also we delete the image or video associated with this post from the storage
-
-                    if(dataSnapshot.exists()){
+                    if(dataSnapshot.exists()) {
 
                         try {
 
-                            //so we first retrieve the name of the image or video file from the database and the type of post
-                            String postfilestoragename = itemSnapshot.child("postfilestoragename").getValue().toString();
-                            String posttype = itemSnapshot.child("type").getValue().toString();
+                            for (DataSnapshot itemSnapshot : dataSnapshot.getChildren()) {
 
-                            if (posttype.equals("image")) {
+                                //also we delete the image or video associated with this post from the storage
 
-                                //delete associated image
-                                try {
-                                    StorageReference postimageRef = FirebaseStorage.getInstance().getReference()
-                                            .child("Post Images").child(postfilestoragename);
-                                    postimageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            // File deleted successfully
-                                            Log.d("SUCCESS:", "onSuccess: deleted file");
+                                if (itemSnapshot.exists()) {
+
+                                    try {
+                                        //so we first retrieve the name of the image or video file from the database and the type of post
+                                        String postfilestoragename = itemSnapshot.child("postfilestoragename").getValue().toString();
+                                        String posttype = itemSnapshot.child("type").getValue().toString();
+
+                                        if (posttype.equals("image")) {
+                                            //delete associated image
+                                            try {
+                                                StorageReference postimageRef = FirebaseStorage.getInstance().getReference()
+                                                        .child("Post Images").child(postfilestoragename);
+                                                postimageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        // File deleted successfully
+                                                        Log.d("SUCCESS:", "onSuccess: deleted file");
+                                                    }
+                                                }).addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception exception) {
+                                                        // Uh-oh, an error occurred!
+                                                        Log.d("ERROR:", "onFailure: did not delete file");
+                                                    }
+                                                });
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        } else {
+                                            //delete associated video
+                                            try {
+                                                StorageReference postvideoRef = FirebaseStorage.getInstance().getReference()
+                                                        .child("Post Videos").child(postfilestoragename);
+                                                postvideoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        // File deleted successfully
+                                                        Log.d("SUCCESS:", "onSuccess: deleted file");
+                                                    }
+                                                }).addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception exception) {
+                                                        // Uh-oh, an error occurred!
+                                                        Log.d("ERROR:", "onFailure: did not delete file");
+                                                    }
+                                                });
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
                                         }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception exception) {
-                                            // Uh-oh, an error occurred!
-                                            Log.d("ERROR:", "onFailure: did not delete file");
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-
-                            } else {
-
-                                //delete associated video
-                                try {
-                                    StorageReference postvideoRef = FirebaseStorage.getInstance().getReference()
-                                            .child("Post Videos").child(postfilestoragename);
-                                    postvideoRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            // File deleted successfully
-                                            Log.d("SUCCESS:", "onSuccess: deleted file");
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception exception) {
-                                            // Uh-oh, an error occurred!
-                                            Log.d("ERROR:", "onFailure: did not delete file");
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                                //remove/delete the file
+                                itemSnapshot.getRef().removeValue();
                             }
-                        }catch(Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
-
-
                     }
-
-
-                    //remove/delete the file
-                    itemSnapshot.getRef().removeValue();
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-
+                }
+            });
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void openAddNewVideoPostActivity() {
@@ -338,97 +360,116 @@ public class PostsFragment extends Fragment {
         getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
     }
 
-
     public void firebasePostsSearch(String searchText){
 
-        allPostsRef.orderByChild("posttitletolowercase").startAt(searchText).endAt(searchText + "\uf0ff")
-                .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    if (dataSnapshot.hasChildren()) {
+        try {
+            allPostsRef.orderByChild("posttitletolowercase").startAt(searchText).endAt(searchText + "\uf0ff")
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                if (dataSnapshot.hasChildren()) {
+                                    try {
 
-                        postsModelList.clear();
+                                        postsModelList.clear();
 
-                        for (final DataSnapshot snapshots : dataSnapshot.getChildren()){
+                                        for (final DataSnapshot snapshots : dataSnapshot.getChildren()) {
 
-                            String postKey = snapshots.getKey();
-                            String uid = snapshots.child("uid").getValue().toString();
-                            String date = snapshots.child("date").getValue().toString();
-                            String time = snapshots.child("time").getValue().toString();
-                            String title = snapshots.child("title").getValue().toString();
-                            String description = snapshots.child("description").getValue().toString();
-                            String profileimage = snapshots.child("profileimage").getValue().toString();
-                            String fullname = snapshots.child("fullname").getValue().toString();
-                            String type = snapshots.child("type").getValue().toString();
-                            String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
-                                    snapshots.child("posttitletolowercase").getValue().toString() : "";
-                            String timestamp = snapshots.child("timestamp").getValue().toString();
-                            String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
-                            String counter = snapshots.child("counter").getValue().toString();
-                            String postimage = snapshots.child("postimage").getValue() != null ?
-                                    snapshots.child("postimage").getValue().toString() : "";
-                            String postvideo = snapshots.child("postvideo").getValue() != null ?
-                                    snapshots.child("postvideo").getValue().toString() : "";
+                                            try {
 
-                            postsModelList.add(new PostsModel(uid,date,time,title,description,postimage,
-                                    profileimage,fullname,type,posttitletolowercase,timestamp,
-                                    postfilestoragename,counter,postvideo,postKey));
+                                                String postKey = snapshots.getKey();
+                                                String uid = snapshots.child("uid").getValue().toString();
+                                                String date = snapshots.child("date").getValue().toString();
+                                                String time = snapshots.child("time").getValue().toString();
+                                                String title = snapshots.child("title").getValue().toString();
+                                                String description = snapshots.child("description").getValue().toString();
+                                                String profileimage = snapshots.child("profileimage").getValue().toString();
+                                                String fullname = snapshots.child("fullname").getValue().toString();
+                                                String type = snapshots.child("type").getValue().toString();
+                                                String posttitletolowercase = snapshots.child("posttitletolowercase").getValue() != null ?
+                                                        snapshots.child("posttitletolowercase").getValue().toString() : "";
+                                                String timestamp = snapshots.child("timestamp").getValue().toString();
+                                                String postfilestoragename = snapshots.child("postfilestoragename").getValue().toString();
+                                                String counter = snapshots.child("counter").getValue().toString();
+                                                String postimage = snapshots.child("postimage").getValue() != null ?
+                                                        snapshots.child("postimage").getValue().toString() : "";
+                                                String postvideo = snapshots.child("postvideo").getValue() != null ?
+                                                        snapshots.child("postvideo").getValue().toString() : "";
+
+                                                postsModelList.add(new PostsModel(uid, date, time, title, description, postimage,
+                                                        profileimage, fullname, type, posttitletolowercase, timestamp,
+                                                        postfilestoragename, counter, postvideo, postKey));
+
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                        }
+
+                                        postsLoader.setVisibility(View.GONE);
+                                        all_users_posts_recyclerview.setVisibility(View.VISIBLE);
+                                        no_posts_layout.setVisibility(View.GONE);
+                                        adapter = new AllPostsAdapter(getContext(), postsModelList);
+                                        adapter.setHasStableIds(true);
+                                        all_users_posts_recyclerview.setAdapter(adapter);
+                                        adapter.notifyDataSetChanged();
+
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
+                                } else {
+                                    postsLoader.setVisibility(View.GONE);
+                                    all_users_posts_recyclerview.setVisibility(View.GONE);
+                                    nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
+                                    no_posts_layout.setVisibility(View.VISIBLE);
+                                }
+
+                            } else {
+                                postsLoader.setVisibility(View.GONE);
+                                all_users_posts_recyclerview.setVisibility(View.GONE);
+                                nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
+                                no_posts_layout.setVisibility(View.VISIBLE);
+                            }
 
                         }
 
-                        postsLoader.setVisibility(View.GONE);
-                        all_users_posts_recyclerview.setVisibility(View.VISIBLE);
-                        no_posts_layout.setVisibility(View.GONE);
-                        adapter = new AllPostsAdapter(getContext(),postsModelList);
-                        adapter.setHasStableIds(true);
-                        all_users_posts_recyclerview.setAdapter(adapter);
-                        adapter.notifyDataSetChanged();
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    }else{
-                        postsLoader.setVisibility(View.GONE);
-                        all_users_posts_recyclerview.setVisibility(View.GONE);
-                        nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
-                        no_posts_layout.setVisibility(View.VISIBLE);
-                    }
-                }else{
-                    postsLoader.setVisibility(View.GONE);
-                    all_users_posts_recyclerview.setVisibility(View.GONE);
-                    nothing_found_textview.setText("Oops! No post matches your search query. \n Try another search");
-                    no_posts_layout.setVisibility(View.VISIBLE);
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+                        }
+                    });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.search_view_menu, menu);
+        try {
+            inflater.inflate(R.menu.search_view_menu, menu);
 
-        MenuItem item = menu.findItem(R.id.action_search);
+            MenuItem item = menu.findItem(R.id.action_search);
 
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                firebasePostsSearch(query);
+            SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    firebasePostsSearch(query);
 
-                return false;
-            }
+                    return false;
+                }
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                firebasePostsSearch(newText);
-                return false;
-            }
-        });
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    firebasePostsSearch(newText);
+                    return false;
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -450,30 +491,50 @@ public class PostsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

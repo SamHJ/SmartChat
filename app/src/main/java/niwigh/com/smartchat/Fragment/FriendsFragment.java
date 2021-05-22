@@ -250,81 +250,83 @@ public class FriendsFragment extends Fragment {
 
                                 if(dataSnapshot.exists()){
 
-                                    final String type;
-                                    final String fullName = dataSnapshot.child("fullname").getValue().toString();
-                                    final String userName = dataSnapshot.child("username").getValue().toString();
-                                    final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
+                                    try {
+
+                                        final String type;
+                                        final String fullName = dataSnapshot.child("fullname").getValue().toString();
+                                        final String userName = dataSnapshot.child("username").getValue().toString();
+                                        final String userProfileImage = dataSnapshot.child("profileimage").getValue().toString();
 
 
+                                        if (dataSnapshot.hasChild("userState")) {
+                                            type = dataSnapshot.child("userState").child("type").getValue().toString();
+                                            if (type.equals("Online")) {
+                                                viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
+                                                viewHolder.offlineStatusImage.setVisibility(View.GONE);
+                                            } else {
+                                                viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
+                                                viewHolder.onlineStatusImage.setVisibility(View.GONE);
+                                            }
 
-
-                                    if(dataSnapshot.hasChild("userState")){
-                                        type = dataSnapshot.child("userState").child("type").getValue().toString();
-                                        if(type.equals("Online")){
-                                            viewHolder.onlineStatusImage.setVisibility(View.VISIBLE);
-                                            viewHolder.offlineStatusImage.setVisibility(View.GONE);
                                         }
-                                        else {
-                                            viewHolder.offlineStatusImage.setVisibility(View.VISIBLE);
-                                            viewHolder.onlineStatusImage.setVisibility(View.GONE);
-                                        }
 
+
+                                        viewHolder.setFullname(fullName);
+                                        viewHolder.setUsername(userName);
+                                        viewHolder.setProfileimage(getActivity(), userProfileImage);
+
+                                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                try {
+                                                    Picasso.with(getContext()).load(userProfileImage).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
+                                                            .into(PopupProfileImage,
+                                                                    new Callback() {
+                                                                        @Override
+                                                                        public void onSuccess() {
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onError() {
+                                                                            Picasso.with(getContext()).load(userProfileImage).placeholder(R.drawable.easy_to_use).into(PopupProfileImage);
+
+                                                                        }
+                                                                    });
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                ShowProfilePopUpDialog();
+                                                btnViewProfile.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        Intent view_this_user_profile = new Intent(getActivity(), PersonProfile.class);
+                                                        view_this_user_profile.putExtra("visit_user_id", usersIDs);
+                                                        startActivity(view_this_user_profile);
+                                                        getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                    }
+                                                });
+
+                                                message_layout.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+
+                                                        Intent message_this_user = new Intent(getActivity(), MessagingArea.class);
+                                                        message_this_user.putExtra("visit_user_id", usersIDs);
+                                                        message_this_user.putExtra("userName", userName);
+                                                        message_this_user.putExtra("userFullName", fullName);
+                                                        startActivity(message_this_user);
+                                                        getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
+
+                                                    }
+                                                });
+
+                                            }
+                                        });
+                                    }catch(NullPointerException e){
+                                        e.printStackTrace();
                                     }
-
-
-                                    viewHolder.setFullname(fullName);
-                                    viewHolder.setUsername(userName);
-                                    viewHolder.setProfileimage(getActivity(), userProfileImage);
-
-                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                           try{
-                                               Picasso.with(getContext()).load(userProfileImage).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
-                                                       .into(PopupProfileImage,
-                                                               new Callback() {
-                                                                   @Override
-                                                                   public void onSuccess() {
-
-                                                                   }
-
-                                                                   @Override
-                                                                   public void onError() {
-                                                                       Picasso.with(getContext()).load(userProfileImage).placeholder(R.drawable.easy_to_use).into(PopupProfileImage);
-
-                                                                   }
-                                                               });
-                                           }catch (Exception e){
-                                               e.printStackTrace();
-                                           }
-
-                                            ShowProfilePopUpDialog();
-                                            btnViewProfile.setOnClickListener(new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View v) {
-                                                    Intent view_this_user_profile = new Intent(getActivity(), PersonProfile.class);
-                                                    view_this_user_profile.putExtra("visit_user_id", usersIDs);
-                                                    startActivity(view_this_user_profile);
-                                                    getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                                }
-                                            });
-
-                                            message_layout.setOnClickListener(new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View v) {
-
-                                                    Intent message_this_user = new Intent(getActivity(), MessagingArea.class);
-                                                    message_this_user.putExtra("visit_user_id", usersIDs);
-                                                    message_this_user.putExtra("userName", userName);
-                                                    message_this_user.putExtra("userFullName", fullName);
-                                                    startActivity(message_this_user);
-                                                    getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
-
-                                                }
-                                            });
-
-                                        }
-                                    });
                                 }else{
                                     all_friends_layout.removeAllViews();
                                     friendsList.setVisibility(View.GONE);
@@ -456,12 +458,15 @@ public class FriendsFragment extends Fragment {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                                 if(dataSnapshot.exists()){
+
+                                    try{
+
                                     final String type;
                                     final String fullName = dataSnapshot.child("fullname").getValue().toString();
                                     final String userName = dataSnapshot.child("username").getValue().toString();
                                     final String userProfileImage =dataSnapshot.child("profileimage").getValue().toString();
 
-                                    try{
+
                                         Picasso.with(getContext()).load(userProfileImage).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
                                                 .into(PopupProfileImage,
                                                         new Callback() {
@@ -476,9 +481,6 @@ public class FriendsFragment extends Fragment {
 
                                                             }
                                                         });
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    }
 
 
                                     if(dataSnapshot.hasChild("userState")){
@@ -530,6 +532,10 @@ public class FriendsFragment extends Fragment {
                                             });
                                         }
                                     });
+
+                                    }catch (NullPointerException e){
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
 

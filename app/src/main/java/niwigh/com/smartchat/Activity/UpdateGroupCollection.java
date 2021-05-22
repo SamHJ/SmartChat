@@ -108,22 +108,28 @@ public class UpdateGroupCollection extends AppCompatActivity {
         collection_name.setText(collectionname);
 
         if(collectionimage != null){
-            Picasso.with(this).load(collectionimage).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
-                    .into(collection_image, new Callback() {
-                        @Override
-                        public void onSuccess() {
+            try {
+                Picasso.with(this).load(collectionimage).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
+                        .into(collection_image, new Callback() {
+                            @Override
+                            public void onSuccess() {
 
-                        }
+                            }
 
-                        @Override
-                        public void onError() {
-
-                            Picasso.with(UpdateGroupCollection.this)
-                                    .load(collectionimage).placeholder(R.drawable.easy_to_use).into(collection_image);
-                        }
-                    });
+                            @Override
+                            public void onError() {
+                                try {
+                                    Picasso.with(UpdateGroupCollection.this)
+                                            .load(collectionimage).placeholder(R.drawable.easy_to_use).into(collection_image);
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
-
 
         collection_image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -135,21 +141,24 @@ public class UpdateGroupCollection extends AppCompatActivity {
         update_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                collectionName = collection_name.getText().toString().trim();
+                try {
+                    collectionName = collection_name.getText().toString().trim();
 
-                if(compressed_byte != null){
-                    if(collectionName.isEmpty()){
-                        utilities.customErrorDialog(currentView,"OK","Error",
-                                "Collection name must not be empty!");
-                    }else{
-                        //update both collection name and image
-                        uploadCollectionImage(collectionName);
+                    if (compressed_byte != null) {
+                        if (collectionName.isEmpty()) {
+                            utilities.customErrorDialog(currentView, "OK", "Error",
+                                    "Collection name must not be empty!");
+                        } else {
+                            //update both collection name and image
+                            uploadCollectionImage(collectionName);
+                        }
+                    } else {
+                        //update only collection name
+                        updateGroupCollection(collectionName);
                     }
-                }else{
-                    //update only collection name
-                    updateGroupCollection(collectionName);
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-
             }
         });
     }
@@ -160,169 +169,192 @@ public class UpdateGroupCollection extends AppCompatActivity {
         loadingBar.setMessage("a moment please...");
         loadingBar.show();
 
-        groupsRef.child("name").setValue(collectionName)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toasty.success(UpdateGroupCollection.this,
-                                    collectionName + " collection updated successfully", Toasty.LENGTH_SHORT).show();
-                            finish();
-                            overridePendingTransition(R.anim.left_in, R.anim.right_out);
+        try {
+            groupsRef.child("name").setValue(collectionName)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toasty.success(UpdateGroupCollection.this,
+                                        collectionName + " collection updated successfully", Toasty.LENGTH_SHORT).show();
+                                finish();
+                                overridePendingTransition(R.anim.left_in, R.anim.right_out);
+                            }
                         }
-                    }
-                });
+                    });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void requestPermission() {
-
-        if(PackageManager.PERMISSION_GRANTED !=
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
-            }else {
-                //Yeah! I want both block to do the same thing, you can write your own logic, but this works for me.
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_STORAGE_PERMISSION);
+        try {
+            if (PackageManager.PERMISSION_GRANTED !=
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                } else {
+                    //Yeah! I want both block to do the same thing, you can write your own logic, but this works for me.
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+                }
+            } else {
+                //Permission Granted, lets go pick photo
+                startImageSelect();
             }
-        }else {
-            //Permission Granted, lets go pick photo
-            startImageSelect();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     private void startImageSelect() {
-
-        CropImage.activity()
-                .setGuidelines(CropImageView.Guidelines.ON)
-                .setAspectRatio(1,1)
-                .start(UpdateGroupCollection.this);
+        try {
+            CropImage.activity()
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(1, 1)
+                    .start(UpdateGroupCollection.this);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        try {
+            if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
 
-        if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE){
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                if (resultCode == RESULT_OK) {
 
-            if(resultCode == RESULT_OK) {
+                    Uri resultUri = result.getUri();
+                    File compressed_image_path = new File(resultUri.getPath());
+                    try {
 
-                Uri resultUri = result.getUri();
-                File compressed_image_path = new File(resultUri.getPath());
-                try {
-
-                    compressed_bitmap = new Compressor(this)
-                            .setMaxWidth(500)
-                            .setMaxHeight(500)
-                            .setQuality(80)
-                            .compressToBitmap(compressed_image_path);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                        compressed_bitmap = new Compressor(this)
+                                .setMaxWidth(500)
+                                .setMaxHeight(500)
+                                .setQuality(80)
+                                .compressToBitmap(compressed_image_path);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    compressed_bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+                    compressed_byte = byteArrayOutputStream.toByteArray();
+                    collection_image.setImageBitmap(compressed_bitmap);
                 }
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                compressed_bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
-                compressed_byte = byteArrayOutputStream.toByteArray();
-                collection_image.setImageBitmap(compressed_bitmap);
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
     }
 
 
     private void uploadCollectionImage(final String collection_name){
-        final StorageReference filePath = groupsImageRef.child(currentUserID + ".jpg");
-        filePath.putBytes(compressed_byte).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if (task.isSuccessful()) {
-                    //tell them that the image was stored in the storage
-                    //first we get the link of this image uploaded
+        try {
+            final StorageReference filePath = groupsImageRef.child(currentUserID + ".jpg");
+            filePath.putBytes(compressed_byte).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        //tell them that the image was stored in the storage
+                        //first we get the link of this image uploaded
 
-                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Uri downUrl = uri;
-                            final String fileUrl = downUrl.toString();
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                try {
+                                    final String fileUrl = uri.toString();
 
-                            Map<String, Object> groupCollectionMap = new HashMap<String, Object>();
-                            groupCollectionMap.put("image", fileUrl);
-                            groupCollectionMap.put("name", collection_name);
-                            loadingBar.setTitle("");
-                            loadingBar.setMessage("Updating records...");
+                                    Map<String, Object> groupCollectionMap = new HashMap<String, Object>();
+                                    groupCollectionMap.put("image", fileUrl);
+                                    groupCollectionMap.put("name", collection_name);
+                                    loadingBar.setTitle("");
+                                    loadingBar.setMessage("Updating records...");
 
-                            groupsRef.updateChildren(groupCollectionMap)
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Toasty.success(UpdateGroupCollection.this,
-                                                        collection_name + " collection updated successfully",
-                                                        Toasty.LENGTH_SHORT).show();
-                                                finish();
-                                                overridePendingTransition(R.anim.left_in, R.anim.right_out);
-                                            }
-                                        }
-                                    });
+                                    groupsRef.updateChildren(groupCollectionMap)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Toasty.success(UpdateGroupCollection.this,
+                                                                collection_name + " collection updated successfully",
+                                                                Toasty.LENGTH_SHORT).show();
+                                                        finish();
+                                                        overridePendingTransition(R.anim.left_in, R.anim.right_out);
+                                                    }
+                                                }
+                                            });
+                                }catch (Exception e){
+                                    e.printStackTrace();
+                                }
 
+                            }
+                        });
+                    } else {
+                        try {
+                            String message = task.getException().getMessage();
+                            //{.....................
+                            //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+                            ViewGroup viewGroup = findViewById(android.R.id.content);
+
+                            //then we will inflate the custom alert dialog xml that we created
+                            View dialogView = LayoutInflater.from(UpdateGroupCollection.this).inflate(R.layout.error_dialog, viewGroup, false);
+
+
+                            //Now we need an AlertDialog.Builder object
+                            AlertDialog.Builder builder = new AlertDialog.Builder(UpdateGroupCollection.this);
+
+                            //setting the view of the builder to our custom view that we already inflated
+                            builder.setView(dialogView);
+
+                            //finally creating the alert dialog and displaying it
+                            final AlertDialog alertDialog = builder.create();
+
+                            Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
+                            TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
+                            TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
+
+                            dialog_btn.setText("OK");
+                            success_title.setText("Error");
+                            success_text.setText(message);
+
+                            // if the OK button is clicked, close the success dialog
+                            dialog_btn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    alertDialog.dismiss();
+                                }
+                            });
+
+                            alertDialog.show();
+                            //...................}
+                            loadingBar.dismiss();
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
-                    });
-                } else {
-                    String message = task.getException().getMessage();
-                    //{.....................
-                    //before inflating the custom alert dialog layout, we will get the current activity viewgroup
-                    ViewGroup viewGroup = findViewById(android.R.id.content);
+                    }
 
-                    //then we will inflate the custom alert dialog xml that we created
-                    View dialogView = LayoutInflater.from(UpdateGroupCollection.this).inflate(R.layout.error_dialog, viewGroup, false);
-
-
-                    //Now we need an AlertDialog.Builder object
-                    AlertDialog.Builder builder = new AlertDialog.Builder(UpdateGroupCollection.this);
-
-                    //setting the view of the builder to our custom view that we already inflated
-                    builder.setView(dialogView);
-
-                    //finally creating the alert dialog and displaying it
-                    final AlertDialog alertDialog = builder.create();
-
-                    Button dialog_btn = (Button) dialogView.findViewById(R.id.buttonError);
-                    TextView success_text = (TextView) dialogView.findViewById(R.id.error_text);
-                    TextView success_title = (TextView) dialogView.findViewById(R.id.error_title);
-
-                    dialog_btn.setText("OK");
-                    success_title.setText("Error");
-                    success_text.setText(message);
-
-                    // if the OK button is clicked, close the success dialog
-                    dialog_btn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            alertDialog.dismiss();
-                        }
-                    });
-
-                    alertDialog.show();
-                    //...................}
-                    loadingBar.dismiss();
                 }
-
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                loadingBar.setTitle("Uploading Collection Image");
-                loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
-                loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                loadingBar.setProgress((int) progress);
-                loadingBar.show();
-                loadingBar.setCanceledOnTouchOutside(false);
-            }
-        });
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    loadingBar.setTitle("Uploading Collection Image");
+                    loadingBar.setMessage(taskSnapshot.getBytesTransferred() / (1024 * 1024) + " / " + taskSnapshot.getTotalByteCount() / (1024 * 1024) + "MB");
+                    loadingBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    loadingBar.setProgress((int) progress);
+                    loadingBar.show();
+                    loadingBar.setCanceledOnTouchOutside(false);
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override

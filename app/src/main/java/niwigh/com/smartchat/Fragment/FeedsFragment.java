@@ -140,81 +140,88 @@ public class FeedsFragment extends Fragment implements UpdateHelper.OnUpdateChec
 
                                 if(dataSnapshot.exists()) {
 
-                                    final String feedImage, feedUrl, feedTitle, feedtype;
-                                    if (dataSnapshot.hasChild("type") && dataSnapshot.hasChild("image_url")
-                                            && dataSnapshot.hasChild("url") && dataSnapshot.hasChild("title")) {
+                                    try {
+
+                                        final String feedImage, feedUrl, feedTitle, feedtype;
+
+                                        if (dataSnapshot.hasChild("type") && dataSnapshot.hasChild("image_url")
+                                                && dataSnapshot.hasChild("url") && dataSnapshot.hasChild("title")) {
+
+                                            try {
+
+                                                feedtype = dataSnapshot.child("type").getValue().toString();
+                                                feedImage = dataSnapshot.child("image_url").getValue().toString();
+                                                feedUrl = dataSnapshot.child("url").getValue().toString();
+                                                feedTitle = dataSnapshot.child("title").getValue().toString();
+                                                final String feedimagestoragename = dataSnapshot.child("feedimagestoragename").getValue() != null ?
+                                                        dataSnapshot.child("feedimagestoragename").getValue().toString() : "";
 
 
-                                        feedtype = dataSnapshot.child("type").getValue().toString();
-                                        feedImage = dataSnapshot.child("image_url").getValue().toString();
-                                        feedUrl = dataSnapshot.child("url").getValue().toString();
-                                        feedTitle = dataSnapshot.child("title").getValue().toString();
-                                        final String feedimagestoragename  = dataSnapshot.child("feedimagestoragename").getValue() != null ?
-                                                dataSnapshot.child("feedimagestoragename").getValue().toString() : "";
+                                                viewHolder.setFeedimage(getActivity(), feedImage);
 
+                                                final String finalFeedtype = feedtype;
+                                                viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
 
-
-
-                                        viewHolder.setFeedimage(getActivity(), feedImage);
-
-                                        final String finalFeedtype = feedtype;
-                                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-
-                                                if (finalFeedtype.equals("url")) {
-                                                    openWebPage(feedUrl);
-                                                } else {
-                                                    Intent feedIntent = new Intent(getActivity(), FullMessageImageView.class);
-                                                    feedIntent.putExtra("url", feedImage);
-                                                    feedIntent.putExtra("name", feedTitle);
-                                                    startActivity(feedIntent);
-                                                    getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
-                                                }
-
-                                            }
-                                        });
-
-
-                                        UserRef.child(currentUserID).child("userState")
-                                                .addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot mSnapshots) {
-                                                if(mSnapshots.exists()){
-                                                    if(mSnapshots.hasChild("usertype")){
-
-                                                        viewHolder.mView.setOnLongClickListener(new View.OnLongClickListener() {
-                                                            @Override
-                                                            public boolean onLongClick(View v) {
-                                                                final AlertDialog alertDialog =  new
-                                                                        AlertDialog.Builder(getContext()).create();
-                                                                alertDialog.setMessage("Delete this feed");
-                                                                alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                                                        alertDialog.dismiss();
-                                                                    }
-                                                                });
-                                                                alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(DialogInterface dialog, int which) {
-                                                                        deleteFeed(dataSnapshot.getKey(),feedimagestoragename);
-                                                                    }
-                                                                });
-                                                                alertDialog.show();
-                                                                return false;
-                                                            }
-                                                        });
+                                                        if (finalFeedtype.equals("url")) {
+                                                            openWebPage(feedUrl);
+                                                        } else {
+                                                            Intent feedIntent = new Intent(getActivity(), FullMessageImageView.class);
+                                                            feedIntent.putExtra("url", feedImage);
+                                                            feedIntent.putExtra("name", feedTitle);
+                                                            startActivity(feedIntent);
+                                                            getActivity().overridePendingTransition(R.anim.right_in, R.anim.left_out);
+                                                        }
 
                                                     }
-                                                }
-                                            }
+                                                });
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                UserRef.child(currentUserID).child("userState")
+                                                        .addValueEventListener(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot mSnapshots) {
+                                                                if (mSnapshots.exists()) {
+                                                                    if (mSnapshots.hasChild("usertype")) {
 
+                                                                        viewHolder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+                                                                            @Override
+                                                                            public boolean onLongClick(View v) {
+                                                                                final AlertDialog alertDialog = new
+                                                                                        AlertDialog.Builder(getContext()).create();
+                                                                                alertDialog.setMessage("Delete this feed");
+                                                                                alertDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
+                                                                                    @Override
+                                                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                                                        alertDialog.dismiss();
+                                                                                    }
+                                                                                });
+                                                                                alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
+                                                                                    @Override
+                                                                                    public void onClick(DialogInterface dialog, int which) {
+                                                                                        deleteFeed(dataSnapshot.getKey(), feedimagestoragename);
+                                                                                    }
+                                                                                });
+                                                                                alertDialog.show();
+                                                                                return false;
+                                                                            }
+                                                                        });
+
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+                                            }catch (Exception e){
+                                                e.printStackTrace();
                                             }
-                                        });
+                                        }
+                                    }catch (Exception e){
+                                        e.printStackTrace();
                                     }
                                 }
                             }
@@ -231,22 +238,26 @@ public class FeedsFragment extends Fragment implements UpdateHelper.OnUpdateChec
     }
 
     private void deleteFeed(String key, String feedimagestoragename) {
-        FeedsRef.child(key).removeValue();
-        StorageReference postimageRef = FirebaseStorage.getInstance().getReference()
-                .child("Feed Images").child(feedimagestoragename);
-        postimageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                // File deleted successfully
-                Log.d("SUCCESS:", "onSuccess: deleted file");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Uh-oh, an error occurred!
-                Log.d("ERROR:", "onFailure: did not delete file");
-            }
-        });
+        try {
+            FeedsRef.child(key).removeValue();
+            StorageReference postimageRef = FirebaseStorage.getInstance().getReference()
+                    .child("Feed Images").child(feedimagestoragename);
+            postimageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    // File deleted successfully
+                    Log.d("SUCCESS:", "onSuccess: deleted file");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Uh-oh, an error occurred!
+                    Log.d("ERROR:", "onFailure: did not delete file");
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         Toasty.success(getContext(),"Feed deleted successfully!",Toasty.LENGTH_SHORT).show();
     }
@@ -315,7 +326,6 @@ public class FeedsFragment extends Fragment implements UpdateHelper.OnUpdateChec
         }
 
         public void setFeedimage(final Context ctx, final String feedImageUrl){
-            final CircleImageView friendsprofileimage = mView.findViewById(R.id.search_all_users_profile_image);
            try{
                Picasso.with(ctx).load(feedImageUrl).networkPolicy(NetworkPolicy.OFFLINE).placeholder(R.drawable.easy_to_use)
                        .into(feedImage, new Callback() {
@@ -365,37 +375,56 @@ public class FeedsFragment extends Fragment implements UpdateHelper.OnUpdateChec
         }
     }
 
-
     @Override
     public void onStart() {
         super.onStart();
         FetchFeeds();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
         FetchFeeds();
-        Utilities.getInstance(getContext()).updateUserStatus("Online");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Online");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        try {
+            Utilities.getInstance(getContext()).updateUserStatus("Offline");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 }
